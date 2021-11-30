@@ -1,6 +1,8 @@
 <template>
   <div>
-    作业管理
+    <main class="flex">
+      <doc-tree />
+    </main>
     
 
   </div>
@@ -8,9 +10,11 @@
 
 <script>
 import { defineComponent, getCurrentInstance, ref, onMounted, reactive } from "vue";
+import DocTree from "../Manage/components/DocTree.vue";
 
 
 export default defineComponent({
+  components: { DocTree },
   name: "WorkManage",
   setup() {
    
