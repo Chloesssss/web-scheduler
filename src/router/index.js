@@ -18,7 +18,12 @@ const routes = [
         path: "exampleMonitor", //实时监控
         name: "ExampleMonitor", 
         component: () => import("@/views/Scheduler/Example/ExampleMonitor.vue"),
-      }
+      },
+      {
+        path: "exampleTaskMonitor", //任务实例列表
+        name: "ExampleTaskMonitor", 
+        component: () => import("@/views/Scheduler/Example/ExampleTaskMonitor.vue"),
+      },
     ]}
 ];
 

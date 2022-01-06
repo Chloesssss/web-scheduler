@@ -65,7 +65,7 @@ export default defineComponent({
       menuList: [ // 左侧菜单列表
         {index:"WorkManage", name: "作业管理" },
         {index:"WorkMonitor", name:"作业监控"},
-        {index:"ExampleMonitor", name:"实时监控"},
+        {index:"ExampleMonitor", name:"实例监控"},
       ],
     });
     const handleSelect = (key) => {

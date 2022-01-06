@@ -1,8 +1,8 @@
 <template>
-  <!-- 实例监控 -->
+  <!-- 实例任务 -->
   <el-breadcrumb separator="/">
-    <el-breadcrumb-item :to="{ path: '/exampleMonitor' }">作业监控</el-breadcrumb-item>
-    <el-breadcrumb-item>实例监控</el-breadcrumb-item>
+    <el-breadcrumb-item :to="{ path: '/exampleTaskMonitor' }">实例监控</el-breadcrumb-item>
+    <el-breadcrumb-item>实例任务</el-breadcrumb-item>
   </el-breadcrumb>
   <div>
     <el-form :inline="true" :model="searchObj">
@@ -35,13 +35,9 @@
     </el-form>
     <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" stripe @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
-      <el-table-column prop="id" label="编号" show-overflow-tooltip/>
-      <el-table-column prop="workName" label="作业名称" show-overflow-tooltip/>
-      <el-table-column prop="name" label="实例名称" show-overflow-tooltip>
-        <template #default="{row}">
-          <el-link @click="taskRouter(row.id)">{{ row.name }}</el-link>
-        </template>
-      </el-table-column>
+      <el-table-column prop="taskCode" label="编号" show-overflow-tooltip/>
+      <el-table-column prop="executorName" label="节点名称" show-overflow-tooltip/>
+      <el-table-column prop="name" label="节点类型" show-overflow-tooltip/>
       <el-table-column prop="state" label="状态" show-overflow-tooltip>
         <template #default="{row}">
           <el-tag
@@ -52,27 +48,27 @@
       </el-table-column>
       <el-table-column prop="startTime" label="开始时间" show-overflow-tooltip/>
       <el-table-column prop="endTime" label="结束时间" show-overflow-tooltip/>
+      <el-table-column prop="host" label="host" show-overflow-tooltip/>
+      <el-table-column prop="submitTime" label="运行时长" show-overflow-tooltip/>
+      <el-table-column prop="maxRetryTimes" label="重试次数" show-overflow-tooltip/>
       <el-table-column label="操作" width="210">
         <template #default="{ row }">
           <el-space wrap :size="10">
-            <el-link type="primary" @click.stop.prevent="reRun(row)">重跑</el-link>
-            <table-delete-link @onDelete="onDelete(row.id)"></table-delete-link>
-            <el-dropdown @command="handleMore($event, row)">
-              <span>更多<i class="el-icon-arrow-down el-icon--right"></i></span>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item command="stopRun">停止</el-dropdown-item>
-                  <el-dropdown-item command="onStop">暂停</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+            <el-link type="warning" @click="onDetail(row)">查看日志</el-link>
           </el-space>
         </template>
       </el-table-column>
-    </el-table> 
+    </el-table>
   </div>
   <!-- 表格底部分页显示 -->
   <pagination :pages="pageObj" @on-page-change="onPageChange()"/>
+  <el-dialog title="日志详情" v-model="state.dialogVisible" destroy-on-close width="1200px" top="25px">
+    <el-scrollbar height="580px">
+        <pre style="font-size: 13px;">
+            {{state.log}}
+        </pre>
+    </el-scrollbar>
+  </el-dialog>
 </template>
 
 <script>
@@ -111,16 +107,17 @@ export default defineComponent({
       ],
       fromOptions: [],
       tableData: [],
-      projectCode: 462463897026816,
-      processDefineCode: 466382081605888,
+      projectCode: 464931792847104,
+     
+      dialogVisible: false,
     })
     const getData = (page) => {
       page && (pageObj.current = page.current)
-      proxy.$axios.post('/dolphinscheduler/projects/process-instances/query-instances-page', { 
+      proxy.$axios.post('/dolphinscheduler/projects/task-instances/query-definition-page', { 
         current: page ? page.current : pageObj.current,
         size: pageObj.size,
         projectCode: state.projectCode,
-        processDefineCode: state.processDefineCode, 
+        
       }).then(({data}) => {
         state.tableData = data.data.totalList
         pageObj.total = data.total
@@ -145,9 +142,11 @@ export default defineComponent({
       })
       state.multipleSelection = arrList
     }
-    //实例任务
-    const taskRouter = (val) =>{
-      router.push({path: 'exampleTaskMonitor',query:{id:val}})
+    const onDetail = (row) => {
+      state.dialogVisible = true
+     // proxy.$axios.get(`/data-collect/joblog/queryPageData/Log?id=${row.logId}`).then((res) =>{
+     //   state.log = res.data.data
+     // })
     }
     return {
       pageObj,
@@ -157,12 +156,10 @@ export default defineComponent({
       fetchData,
       //reset,
       handleSelectionChange,
-      taskRouter,
+      onDetail,
     }
   },
 });
-
-
 
 </script>
 <style lang="scss" scoped>
