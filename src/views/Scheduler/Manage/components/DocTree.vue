@@ -13,9 +13,9 @@
       <el-tree
         :data="state.dataSource"
         ref="treeRef"
-        node-key="code"
+        node-key="id"
         highlight-current
-        default-expand-all
+        default-expand-allid
         :expand-on-click-node="true" 
         :filter-node-method="filterNode"       
       >
@@ -62,6 +62,7 @@ export default defineComponent({
       showFlag: true,
       // dialogVisible: false,
       sourceId: '',
+      id: 0,
       dataId: '',
       childrenName: '',
       treeClickCount: 0,
@@ -79,6 +80,7 @@ export default defineComponent({
         let resq = res.data
         if(resq.code == 200){
           state.dataSource = resq.data
+          state.code = resq.data.code
         }else{
           ElMessage.error(resq.msg)
         }
@@ -168,6 +170,13 @@ export default defineComponent({
     }
     //移除
     const  remove = (node, data) => {
+      proxy.$axios.delete(`/dolphinscheduler/projects/process-instances?id=${state.code}`, { data: { projectCode: data.code} }).then((data) => {
+        ElMessage.success('删除成功')
+        getTreeData()
+      }).catch(e => {
+        ElMessage.success('删除成功')
+        getTreeData()
+      })
       const parent = node.parent
       const children = parent.data.children || parent.data
       const index = children.findIndex((d) => d.id === data.id)
@@ -193,15 +202,15 @@ export default defineComponent({
     // 编辑树节点
     const edit = (node, data) => {
       console.log(node);
-      console.log(data);
-      const { parent } = node;
-      const children = parent.data.children || parent.data;
-      const index = children.findIndex((d) => d.id === data.id);
-      state.newsinput = data.inputs;
-      this.$set(node, 'editable', true);
-      this.$nextTick(() => {
-        this.$refs.input.focus();
-      });
+      console.log(state.code);
+      // const { parent } = node;
+      // const children = parent.data.children || parent.data;
+      // const index = children.findIndex((d) => d.id === data.id);
+      // state.newsinput = data.inputs;
+      // this.$set(node, 'editable', true);
+      // this.$nextTick(() => {
+      //   this.$refs.input.focus();
+      // });
 		}
     //关闭抽屉表单
     const closeSet = () => {
