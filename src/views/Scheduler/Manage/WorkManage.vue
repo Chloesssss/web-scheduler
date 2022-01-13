@@ -17,20 +17,29 @@
       </div>
     </div>
   </div>
-</template>ior
+  <!-- 定时管理弹窗 -->
+  <!-- <time-control :time-form-visible='state.timeFormVisible' @close='closeModal'></time-control> -->
+  <!-- 编辑/新增 -->
+  <group-create :dialog-form-visible='state.dialogFormVisible' @close='closeModal'></group-create>
+</template>
 
 <script>
 import { defineComponent, getCurrentInstance, ref, onMounted, reactive } from "vue";
+import { useRouter } from 'vue-router'
 import DocTree from "../Manage/components/DocTree.vue";
-
+import groupCreate from "../Manage/components/TimeControl.vue";
 
 export default defineComponent({
-  components: { DocTree },
+  components: { DocTree, groupCreate },
   name: "WorkManage",
   setup() {
    
    
-
+    const router = useRouter()
+    const state = reactive({
+      //timeFormVisible:false,
+      dialogFormVisible:false,
+    })
     const onSave =() => {
       // proxy.$axios.put('/dlink/dlink-admin/task', generateCommitParams()).then(({data}) => {
       //   ElMessage[data.code === 0 ? 'success': 'error'](data.msg)
@@ -42,14 +51,26 @@ export default defineComponent({
       })
     }
     const onMonitior =() => {
-      // proxy.$axios.put('/dlink/dlink-admin/task', generateCommitParams()).then(({data}) => {
-      //   ElMessage[data.code === 0 ? 'success': 'error'](data.msg)
-      // })
+      router.push({path: 'workMonitor'})
+    }
+    const onSetTime =() => {
+      state.dialogFormVisible = true
+    }
+    //关闭弹框
+    const closeModal = () =>{
+      state.dialogFormVisible = false
+      //state.timeFormVisible = false
+      // state.apiVisible = false
+      // state.rulesVisible=false
+      // getData()
     }
     return {
+      state,
       onSave,
       onLine,
       onMonitior,
+      onSetTime,
+      closeModal,
     }
   },
 });
