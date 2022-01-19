@@ -1,6 +1,6 @@
 <template>
   <div class="pr-10" style="border-right: 1px solid rgb(220, 223, 230);">
-    <div style="width:280px;" v-if="showFlag">
+    <div style="width:230px;" v-if="showFlag">
       <div style="float:right">
         <i class="el-icon-circle-plus-outline mr-10 cursor-pointer" @click="appendNode"></i>
         <i class="el-icon-s-fold cursor-pointer" @click="changeDom"></i>
@@ -16,20 +16,41 @@
         node-key="id"
         highlight-current
         default-expand-allid
+        @node-click="onTreeClick"
         :expand-on-click-node="true" 
         :filter-node-method="filterNode"       
       >
         <!-- accordion //手风琴  default-expand-all //打开全部 -->
-        <template  #default="{ node, data }" >
-          <span v-if="!data.isInput" class="custom-tree-node">
-            <i v-if="!node.expanded" class="el-icon-folder mr-5" @click="config">{{data.label}}</i>
-            <i v-else class="el-icon-folder-opened mr-5" @click="config">{{data.label}}</i>
-            <span v-if="!node.data.children">
-              <i class="el-icon-edit-outline mr-10" @click="edit"></i>
-              <i class="el-icon-delete" @click="remove(node, data)"></i>
-            </span>
+        <template #default="{ data, node }">
+          <span class="custom-tree-node flex width-a-hundred-percent">
+            <template v-if="data.children===null">
+              <i class="el-icon-document mr-5"></i>
+              <el-dropdown class="width-a-hundred-percent" @command="handleCommand($event, data, node)" trigger="contextmenu">
+                <span class="flex" style="max-width: 150px;white-space: normal;">{{ data.label }}</span>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="renamework">重命名</el-dropdown-item>
+                    <el-dropdown-item :disabled="node.childNodes.length >0" command="delete">删除</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </template>
+            <template v-else>
+              <i v-if="!node.expanded" class="el-icon-folder mr-5"></i>
+              <i v-else class="el-icon-folder-opened mr-5"></i>
+              <el-dropdown class="width-a-hundred-percent" @command="handleCommand($event, data, node)" trigger="contextmenu">
+                <span class="flex" style="max-width: 150px;white-space: normal;">{{ data.label }}</span>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="createMenu">创建目录</el-dropdown-item>
+                    <el-dropdown-item command="createWork">创建作业</el-dropdown-item>
+                    <el-dropdown-item command="rename">重命名</el-dropdown-item>
+                    <el-dropdown-item :disabled="node.childNodes.length >0" command="delete">删除</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </template>
           </span>
-          <span v-else><el-input v-model="currentInput" placeholder="请输入分类名称" @blur="saveCurrentInp"></el-input></span>
         </template>
       </el-tree>
     </div>
@@ -37,20 +58,23 @@
       <i class="el-icon-s-unfold cursor-pointer" @click="changeDom"></i>
     </div>
   </div>
-  <!-- <div>
-    <tree-from :dialog-visible='state.dialogVisible' :data-id='state.dataId' @close='closeSet' />
-  </div> -->
+  <div>
+    <work-menu :visible="state.workMenuVisible" :name="state.createWorkName" :id="state.createWorkId" :parent-id="state.workParentId" @onOk="workMenuOk" @cancel="state.workMenuVisible = false"></work-menu>
+    <create-work :id="state.createWorkId" :name="state.createWorkName" :parent-id="state.workParentId" :visible="state.createWorkVisible" @onOk="createWorkOk" @cancel="state.createWorkVisible = false" />
+  </div>
 </template>
 
 <script>
 import { defineComponent, getCurrentInstance, ref, onMounted, reactive, toRefs } from "vue";
 import { ElMessage } from 'element-plus'
-import treeFrom from '../components/ConfigTree.vue'
 import {useRouter ,useRoute} from "vue-router";
+import CreateWork from "./CreateWork.vue";
+import WorkMenu from "./workMenu.vue";
+import { DeleteConfirm } from '@/../common/utils/index.js'
 
 export default defineComponent({
   name: "DocTree",
-  components: { treeFrom },
+  components: { CreateWork, WorkMenu },
   setup() {
     const { proxy } = getCurrentInstance()
     const router = useRouter()
@@ -60,17 +84,19 @@ export default defineComponent({
       searchInput: '',
       dataSource: [],
       showFlag: true,
-      // dialogVisible: false,
       sourceId: '',
       id: 0,
       dataId: '',
-      childrenName: '',
-      treeClickCount: 0,
-      newsinput: '',
+      createWorkId: '',
+      workParentId: '',
+      createWorkName: '',
+      createWorkVisible: false,
+      workMenuVisible: false,
       currentData: '',
       currentNode: '',
       tmpCurrent: '',
-      currentInput: '',
+      code: '',
+      projectCode: '',
     })
     //获取目录
     const getTreeData = () => {
@@ -80,108 +106,92 @@ export default defineComponent({
         let resq = res.data
         if(resq.code == 200){
           state.dataSource = resq.data
-          state.code = resq.data.code
         }else{
           ElMessage.error(resq.msg)
         }
       });
-        
-        // if(route.searchInput.id){
-        //   searchObj.dbType = route.searchInput.dbType
-        //   state.sourceId = route.searchInput.id
-        //   fetchData()
-        // }
-        // else{
-          // state.sourceId = data[0].children[0].value
-          // searchObj.dbType = data[0].label
-          // fetchData()
-        // }
     }
-    //设计节点双击
-    // const handleNodeClick = (data, node) => {
-    //   //记录点击次数
-    //   state.treeClickCount++;
-    //   //单次点击次数超过2次不作处理,直接返回,也可以拓展成多击事件
-    //   if (state.treeClickCount >= 2) {
-    //     return;
-    //   }
-    //   //计时器,计算300毫秒为单位,可自行修改
-    //   this.timer = window.setTimeout(() => {
-    //     if (state.treeClickCount == 1) {
-    //       //把次数归零
-    //       state.treeClickCount = 0;
-    //       //单击事件处理
-    //       return onTreeClick();
-    //     } else if (this.treeClickCount > 1) {
-    //       //把次数归零
-    //       state.treeClickCount = 0;
-    //       //双击事件
-    //       // return state.dialogVisible="true";
-    //     }
-    //   }, 300);
-    // }
     //点击目录
     const onTreeClick = (data,node) => {
-      console.log("data",data)
-      console.log("node",node.parent)
-      state.sourceId = data.value
-      searchObj.dbType = node.parent.label
-      state.childrenName = data.label
-      if(state.sourceId){
-        fetchData()
+      state.code = data.code
+      if (data.isLeaf) {
+        state.projectCode = node.parent.data.code
+      } else {
+        state.projectCode = 0
       }
+      
     }
     // 保存当前点击
-    const handleNodeClick = (data,node) => {
+    const saveNodeClick = (data,node) => {
       state.currentData = data // 当前分类的数据
       state.currentNode = node // 当前分类的节点
-      if(data.code != -1){
+      if(state.dataId != -1){
         state.tmpCurrent = data // 缓存当前分类数据，主要用于新增时防止再次点击输入框当前值变化
+      }
+    }
+    const createWorkOk =() => {
+      state.createWorkVisible = false
+      getTreeData()
+    }
+    const workMenuOk =() => {
+      state.workMenuVisible = false
+      getTreeData()
+    }
+    //右击指令操作列菜单
+    const handleCommand =(command, data, node) => {
+      switch (command) {
+        case 'delete':
+        DeleteConfirm().then(() => {
+          if (data.isLeaf) {
+            proxy.$axios.delete(`/dolphinscheduler/projects/process-definition/delete?code=${state.code}&projectCode=${state.projectCode}`,
+            ).then((data) => {
+              ElMessage.success(data.data.msg)
+              console.log(state.code)
+              getTreeData()
+            }).catch(e => {
+              ElMessage.success(data.data.msg)
+              getTreeData()
+            })
+          } else {
+            proxy.$axios.delete(`/dolphinscheduler/projects/${state.code}`,
+            ).then((data) => {
+              ElMessage.success(data.data.msg)
+              console.log(state.code)
+              getTreeData()
+            }).catch(e => {
+              ElMessage.success(data.data.msg)
+              getTreeData()
+            })
+          }
+        })
+        break;
+        case 'createMenu':
+        state.workParentId = data.code
+        state.createWorkVisible = true
+        state.createWorkId = 0
+        break;
+        case 'createWork':
+        state.workParentId = data.code
+        state.workMenuVisible = true
+        break;
+        case 'renamework': // 重命名作业
+        state.workMenuVisible = true
+        state.createWorkId = data.code
+        state.workParentId = node.parent.data.code
+        state.createWorkName = data.label
+        break;
+        case 'rename': // 重命名目录
+        state.createWorkVisible = true
+        state.createWorkId = data.code
+        state.createWorkName = data.label
+        break;
       }
     }
     // 新增树节点
     const appendNode = (data) => {
-      const newChild = { code: -1, label: '', leaf: true, isInput:true }
-      if (!state.currentData.children) {
-        this.$set(state.currentData, 'children', [])
-      }
-      state.currentData.children.push(newChild)
-      state.dataSource = [...state.dataSource]
-    }
-    // 保存分类新增或者修改
-    const saveCurrentInp = () => {
-      if(state.currentInput){
-        var params = {
-          name:state.currentInput
-        }
-        if(tmpCurrent.isEdit){
-          params.code = state.tmpCurrent.code
-        }else{
-          params.parentId = this.tmpCurrent.id
-        }
-        // 调用接口新增分类，成功后会返回分类信息，这样就可以更新新增的分类数据了，这里记得添加上保存的接口才可以哦
-        var newChild = {id:res.result.id,label:res.result.name,children:[],isInput:false}
-        this.$set(state.currentNode,'data',newChild)
-        proxy.$refs.tree.updateKeyChildren(currentData.isEdit?tmpCurrent.code:-1,newChild)
-        
-      }else{
-        ElMessage.error('请输入节点名称')
-      }
-    }
-    //移除
-    const  remove = (node, data) => {
-      proxy.$axios.delete(`/dolphinscheduler/projects/process-instances?id=${state.code}`, { data: { projectCode: data.code} }).then((data) => {
-        ElMessage.success('删除成功')
-        getTreeData()
-      }).catch(e => {
-        ElMessage.success('删除成功')
-        getTreeData()
-      })
-      const parent = node.parent
-      const children = parent.data.children || parent.data
-      const index = children.findIndex((d) => d.id === data.id)
-      children.splice(index, 1)
-      state.dataSource = [...state.dataSource]
+      state.workParentId = 0
+      state.createWorkVisible = true
+      state.createWorkId = 0
     }
     //收起与展开
     const changeDom = () =>{
@@ -199,36 +209,20 @@ export default defineComponent({
     onMounted(() => {
       getTreeData()
     })
-    // 编辑树节点
-    const edit = (node, data) => {
-      console.log(node);
-      console.log(state.code);
-      // const { parent } = node;
-      // const children = parent.data.children || parent.data;
-      // const index = children.findIndex((d) => d.id === data.id);
-      // state.newsinput = data.inputs;
-      // this.$set(node, 'editable', true);
-      // this.$nextTick(() => {
-      //   this.$refs.input.focus();
-      // });
-		}
-    //关闭抽屉表单
-    const closeSet = () => {
-      // state.dialogVisible = false
-    }
     return {
       ...toRefs(state),
       treeRef,
       state,
       getTreeData,
-      handleNodeClick,
+      onTreeClick,
+      createWorkOk,
+      workMenuOk,
+      handleCommand,
+      saveNodeClick,
       appendNode,
-      remove,
       changeDom,
       searchAll,
       filterNode,
-      edit,
-      closeSet,
     }
   },
 });

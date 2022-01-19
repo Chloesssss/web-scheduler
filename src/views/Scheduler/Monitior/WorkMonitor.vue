@@ -73,7 +73,7 @@ import { cloneDeep } from 'lodash'
 import { ElMessage } from 'element-plus'
 import { Message } from '@/../common/utils/message'
 export default defineComponent({
-  name: "WorkManage",
+  name: "workMonitor",
   setup() {
     const { proxy } = getCurrentInstance();
     const pageObj = reactive(cloneDeep(Pagination))
@@ -106,7 +106,7 @@ export default defineComponent({
         },
       ],
       tableData: [],
-      projectCode: 462463897026816,
+      projectCode: 464931792847104,
     })
     const getData = () => {
       proxy.$axios.post(`/dolphinscheduler/projects/process-definition/query-definition-page`,{

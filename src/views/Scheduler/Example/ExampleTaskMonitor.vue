@@ -5,6 +5,9 @@
     <el-breadcrumb-item>实例任务</el-breadcrumb-item>
   </el-breadcrumb>
   <div>
+    <i aria-label="作业名称">{{}}</i>
+  </div>
+  <div>
     <el-form :inline="true" :model="searchObj">
       <el-form-item label="作业名称">
         <el-input v-model="searchObj.jobName" clearable placeholder="作业名称" maxlength="50" class="mr-10" />
@@ -36,8 +39,8 @@
     <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" stripe @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column prop="taskCode" label="编号" show-overflow-tooltip/>
-      <el-table-column prop="executorName" label="节点名称" show-overflow-tooltip/>
-      <el-table-column prop="name" label="节点类型" show-overflow-tooltip/>
+      <el-table-column prop="name" label="节点名称" show-overflow-tooltip/>
+      <el-table-column prop="taskType" label="节点类型" show-overflow-tooltip/>
       <el-table-column prop="state" label="状态" show-overflow-tooltip>
         <template #default="{row}">
           <el-tag
@@ -108,7 +111,7 @@ export default defineComponent({
       fromOptions: [],
       tableData: [],
       projectCode: 464931792847104,
-     
+      log: '',
       dialogVisible: false,
     })
     const getData = (page) => {
@@ -117,7 +120,6 @@ export default defineComponent({
         current: page ? page.current : pageObj.current,
         size: pageObj.size,
         projectCode: state.projectCode,
-        
       }).then(({data}) => {
         state.tableData = data.data.totalList
         pageObj.total = data.total
@@ -144,9 +146,10 @@ export default defineComponent({
     }
     const onDetail = (row) => {
       state.dialogVisible = true
-     // proxy.$axios.get(`/data-collect/joblog/queryPageData/Log?id=${row.logId}`).then((res) =>{
-     //   state.log = res.data.data
-     // })
+      console.log(row.id)
+      proxy.$axios.get(`/dolphinscheduler/log/detail?taskInstanceId=${row.id}`).then((res) =>{
+        state.log = res.data.data
+      })
     }
     return {
       pageObj,

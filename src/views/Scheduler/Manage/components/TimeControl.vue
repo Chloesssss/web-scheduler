@@ -17,8 +17,18 @@
             type="datetimerange">
           </el-date-picker>
         </el-form-item>
-        <el-form-item label="执行规则" prop="executionRule">
-          <el-input v-model="formObj.executionRule" maxlength="100" type="textarea" show-word-limit />
+        <el-form-item label="执行规则" prop="executionRule" >
+          <el-space>
+            每<el-input v-model="formObj.executionRule" style="width: 250px">
+              <template #append>
+                <el-select v-model="formObj.select" style="width: 80px">
+                  <el-option label="秒" value="1"></el-option>
+                  <el-option label="分钟" value="2"></el-option>
+                </el-select>
+              </template>
+            </el-input>执行一次
+            <el-button>时间预览</el-button>
+          </el-space>
         </el-form-item>
         <el-form-item label="作业状态" prop="status">
           <el-switch v-model="formObj.status" inline-prompt active-text="上线" inactive-text="下线">
@@ -43,7 +53,7 @@
 import { defineComponent, getCurrentInstance, ref, toRefs, reactive, watch } from "vue";
 import { ElMessage } from 'element-plus'
 export default defineComponent({
-  name: "groupCreate",
+  name: "timeControl",
   props:{
     dialogFormVisible:Boolean,
     dataId:String
@@ -62,7 +72,7 @@ export default defineComponent({
       status:'',
       validDate: [],
       failStrategy:'',
-      //ip: '',
+      select: '2',
     })
     //校验规则
     const rules = reactive({
