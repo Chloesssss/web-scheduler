@@ -122,7 +122,7 @@ export default defineComponent({
         projectCode: state.projectCode,
       }).then(({data}) => {
         state.tableData = data.data.totalList
-        pageObj.total = data.total
+        pageObj.total = data.data.total
       })
     }
     //分页

@@ -2,11 +2,11 @@
   <div class=" flex" style="overflow: hidden;">
     <div class="overflow-auto mr-20" style="width:25%;min-width: 250px ">
       <main class="flex">
-        <doc-tree ref="mychild" />
+        <doc-tree ref="mychild" @give-code="getCode" />
       </main>  
     </div>
     <div style="width:75%">
-      <div class="top-menu pl-20 flex align-items-start" style="width: 500px">
+      <div style="width: 500px">
         <i @click="onSave" class="el-icon-collection mt-1 cursor-pointer" style="width:80px;"> 保存</i>
         <i @click="onLine" class="el-icon-upload mr-10 cursor-pointer" style="width:80px;"> 上线</i>
         <i @click="onMonitior" class="el-icon-data-line mr-10 cursor-pointer" style="width:100px;"> 前往监控</i>
@@ -24,6 +24,7 @@ import { defineComponent, getCurrentInstance, ref, onMounted, reactive } from "v
 import { useRouter } from 'vue-router'
 import DocTree from "../Manage/components/DocTree.vue";
 import timeControl from "../Manage/components/TimeControl.vue";
+import { ElMessage } from 'element-plus'
 
 export default defineComponent({
   components: { DocTree, timeControl },
@@ -39,14 +40,20 @@ export default defineComponent({
       projectCode: '',
       releaseState: '',
     })
+    const getCode = (e,i) => {
+      // console.log(e);
+      // console.log(i);
+      state.code = e;
+      state.projectCode=i;
+    }
     //保存
-    const onSave =() => {
+    const onSave = () => {
       // proxy.$axios.put('/dlink/dlink-admin/task', generateCommitParams()).then(({data}) => {
       //   ElMessage[data.code === 0 ? 'success': 'error'](data.msg)
       // })
     }
     //上下线
-    const onLine =() => {
+    const onLine = () => {
       proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/?code=${state.id}`,{
         code: state.id,
         projectCode: state.projectCode,
@@ -69,16 +76,23 @@ export default defineComponent({
       });
     }
     //前往监控
-    const onMonitior =(data,node) => {
-      proxy.$refs.mychild.onTreeClick(data,node)
-      router.push({path: 'workMonitor', query: {projectCode:state.projectCode}})
+    const onMonitior = () => {
+      if(state.projectCode===0){
+        router.push({path: 'workMonitor', query: {projectCode: state.code, code: null}})
+      }else if(state.code&&state.projectCode){
+        router.push({path: 'workMonitor', query: {projectCode: state.projectCode, code:state.code}})
+      }else{
+        ElMessage.error("请先选择左侧作业树节点")
+      }
+      // console.log(state.projectCode)
+      // console.log(state.code);
     }
     //定时管理
-    const onSetTime =() => {
+    const onSetTime = () => {
       state.dialogFormVisible = true
     }
     //关闭弹框
-    const closeModal = () =>{
+    const closeModal = () => {
       state.dialogFormVisible = false
       //state.timeFormVisible = false
       // state.apiVisible = false
@@ -87,6 +101,7 @@ export default defineComponent({
     }
     return {
       state,
+      getCode,
       onSave,
       onLine,
       onMonitior,

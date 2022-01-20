@@ -109,21 +109,26 @@ export default defineComponent({
           value: 2
         },
       ],
+      id: '',
       fromOptions: [],
       tableData: [],
-      projectCode: 462463897026816,
-      processDefineCode: 466382081605888,
+      projectCode: '',
+      processDefineCode: '',
     })
     const getData = (page) => {
+      state.projectCode = proxy.$route.query.projectCode
+      state.processDefineCode = proxy.$route.query.code
+      state.id = proxy.$route.query.id
       page && (pageObj.current = page.current)
-      proxy.$axios.post('/dolphinscheduler/projects/process-instances/query-instances-page', { 
+      proxy.$axios.post('/dolphinscheduler/projects/process-instances/query-instances-page', {
+        ...searchObj,
         current: page ? page.current : pageObj.current,
         size: pageObj.size,
         projectCode: state.projectCode,
         processDefineCode: state.processDefineCode, 
       }).then(({data}) => {
         state.tableData = data.data.totalList
-        pageObj.total = data.total
+        pageObj.total = data.data.total
       })
     }
     //分页
@@ -146,8 +151,9 @@ export default defineComponent({
       state.multipleSelection = arrList
     }
     //实例任务
-    const taskRouter = (val) =>{
-      router.push({path: 'exampleTaskMonitor',query:{id:val}})
+    const taskRouter = (row) =>{
+      state.id = row.id
+      router.push({path: 'exampleTaskMonitor',query:{id:state.id, projectCode: state.projectCode, code: state.processDefineCode}})
     }
     return {
       pageObj,

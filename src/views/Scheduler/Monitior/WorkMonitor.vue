@@ -25,7 +25,7 @@
       <el-table-column prop="code" label="编号" show-overflow-tooltip/>
       <el-table-column prop="name" label="作业名称" show-overflow-tooltip>
         <template #default="{row}">
-          <el-link @click="examRouter(row.id)">{{ row.name }}</el-link>
+          <el-link @click="examRouter(row)">{{ row.name }}</el-link>
         </template>
       </el-table-column>
       <el-table-column prop="releaseState" label="状态" show-overflow-tooltip>
@@ -33,7 +33,7 @@
           <el-tag
             :type="row.releaseState === '上线' ? '' : 'danger'"
             disable-transitions
-          >{{ row.releaseState }}</el-tag>
+          >{{ row.releaseState===OFFLINE?'上线':'下线' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="createTime" label="创建时间" show-overflow-tooltip/>
@@ -52,7 +52,7 @@
                     <el-dropdown-item command="onLine">上线</el-dropdown-item>
                   </template>
                   <el-dropdown-item v-else command="onDownLine">下线</el-dropdown-item>
-                  <el-dropdown-item command="onDelete(row.id)">删除</el-dropdown-item>
+                  <el-dropdown-item command="onDelete(row)">删除</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -105,22 +105,28 @@ export default defineComponent({
           value: 1
         },
       ],
+      id: '',
       tableData: [],
-      projectCode: 464931792847104,
+      projectCode: '',
+      code: '',
     })
     const getData = () => {
+      //通过路由传参(get!!!快乐ヾ(≧▽≦*)o
+      state.projectCode = proxy.$route.query.projectCode
+      state.code = proxy.$route.query.code
       proxy.$axios.post(`/dolphinscheduler/projects/process-definition/query-definition-page`,{
         ...searchObj,
         current: pageObj.current,
         size: pageObj.size,
-        projectCode: state.projectCode
+        projectCode: state.projectCode,
+        code: state.code,
       })
       .then((res) => {
         let resq = res.data
         state.tableData = resq.totalList
-        console.log(resq.totalList)
         if(resq.code == 200){
           state.tableData = resq.data.totalList
+          pageObj.total = resq.data.total
         }else{
           ElMessage.error(resq.msg)
         }
@@ -128,6 +134,7 @@ export default defineComponent({
     }
     onMounted(() => {
       getData()
+      
     });
     //分页
     const onPageChange = (data) => {
@@ -150,8 +157,10 @@ export default defineComponent({
       state.multipleSelection = arrList
     }
     //实例监控
-    const examRouter = (val) =>{
-      router.push({path: 'exampleMonitor',query:{id:val}})
+    const examRouter = (row) =>{
+      state.id = row.id
+      router.push({path: 'exampleMonitor',query: { id: state.id, projectCode: state.projectCode, code: state.code }})
+
     }
     return {
       pageObj,

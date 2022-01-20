@@ -75,7 +75,8 @@ import { DeleteConfirm } from '@/../common/utils/index.js'
 export default defineComponent({
   name: "DocTree",
   components: { CreateWork, WorkMenu },
-  setup() {
+  emits:['giveCode'],
+  setup(props,{emit}) {
     const { proxy } = getCurrentInstance()
     const router = useRouter()
     const route = useRoute()
@@ -114,12 +115,13 @@ export default defineComponent({
     //点击目录
     const onTreeClick = (data,node) => {
       state.code = data.code
-      if (data.isLeaf) {
+      if (data.children===null) {
         state.projectCode = node.parent.data.code
       } else {
         state.projectCode = 0
       }
-      
+      emit("giveCode", state.code,state.projectCode);
+      //proxy.$emit("giveProjectCode", state.projectCode);
     }
     // 保存当前点击
     const saveNodeClick = (data,node) => {
