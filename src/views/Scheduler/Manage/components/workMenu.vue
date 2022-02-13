@@ -20,7 +20,7 @@ import {cloneDeep} from 'lodash'
 import { ElMessage } from 'element-plus'
 
 export default {
-  name: 'MapConfig',
+  name: 'WorkMenu',
   emits: ['cancel', 'onOk'],
   props: {
     visible: {

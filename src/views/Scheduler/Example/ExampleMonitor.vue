@@ -1,9 +1,9 @@
 <template>
   <!-- 实例监控 -->
-  <el-breadcrumb separator="/">
+  <!-- <el-breadcrumb separator="/">
     <el-breadcrumb-item :to="{ path: '/exampleMonitor' }">作业监控</el-breadcrumb-item>
     <el-breadcrumb-item>实例监控</el-breadcrumb-item>
-  </el-breadcrumb>
+  </el-breadcrumb> -->
   <div>
     <el-form :inline="true" :model="searchObj">
       <el-form-item label="作业名称">
@@ -13,11 +13,11 @@
         <el-input v-model="searchObj.name" clearable placeholder="实例名称" maxlength="50" class="mr-10" />
       </el-form-item>
       <el-form-item label="实例状态">
-        <el-select class="mb-10" v-model="searchObj.state" clearable placeholder="请选择">
+        <el-select class="mb-10" v-model="searchObj.stateType" clearable placeholder="请选择">
           <el-option v-for="item in state.statusOptions" :key="item.key" :label="item.key" :value="item.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="时间范围">
+      <!-- <el-form-item label="时间范围">
         <el-date-picker
           v-model="state.workTimeRange"
           value-format="YYYY-MM-DD"
@@ -27,7 +27,7 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
         />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item>
         <el-button type="primary" @click="fetchData()">查询</el-button>
         <!-- <el-button @click="reset">重置</el-button> -->
@@ -45,9 +45,9 @@
       <el-table-column prop="state" label="状态" show-overflow-tooltip>
         <template #default="{row}">
           <el-tag
-            :type="row.state === '完成' ? '' : 'danger'"
+            :type="row.state === 'SUCCESS' ? 'success' : (row.state === 'FAILURE' ? 'danger' : '' )"
             disable-transitions
-          >{{ row.state }}</el-tag>
+          >{{ row.state === 'SUCCESS' ? '成功' : (row.state === 'FAILURE' ? '失败' : '运行中' ) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="startTime" label="开始时间" show-overflow-tooltip/>
@@ -56,7 +56,7 @@
         <template #default="{ row }">
           <el-space wrap :size="10">
             <el-link type="primary" @click.stop.prevent="reRun(row)">重跑</el-link>
-            <table-delete-link @onDelete="onDelete(row.id)"></table-delete-link>
+            <table-delete-link @onDelete="onDelete(row)"></table-delete-link>
             <el-dropdown @command="handleMore($event, row)">
               <span>更多<i class="el-icon-arrow-down el-icon--right"></i></span>
               <template #dropdown>
@@ -91,37 +91,40 @@ export default defineComponent({
     const searchObj = reactive({ // 声明查询信息
       definitionName: null,
       name: null,
-      state: null,
+      stateType: null,
     })
     const state = reactive({
       loading: false,
       statusOptions: [
         {
-          key: '失败',
-          value: 0
-        },
-        {
-          key: '运行',
-          value: 1
+          key: '运行中',
+          value: 4
         },
         {
           key: '完成',
-          value: 2
+          value: 5
+        },
+        {
+          key: '失败',
+          value: 6
         },
       ],
       id: '',
+      definitionName: '',
       fromOptions: [],
       tableData: [],
       projectCode: '',
       processDefineCode: '',
+      pjCode: '',
+      deCode: '',
     })
     const getData = (page) => {
-      state.projectCode = proxy.$route.query.projectCode
-      state.processDefineCode = proxy.$route.query.code
-      state.id = proxy.$route.query.id
+      
       page && (pageObj.current = page.current)
       proxy.$axios.post('/dolphinscheduler/projects/process-instances/query-instances-page', {
-        ...searchObj,
+        executorName: searchObj.definitionName,
+        searchVal: searchObj.name,
+        stateType: searchObj.stateType,
         current: page ? page.current : pageObj.current,
         size: pageObj.size,
         projectCode: state.projectCode,
@@ -151,9 +154,24 @@ export default defineComponent({
       state.multipleSelection = arrList
     }
     //实例任务
-    const taskRouter = (row) =>{
+    const taskRouter = (row) => {
+      if(proxy.$route.query.projectCode&&proxy.$route.query.code){
+        state.projectCode = proxy.$route.query.projectCode
+        state.processDefineCode = proxy.$route.query.code
+        state.id = proxy.$route.query.id
+      } else {
+        state.projectCode = row.processDefinitionCode
+      }
       state.id = row.id
-      router.push({path: 'exampleTaskMonitor',query:{id:state.id, projectCode: state.projectCode, code: state.processDefineCode}})
+      router.push({path: 'exampleTaskMonitor',query:{id:state.id, projectCode: state.projectCode, code: state.processDefineCode, }})
+    }
+    const onDelete = (row) => {
+      proxy.$axios.delete(`/dolphinscheduler/projects/process-instances/${row.id}`,{data: { id: row.id, projectCode: state.projectCode }}).then(({data}) => {
+          getData()
+          ElMessage.error(data.msg)
+        }).catch(({ data }) => {
+          ElMessage.success(data.msg)
+        })
     }
     return {
       pageObj,
@@ -161,7 +179,7 @@ export default defineComponent({
       state,
       onPageChange,
       fetchData,
-      //reset,
+      onDelete,
       handleSelectionChange,
       taskRouter,
     }

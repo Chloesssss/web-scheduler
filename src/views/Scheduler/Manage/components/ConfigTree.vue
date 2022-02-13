@@ -4,7 +4,7 @@
     v-model="dialogVisible"
     title="数据调度节点"
     :before-close="handleClose"
-    direction="ltr"
+    direction="rtl"
     custom-class="demo-drawer"
   >
     <div class="demo-drawer__content">
@@ -18,11 +18,11 @@
         <el-form-item label="超时失败">
           <el-switch v-model="form.overTime"></el-switch>
         </el-form-item>
-        <el-form-item label="汇聚作业">
+        <!-- <el-form-item label="汇聚作业">
           <el-select v-model="form.work" clearable placeholder="请选择">
             <el-option v-for="item in state.workOptions" :key="item.key" :label="item.key" :value="item.value" />
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="源表">
           <el-input v-model="form.originTable"></el-input>
         </el-form-item>
@@ -39,28 +39,41 @@
 </template>
 
 <script>
-  import { defineComponent, reactive, toRefs, onMounted, getCurrentInstance } from "vue";
+  import { defineComponent, reactive, toRefs, ref, onMounted, watch, getCurrentInstance } from "vue";
   import { ElMessageBox } from 'element-plus'
 
   export default defineComponent({
     name: "treeFrom",
-    setup() {
+    props: {
+      visible: {
+        type: Boolean,
+        default: false
+      },
+    },
+    emits:['close'],
+    setup(props, {emit}) {
       const { proxy } = getCurrentInstance();
+      const { visible } = toRefs(props)
+      const dialogVisible = ref(false)
+      const  form = reactive({ // 声明查询信息
+        name: null,
+        desc: null,
+        overTime: null,
+        work: '',
+        originTable: null,
+        targetTable: null,
+      })
       const state = reactive({
         drawer : false,
-        dialogVisible: false,
-        form: {
-          name: '',
-          desc: '',
-          overTime: '',
-          work: '',
-          originTable: '',
-          targetTable: '',
-        },
+        workOptions: [], 
+      })
+      watch([visible],(newval,oldval) => {
+        console.log(newval)
+        dialogVisible.value = newval[0]
       })
       const handleClose = (done) => {
         if (state.loading) {
-          return
+          return emit('close')
         }
         ElMessageBox.confirm('Do you want to submit?')
         .then(() => {
@@ -78,14 +91,16 @@
         })
       }
       const cancelForm = () => {
-      state.loading = false
-      state.dialog = false
-      clearTimeout(state.timer)
+        state.loading = false
+        state.dialog = false
+        clearTimeout(state.timer)
       }
       return {
+        form,
         ...toRefs(state),
         handleClose,
         cancelForm,
+        dialogVisible,
       }
     }
   })

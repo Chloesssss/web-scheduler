@@ -12,7 +12,7 @@
       </el-form-item>
       <el-form-item label="作业主题">
         <el-select filterable clearable v-model="searchObj.motif" placeholder="请选择">
-          <el-option v-for="item in state.motif" :key="item.key" :label="item.key" :value="item.value" />
+          <el-option v-for="item in state.motifList" :key="item.key" :label="item.label" :value="item.label" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -28,12 +28,12 @@
           <el-link @click="examRouter(row)">{{ row.name }}</el-link>
         </template>
       </el-table-column>
-      <el-table-column prop="releaseState" label="状态" show-overflow-tooltip>
+      <el-table-column prop="releaseStateCN" label="状态" show-overflow-tooltip>
         <template #default="{row}">
           <el-tag
-            :type="row.releaseState === '上线' ? '' : 'danger'"
+            :type="row.releaseStateCN === '上线' ? '' : 'danger'"
             disable-transitions
-          >{{ row.releaseState===OFFLINE?'上线':'下线' }}</el-tag>
+          >{{ row.releaseStateCN }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="createTime" label="创建时间" show-overflow-tooltip/>
@@ -52,7 +52,7 @@
                     <el-dropdown-item command="onLine">上线</el-dropdown-item>
                   </template>
                   <el-dropdown-item v-else command="onDownLine">下线</el-dropdown-item>
-                  <el-dropdown-item command="onDelete(row)">删除</el-dropdown-item>
+                  <el-dropdown-item command="onDelete">删除</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -72,6 +72,8 @@ import { Pagination } from '@/../common/constants'
 import { cloneDeep } from 'lodash'
 import { ElMessage } from 'element-plus'
 import { Message } from '@/../common/utils/message'
+import { DeleteConfirm } from '@/../common/utils/index.js';
+
 export default defineComponent({
   name: "workMonitor",
   setup() {
@@ -79,9 +81,9 @@ export default defineComponent({
     const pageObj = reactive(cloneDeep(Pagination))
     const router = useRouter()
     const searchObj = reactive({ // 声明查询信息
-      runStatus: null,
-      name: null,
-      motif: null,
+      runStatus: '',
+      name: '',
+      motif: '',
     })
     const state = reactive({
       loading: false,
@@ -95,16 +97,7 @@ export default defineComponent({
           value: 1
         },
       ],
-      motif: [
-        {
-          key: '下线',
-          value: 0
-        },
-        {
-          key: '上线',
-          value: 1
-        },
-      ],
+      motifList: [],
       id: '',
       tableData: [],
       projectCode: '',
@@ -115,7 +108,9 @@ export default defineComponent({
       state.projectCode = proxy.$route.query.projectCode
       state.code = proxy.$route.query.code
       proxy.$axios.post(`/dolphinscheduler/projects/process-definition/query-definition-page`,{
-        ...searchObj,
+        searchVal: searchObj.name,
+        // projectName: null||searchObj.motif,
+        releaseState: searchObj.runStatus,
         current: pageObj.current,
         size: pageObj.size,
         projectCode: state.projectCode,
@@ -134,7 +129,7 @@ export default defineComponent({
     }
     onMounted(() => {
       getData()
-      
+      getMotif()
     });
     //分页
     const onPageChange = (data) => {
@@ -148,6 +143,39 @@ export default defineComponent({
     // const reset = (searchform) => {
     //   proxy.$refs[searchform].resetFields()
     // }
+    const handleMore = (command, row) => {
+      switch (command) {
+        case 'onLine':
+          onLine(row)
+        break;
+        case 'onDownLine' :
+          proxy.$axios.get(``).then(({data}) => {
+            Message(data.code, '下线')
+            fetchData()
+          })
+        break;
+        case 'onDelete' :
+        DeleteConfirm().then(() => {
+          proxy.$axios.delete(`/dolphinscheduler/projects/process-definition/delete?code=${state.code}&projectCode=${state.projectCode}`,
+          ).then((data) => {
+            ElMessage.success(data.data.msg)
+            console.log(state.code)
+            fetchData()
+          }).catch(e => {
+            ElMessage.success(data.data.msg)
+            fetchData()
+          })
+          
+        })
+        break;
+      }
+    }
+    //获取下拉列表主题名
+    const getMotif = () => {
+      proxy.$axios.get("/dolphinscheduler/projects/view-tree").then((res) => {
+          state.motifList = res.data.data
+        })
+    }
     //获取批量选中值
     const handleSelectionChange = (val) => {
       let valList = val,arrList = [];
@@ -170,6 +198,7 @@ export default defineComponent({
       onPageChange,
       fetchData,
       //reset,
+      handleMore,
       handleSelectionChange,
       examRouter,
     }

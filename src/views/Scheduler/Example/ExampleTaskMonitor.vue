@@ -1,72 +1,52 @@
 <template>
   <!-- 实例任务 -->
-  <el-breadcrumb separator="/">
+  <el-breadcrumb separator-class="el-icon-arrow-right">
     <el-breadcrumb-item :to="{ path: '/exampleTaskMonitor' }">实例监控</el-breadcrumb-item>
     <el-breadcrumb-item>实例任务</el-breadcrumb-item>
   </el-breadcrumb>
-  <div>
-    <i aria-label="作业名称">{{}}</i>
-  </div>
-  <div>
-    <el-form :inline="true" :model="searchObj">
-      <el-form-item label="作业名称">
-        <el-input v-model="searchObj.jobName" clearable placeholder="作业名称" maxlength="50" class="mr-10" />
-      </el-form-item>
-      <el-form-item label="实例名称">
-        <el-input v-model="searchObj.logName" clearable placeholder="实例名称" maxlength="50" class="mr-10" />
-      </el-form-item>
-      <el-form-item label="实例状态">
-        <el-select class="mb-10" v-model="searchObj.status" clearable placeholder="请选择">
-          <el-option v-for="item in state.statusOptions" :key="item.key" :label="item.key" :value="item.value" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="时间范围">
-        <el-date-picker
-          v-model="state.workTimeRange"
-          value-format="YYYY-MM-DD"
-          type="daterange"
-          :clearable="false"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="fetchData()">查询</el-button>
-        <!-- <el-button @click="reset">重置</el-button> -->
-      </el-form-item>
-    </el-form>
-    <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" stripe @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" />
-      <el-table-column prop="taskCode" label="编号" show-overflow-tooltip/>
-      <el-table-column prop="name" label="节点名称" show-overflow-tooltip/>
-      <el-table-column prop="taskType" label="节点类型" show-overflow-tooltip/>
-      <el-table-column prop="state" label="状态" show-overflow-tooltip>
-        <template #default="{row}">
-          <el-tag
-            :type="row.state === '完成' ? '' : 'danger'"
-            disable-transitions
-          >{{ row.state }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="startTime" label="开始时间" show-overflow-tooltip/>
-      <el-table-column prop="endTime" label="结束时间" show-overflow-tooltip/>
-      <el-table-column prop="host" label="host" show-overflow-tooltip/>
-      <el-table-column prop="submitTime" label="运行时长" show-overflow-tooltip/>
-      <el-table-column prop="maxRetryTimes" label="重试次数" show-overflow-tooltip/>
-      <el-table-column label="操作" width="210">
-        <template #default="{ row }">
-          <el-space wrap :size="10">
-            <el-link type="warning" @click="onDetail(row)">查看日志</el-link>
-          </el-space>
-        </template>
-      </el-table-column>
-    </el-table>
-  </div>
+  <el-main>
+    <div style="width:90%" >
+      <div style="width=100%;height:25%">作业名称：{{ state.definitionName }}</div>
+        <el-descriptions :column="2" style="margin-top:15px">
+          <el-descriptions-item label="实例名称：">{{ state.sourceName }}</el-descriptions-item>
+          <el-descriptions-item label="运行状态：">{{ state.runState }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <div style="width:10% ">
+        <div id="container">DAG图图</div>
+      </div>
+    <div>
+      <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" stripe >
+        <el-table-column prop="taskCode" label="编号" show-overflow-tooltip/>
+        <el-table-column prop="name" label="节点名称" show-overflow-tooltip/>
+        <el-table-column prop="taskType" label="节点类型" show-overflow-tooltip/>
+        <el-table-column prop="state" label="状态" show-overflow-tooltip>
+          <template #default="{row}">
+            <el-tag
+              :type="row.state === 'SUBMITTED_SUCCESS' ? 'success' : 'danger'"
+              disable-transitions
+            >{{ row.state === 'SUBMITTED_SUCCESS' ? '执行成功' : (row.state === 'FAILURE' ? '失败' : '未知' ) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="startTime" label="开始时间" show-overflow-tooltip/>
+        <el-table-column prop="endTime" label="结束时间" show-overflow-tooltip/>
+        <el-table-column prop="host" label="host" show-overflow-tooltip/>
+        <el-table-column prop="submitTime" label="运行时长" show-overflow-tooltip/>
+        <el-table-column prop="maxRetryTimes" label="重试次数" show-overflow-tooltip/>
+        <el-table-column label="操作" width="210">
+          <template #default="{ row }">
+            <el-space wrap :size="10">
+              <el-link type="warning" @click="onDetail(row)">查看日志</el-link>
+            </el-space>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+  </el-main>
   <!-- 表格底部分页显示 -->
   <pagination :pages="pageObj" @on-page-change="onPageChange()"/>
-  <el-dialog title="日志详情" v-model="state.dialogVisible" destroy-on-close width="1200px" top="25px">
-    <el-scrollbar height="580px">
+  <el-dialog title="日志详情" v-model="state.dialogVisible" destroy-on-close width="960px" top="25px">
+    <el-scrollbar height="480px">
         <pre style="font-size: 13px;">
             {{state.log}}
         </pre>
@@ -108,12 +88,33 @@ export default defineComponent({
           value: 2
         },
       ],
+      definitionName: '',
+      sourceName: '',
+      runState: '',
       fromOptions: [],
       tableData: [],
-      projectCode: 464931792847104,
+      projectCode: '',
+      code: '',
       log: '',
       dialogVisible: false,
     })
+    //获取作业信息
+    const getDetail = () =>{
+      proxy.$axios.get(`/dolphinscheduler/projects/process-instances/query-instances-page`,{
+        current: 1,
+        size: 10,
+        projectCode: state.projectCode,
+        processDefineCode: state.code
+      }).then(({data}) => {
+        state.tableData = data.data.totalList
+        pageObj.total = data.data.total
+          state.definitionName = data.data.totalList.definitionName;
+          state.sourceName = data.data.totalList.name;
+          state.runState = data.data.totalList.state;       
+          ElMessage.error(resq.msg)
+      })
+    }
+    //获取节点数据
     const getData = (page) => {
       page && (pageObj.current = page.current)
       proxy.$axios.post('/dolphinscheduler/projects/task-instances/query-definition-page', { 
@@ -134,16 +135,11 @@ export default defineComponent({
       getData()
     }
     onMounted(() => {
+      getDetail()
+      state.projectCode = proxy.$route.query.projectCode
+      state.code = proxy.$route.query.code
       getData()
     });
-    //获取批量选中值
-    const handleSelectionChange = (val) => {
-      let valList = val,arrList = [];
-      valList.map((item) => {
-        arrList.push(item.id)
-      })
-      state.multipleSelection = arrList
-    }
     const onDetail = (row) => {
       state.dialogVisible = true
       console.log(row.id)
@@ -157,8 +153,6 @@ export default defineComponent({
       state,
       onPageChange,
       fetchData,
-      //reset,
-      handleSelectionChange,
       onDetail,
     }
   },
