@@ -12,8 +12,8 @@
           <el-descriptions-item label="运行状态：">{{ state.runState }}</el-descriptions-item>
         </el-descriptions>
       </div>
-      <div style="width:10% ">
-        <div id="container">DAG图图</div>
+      <div style="width:100% ">
+        <dag-graph />
       </div>
     <div>
       <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" stripe >
@@ -25,7 +25,7 @@
             <el-tag
               :type="row.state === 'SUBMITTED_SUCCESS' ? 'success' : 'danger'"
               disable-transitions
-            >{{ row.state === 'SUBMITTED_SUCCESS' ? '执行成功' : (row.state === 'FAILURE' ? '失败' : '未知' ) }}</el-tag>
+            >{{ row.state === 'SUBMITTED_SUCCESS' ? '执行成功' : (row.state === 'FAILURE' ? '失败' : '失败' ) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="startTime" label="开始时间" show-overflow-tooltip/>
@@ -61,7 +61,9 @@ import { Pagination } from '@/../common/constants'
 import { cloneDeep } from 'lodash'
 import { ElMessage } from 'element-plus'
 import { Message } from '@/../common/utils/message';
+import DagGraph from "../Manage/components/DagGraph.vue";
 export default defineComponent({
+  components: { DagGraph },
   name: "ExampleManage",
   setup() {
     const { proxy } = getCurrentInstance();

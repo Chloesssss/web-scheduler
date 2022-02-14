@@ -742,7 +742,7 @@ export default {
       );
       // stencil.load([c2, r2, r3, c3], 'staffPool')
       console.log(graph.toJSON());
-      /************************************** 绑定事件 *********************************/
+      //绑定事件
       graph.on("cell:dblclick", ({ cell, e }) => {
         const p = graph.clientToGraph(e.clientX, e.clientY);
         cell.addTools([
@@ -757,23 +757,23 @@ export default {
       });
       // 节点删除操作
       // 鼠标 Hover 时添加删除按钮
-      graph.on('node:mouseenter', ({ node }) => {
-        if (node === target) {
-          node.addTools({
-            name: 'button-remove',
-            args: {
-              x: 0,
-              y: 0,
-              offset: { x: 10, y: 10 },
-            },
-          })
-        }
-      })
+      // graph.on('node:mouseenter', ({ node }) => {
+      //   if (node === target) {
+      //     node.addTools({
+      //       name: 'button-remove',
+      //       args: {
+      //         x: 0,
+      //         y: 0,
+      //         offset: { x: 10, y: 10 },
+      //       },
+      //     })
+      //   }
+      // })
 
       // 鼠标移开时删除删除按钮
-      graph.on('node:mouseleave', ({ node }) => {
-        node.removeTools()
-      })
+      // graph.on('node:mouseleave', ({ node }) => {
+      //   node.removeTools()
+      // })
       // 线删除操作
       graph.on("edge:mouseenter", ({ edge }) => {
         edge.addTools([

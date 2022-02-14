@@ -42,8 +42,8 @@
       <el-table-column label="操作" width="210">
         <template #default="{ row }">
           <el-space wrap :size="10">
-            <el-link type="primary" @click.stop.prevent="onEdit(row)">编辑</el-link>
-            <el-link :disabled="row.runStatus === 1" type="warning" @click.stop.prevent="onDetail(row)">立即执行</el-link>
+            <el-link type="primary" @click="onEdit(row)">编辑</el-link>
+            <el-link :disabled="row.runStatus === 1" type="warning" @click="onDo">立即执行</el-link>
             <el-dropdown @command="handleMore($event, row)">
               <span>更多<i class="el-icon-arrow-down el-icon--right"></i></span>
               <template #dropdown>
@@ -102,14 +102,15 @@ export default defineComponent({
       tableData: [],
       projectCode: '',
       code: '',
+      doMessage: {},
     })
     const getData = () => {
-      //通过路由传参(get!!!快乐ヾ(≧▽≦*)o
+      //通过路由传参
       state.projectCode = proxy.$route.query.projectCode
       state.code = proxy.$route.query.code
       proxy.$axios.post(`/dolphinscheduler/projects/process-definition/query-definition-page`,{
         searchVal: searchObj.name,
-        // projectName: null||searchObj.motif,
+        projectName: searchObj.motif,
         releaseState: searchObj.runStatus,
         current: pageObj.current,
         size: pageObj.size,
@@ -143,10 +144,17 @@ export default defineComponent({
     // const reset = (searchform) => {
     //   proxy.$refs[searchform].resetFields()
     // }
+    //编辑
+    const onEdit = (row) => {
+      router.push({path: 'workManage', query: {projectCode: state.projectCode, code: state.code, releaseState: row.releaseStateCN }})
+    }
     const handleMore = (command, row) => {
       switch (command) {
         case 'onLine':
           onLine(row)
+        break;
+        case 'onLine':
+          onDo
         break;
         case 'onDownLine' :
           proxy.$axios.get(``).then(({data}) => {
@@ -169,6 +177,45 @@ export default defineComponent({
         })
         break;
       }
+    }
+    //上下线
+    const onLine = (row) => {
+      let releaState = row.releaseStateCN === '下线' ? 'OFFLINE' : 'ONLINE'
+      console.log(releaState);
+      proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/${state.code}`,{
+        code: state.code,
+        projectCode: state.projectCode,
+        releaseState: releaState,
+      })
+      .then((res) => {
+        let resq = res.data
+        if(resq.code == 200){
+          ElMessage.success('修改状态成功')
+          getData()
+        }else if(resq.code == 400){
+          ElMessageBox.alert(resq.msg, '提示', {
+            confirmButtonText: '确定',
+            type: 'warning'
+          })
+          .catch(() => {})
+        }else{
+          ElMessage.error(resq.msg)
+        }
+      });
+    }
+    //立即执行
+    const onDo = () => {
+       proxy.$axios.post('/dolphinscheduler/projects/executors/start-process-instance', {
+
+       }).then(({data}) => {
+          state.doMessage = data.datas
+          ElMessage[state.doMessage.success ? 'success' : 'error'](state.doMessage.success ? '执行成功' : '执行失败')
+          state.loading = false
+        }).catch(e => {
+          ElMessage.error('执行异常')
+          state.doMessage = {}
+          state.loading = false
+        })
     }
     //获取下拉列表主题名
     const getMotif = () => {
@@ -198,6 +245,7 @@ export default defineComponent({
       onPageChange,
       fetchData,
       //reset,
+      onEdit,
       handleMore,
       handleSelectionChange,
       examRouter,

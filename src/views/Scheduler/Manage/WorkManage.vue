@@ -14,7 +14,7 @@
         <i @click="onSetTime" class="el-icon-video-pause mr-10 cursor-pointer" style="width:100px;"> 定时管理</i>
       </div>
       <div style="width: 100%,hight: 100%">
-        <filiation-graph />
+        <filiation-graph  />
       </div>
     </div>
   </div>
@@ -56,16 +56,21 @@ export default defineComponent({
     }
     //保存
     const onSave = () => {
-      // proxy.$axios.put('/dlink/dlink-admin/task', generateCommitParams()).then(({data}) => {
-      //   ElMessage[data.code === 0 ? 'success': 'error'](data.msg)
-      // })
+      proxy.$axios.post('/dolphinscheduler/projects/process-definition', {
+        locations: 0,
+        name: 0,
+        projectCode: 0,
+      }).then(({data}) => {
+        ElMessage[data.code === 0 ? 'success': 'error'](data.msg)
+      })
     }
     //上下线
     const onLine = () => {
+      let releaseState = proxy.$route.queryreleaseState === '下线' ? 'OFFLINE' : 'ONLINE'
       proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/${state.code}`,{
         code: state.code,
         projectCode: state.projectCode,
-        releaseState: state.releaseState,
+        releaseState: releaseState,
       })
       .then((res) => {
         let resq = res.data
@@ -97,8 +102,7 @@ export default defineComponent({
     }
     //立即执行
     const onCommitConfig = () => {
-      state.dialogVisible = true
-
+      
     }
     //定时管理
     const onSetTime = () => {
