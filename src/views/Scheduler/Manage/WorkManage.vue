@@ -19,22 +19,21 @@
     </div>
   </div>
   <!-- 定时管理弹窗 -->
-  <time-control :dialog-form-visible='state.dialogFormVisible' @close='closeModal'></time-control>
-  <!-- 执行策略配置 -->
-  <config-tree :visible="state.dialogVisible" @close="closeModal"/>
+  <!-- <time-control :dialog-form-visible='state.dialogFormVisible' @close='closeModal'></time-control> -->
+  <index :visible="state.visible" @close="closeModal" :project-code="state.projectCode" :code="state.code"/>
 </template>
 
 <script>
 import { defineComponent, getCurrentInstance, ref, onMounted, reactive } from "vue";
 import { useRouter } from 'vue-router'
 import DocTree from "../Manage/components/DocTree.vue";
-import timeControl from "../Manage/components/TimeControl.vue";
+import timeControl from "./components/TimeCol.vue";
 import { ElMessage } from 'element-plus'
-import ConfigTree from "./components/ConfigTree.vue";
 import FiliationGraph from "./components/filiationGraph.vue";
+import Index from "./components/index.vue";
 
 export default defineComponent({
-  components: { DocTree, timeControl, ConfigTree, FiliationGraph },
+  components: { DocTree, timeControl, FiliationGraph, Index },
   name: "WorkManage",
   setup() {
    
@@ -45,7 +44,7 @@ export default defineComponent({
       code: '',
       projectCode: '',
       releaseState: '',
-      dialogVisible: false,
+      visible: false,
     })
     const getCode = (e,i) => {
       console.log(e);
@@ -57,11 +56,20 @@ export default defineComponent({
     //保存
     const onSave = () => {
       proxy.$axios.post('/dolphinscheduler/projects/process-definition', {
-        locations: 0,
-        name: 0,
-        projectCode: 0,
+        locations: '',
+        name: '',
+        projectCode: state.projectCode,
+        taskDefinition: [],
+        taskRelation: [],
+        tenantCode: '',
       }).then(({data}) => {
-        ElMessage[data.code === 0 ? 'success': 'error'](data.msg)
+        if(data.code === 200) {
+          ElMessage.success('保存成功')
+        } else {
+          ElMessage.error(data.msg)
+        }
+      }).catch(e => {
+        ElMessage.error('保存失败请重试！')
       })
     }
     //上下线
@@ -102,19 +110,20 @@ export default defineComponent({
     }
     //立即执行
     const onCommitConfig = () => {
-      
+      proxy.$axios.post('/dolphinscheduler/projects/executors/start-process-instance', {
+        projectCode: state.projectCode,
+      }).then(({data}) => {
+        ElMessage[data.code === 0 ? 'success': 'error'](data.msg)
+      })
     }
     //定时管理
     const onSetTime = () => {
-      state.dialogFormVisible = true
+      state.visible = true
     }
     //关闭弹框
     const closeModal = () => {
       state.dialogFormVisible = false
-      state.dialogVisible = false
-      //state.timeFormVisible = false
-      // state.apiVisible = false
-      // state.rulesVisible=false
+      state.visible = false
       // getData()
     }
     return {

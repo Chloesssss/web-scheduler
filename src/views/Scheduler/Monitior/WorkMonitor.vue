@@ -43,7 +43,7 @@
         <template #default="{ row }">
           <el-space wrap :size="10">
             <el-link type="primary" @click="onEdit(row)">编辑</el-link>
-            <el-link :disabled="row.runStatus === 1" type="warning" @click="onDo">立即执行</el-link>
+            <el-link :disabled="row.runStatus === 1" type="warning" @click="onDoWork()">立即执行</el-link>
             <el-dropdown @command="handleMore($event, row)">
               <span>更多<i class="el-icon-arrow-down el-icon--right"></i></span>
               <template #dropdown>
@@ -104,7 +104,7 @@ export default defineComponent({
       code: '',
       doMessage: {},
     })
-    const getData = () => {
+    const getData = (row) => {
       //通过路由传参
       state.projectCode = proxy.$route.query.projectCode
       state.code = proxy.$route.query.code
@@ -146,15 +146,18 @@ export default defineComponent({
     // }
     //编辑
     const onEdit = (row) => {
+      proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${row.code}`, {
+        code: row.code,
+        locations: null,
+        name: row.name,
+        projectCode: state.projectCode
+      })
       router.push({path: 'workManage', query: {projectCode: state.projectCode, code: state.code, releaseState: row.releaseStateCN }})
     }
     const handleMore = (command, row) => {
       switch (command) {
         case 'onLine':
           onLine(row)
-        break;
-        case 'onLine':
-          onDo
         break;
         case 'onDownLine' :
           proxy.$axios.get(``).then(({data}) => {
@@ -183,7 +186,7 @@ export default defineComponent({
       let releaState = row.releaseStateCN === '下线' ? 'OFFLINE' : 'ONLINE'
       console.log(releaState);
       proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/${state.code}`,{
-        code: state.code,
+        code: row.code,
         projectCode: state.projectCode,
         releaseState: releaState,
       })
@@ -204,18 +207,12 @@ export default defineComponent({
       });
     }
     //立即执行
-    const onDo = () => {
+    const onDoWork = () => {
        proxy.$axios.post('/dolphinscheduler/projects/executors/start-process-instance', {
-
-       }).then(({data}) => {
-          state.doMessage = data.datas
-          ElMessage[state.doMessage.success ? 'success' : 'error'](state.doMessage.success ? '执行成功' : '执行失败')
-          state.loading = false
-        }).catch(e => {
-          ElMessage.error('执行异常')
-          state.doMessage = {}
-          state.loading = false
-        })
+        projectCode: state.projectCode,
+      }).then(({data}) => {
+        ElMessage[data.code === 0 ? 'success': 'error'](data.msg)
+      })
     }
     //获取下拉列表主题名
     const getMotif = () => {
@@ -245,6 +242,7 @@ export default defineComponent({
       onPageChange,
       fetchData,
       //reset,
+      onDoWork,
       onEdit,
       handleMore,
       handleSelectionChange,

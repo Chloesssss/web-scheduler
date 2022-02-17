@@ -43,7 +43,7 @@
   import { ElMessageBox } from 'element-plus'
 
   export default defineComponent({
-    name: "treeFrom",
+    name: "cellFrom",
     props: {
       visible: {
         type: Boolean,

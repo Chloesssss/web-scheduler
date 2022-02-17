@@ -108,12 +108,10 @@ export default defineComponent({
         projectCode: state.projectCode,
         processDefineCode: state.code
       }).then(({data}) => {
-        state.tableData = data.data.totalList
-        pageObj.total = data.data.total
-          state.definitionName = data.data.totalList.definitionName;
-          state.sourceName = data.data.totalList.name;
-          state.runState = data.data.totalList.state;       
-          ElMessage.error(resq.msg)
+        state.definitionName = data.definitionName
+        state.sourceName = data.name
+        state.runState = data.state
+        ElMessage.error(data.msg)
       })
     }
     //获取节点数据

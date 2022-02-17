@@ -3,17 +3,28 @@
     <div class="app-stencil" ref="stencilContainer"></div>
     <div class="app-content" id="flowContainer" ref="container"></div>
   </div>
+  <!-- 执行策略配置 -->
+  <config-cell :visible="dialogVisible" @close="closeModal" />
 </template>
 
 <script>
 import { Graph, Shape, Addon, FunctionExt } from "@antv/x6";
+import ConfigCell from "./ConfigCell.vue";
 const { Stencil } = Addon;
 const { Rect, Polygon } = Shape;
 
 export default {
+  components: { ConfigCell },
   name: "index",
   mounted() {
     this.init();
+  },
+  data() {
+    return {
+      dialogVisible: false,
+      cell: null, // graph context.cell
+      view: null, // graph context.view
+    };
   },
   methods: {
     init() {
@@ -65,18 +76,14 @@ export default {
             return new Shape.Edge({
               attrs: {
                 line: {
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
+                  stroke: "#A2B1C3",
+                  strokeWidth: 1,
                   targetMarker: {
                     name: "classic",
-                    size: 8,
+                    size: 7,
                   },
                 },
               },
-              router: {
-                name: "manhattan",
-              },
-              zIndex: 0,
             });
           },
           validateConnection({
@@ -171,34 +178,111 @@ export default {
         title: "Components",
         target: graph,
         search: false, // 搜索
-        collapsable: false,
+        collapsable: true,
         stencilGraphWidth: 250,
-        stencilGraphHeight: 300,
+        stencilGraphHeight: 400,
         groups: [
           {
             name: "processLibrary",
             title: "数据集成",
           },
-          // {
-          //     name: 'staffPool',
-          //     title: '人员库',
-          // },
-          // {
-          //     name: 'modelLibrary',
-          //     title: '模型仓库',
-          // },
         ],
+        layoutOptions: {
+          columns: 1,
+          columnWidth: 130,
+          rowHeight: 70,
+        },
       });
       this.$refs.stencilContainer.appendChild(stencil.container);
+      // 初始化图形
+      const ports = {
+        groups: {
+          top: {
+            position: "top",
+            attrs: {
+              circle: {
+                r: 4,
+                magnet: true,
+                stroke: "#5F95FF",
+                strokeWidth: 2,
+                fill: "#fff",
+                style: {
+                  visibility: "hidden",
+                },
+              },
+            },
+          },
+          right: {
+            position: "right",
+            attrs: {
+              circle: {
+                r: 4,
+                magnet: true,
+                stroke: "#5F95FF",
+                strokeWidth: 2,
+                fill: "#fff",
+                style: {
+                  visibility: "hidden",
+                },
+              },
+            },
+          },
+          bottom: {
+            position: "bottom",
+            attrs: {
+              circle: {
+                r: 4,
+                magnet: true,
+                stroke: "#5F95FF",
+                strokeWidth: 2,
+                fill: "#fff",
+                style: {
+                  visibility: "hidden",
+                },
+              },
+            },
+          },
+          left: {
+            position: "left",
+            attrs: {
+              circle: {
+                r: 4,
+                magnet: true,
+                stroke: "#5F95FF",
+                strokeWidth: 2,
+                fill: "#fff",
+                style: {
+                  visibility: "hidden",
+                },
+              },
+            },
+          },
+        },
+        items: [
+          {
+            group: "top",
+          },
+          {
+            group: "right",
+          },
+          {
+            group: "bottom",
+          },
+          {
+            group: "left",
+          },
+        ],
+      };
+      //设计画布左侧节点样式
       const collect = new Rect({
-        width: 70,
-        height: 70,
         attrs: {
           text: { text: "数据采集" },
           body: {
-            fill: "#6bc76a",
-            stroke: "#6bc76a",
+            fill: "#EFF4FF",
+            stroke: "#5F95FF",
             color: "#333",
+            rx: 50,
+            ry: 20,
           },
           label: {
             fontSize: 16,
@@ -224,93 +308,16 @@ export default {
             width: -10,
           },
         },
-        ports: {
-          groups: {
-            top: {
-              position: "top",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            right: {
-              position: "right",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            bottom: {
-              position: "bottom",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            left: {
-              position: "left",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-          },
-          items: [
-            {
-              group: "top",
-            },
-            {
-              group: "right",
-            },
-            {
-              group: "bottom",
-            },
-            {
-              group: "left",
-            },
-          ],
-        },
+        ports: { ...ports },
       });
       const flink = new Rect({
-        width: 70,
-        height: 70,
         attrs: {
           text: { text: "数据开发", fill: "end" },
           body: {
-            fill: "#299999",
-            stroke: "#299999",
+            fill: "#efdbff",
+            stroke: "#9254de",
+            rx: 50,
+            ry: 20,
           },
           label: {
             fontSize: 16,
@@ -318,464 +325,150 @@ export default {
             fontWeight: 800,
           },
         },
-        ports: {
-          groups: {
-            top: {
-              position: "top",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            right: {
-              position: "right",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            bottom: {
-              position: "bottom",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            left: {
-              position: "left",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-          },
-          items: [
-            {
-              group: "top",
-            },
-            {
-              group: "right",
-            },
-            {
-              group: "bottom",
-            },
-            {
-              group: "left",
-            },
-          ],
-        },
+        ports: { ...ports },
       });
-      const service = new Rect({
-        width: 70,
-        height: 70,
-        attrs: {
-          text: { text: "数据服务" },
-          body: {
-            fill: "#E6A23C",
-            stroke: "#E6A23C",
-            color: "#333",
-          },
-          label: {
-            fontSize: 16,
-            fill: "#333",
-            fontWeight: 800,
-          },
-        },
-        "edit-text": {
-          contenteditable: "false",
-          class: "x6-edit-text",
-          style: {
-            width: "100%",
-            textAlign: "center",
-            fontSize: 12,
-            color: "rgba(0,0,0,0.85)",
-          },
-        },
-        text: {
-          fontSize: 12,
-          fill: "rgba(0,0,0,0.85)",
-          textWrap: {
-            text: "",
-            width: -10,
-          },
-        },
-        ports: {
-          groups: {
-            top: {
-              position: "top",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            right: {
-              position: "right",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            bottom: {
-              position: "bottom",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            left: {
-              position: "left",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-          },
-          items: [
-            {
-              group: "top",
-            },
-            {
-              group: "right",
-            },
-            {
-              group: "bottom",
-            },
-            {
-              group: "left",
-            },
-          ],
-        },
-      });
-      const security = new Rect({
-        width: 70,
-        height: 70,
-        attrs: {
-          text: { text: "数据安全" },
-          body: {
-            fill: "#409EF6",
-            stroke: "#409EF6",
-            color: "#333",
-          },
-          label: {
-            fontSize: 16,
-            fill: "#333",
-            fontWeight: 800,
-          },
-        },
-        "edit-text": {
-          contenteditable: "false",
-          class: "x6-edit-text",
-          style: {
-            width: "100%",
-            textAlign: "center",
-            fontSize: 12,
-            color: "rgba(0,0,0,0.85)",
-          },
-        },
-        text: {
-          fontSize: 12,
-          fill: "rgba(0,0,0,0.85)",
-          textWrap: {
-            text: "",
-            width: -10,
-          },
-        },
-        ports: {
-          groups: {
-            top: {
-              position: "top",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            right: {
-              position: "right",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            bottom: {
-              position: "bottom",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            left: {
-              position: "left",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-          },
-          items: [
-            {
-              group: "top",
-            },
-            {
-              group: "right",
-            },
-            {
-              group: "bottom",
-            },
-            {
-              group: "left",
-            },
-          ],
-        },
-      });
-      const indexCenter = new Rect({
-        width: 70,
-        height: 70,
-        attrs: {
-          text: { text: "指标中心" },
-          body: {
-            fill: "#A2F6FC",
-            stroke: "#A2F6FC",
-            color: "#333",
-          },
-          label: {
-            fontSize: 16,
-            fill: "#333",
-            fontWeight: 800,
-          },
-        },
-        "edit-text": {
-          contenteditable: "false",
-          class: "x6-edit-text",
-          style: {
-            width: "100%",
-            textAlign: "center",
-            fontSize: 12,
-            color: "rgba(0,0,0,0.85)",
-          },
-        },
-        text: {
-          fontSize: 12,
-          fill: "rgba(0,0,0,0.85)",
-          textWrap: {
-            text: "",
-            width: -10,
-          },
-        },
-        ports: {
-          groups: {
-            top: {
-              position: "top",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            right: {
-              position: "right",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            bottom: {
-              position: "bottom",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-            left: {
-              position: "left",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5F95FF",
-                  strokeWidth: 2,
-                  fill: "#fff",
-                  style: {
-                    visibility: "hidden",
-                  },
-                },
-              },
-            },
-          },
-          items: [
-            {
-              group: "top",
-            },
-            {
-              group: "right",
-            },
-            {
-              group: "bottom",
-            },
-            {
-              group: "left",
-            },
-          ],
-        },
-      });
+      // const service = new Rect({
+      //   attrs: {
+      //     text: { text: "数据服务" },
+      //     body: {
+      //       fill: "#E6A23C",
+      //       stroke: "#E6A23C",
+      //       color: "#333",
+      //     },
+      //     label: {
+      //       fontSize: 16,
+      //       fill: "#333",
+      //       fontWeight: 800,
+      //     },
+      //   },
+      //   "edit-text": {
+      //     contenteditable: "false",
+      //     class: "x6-edit-text",
+      //     style: {
+      //       width: "100%",
+      //       textAlign: "center",
+      //       fontSize: 12,
+      //       color: "rgba(0,0,0,0.85)",
+      //     },
+      //   },
+      //   text: {
+      //     fontSize: 12,
+      //     fill: "rgba(0,0,0,0.85)",
+      //     textWrap: {
+      //       text: "",
+      //       width: -10,
+      //     },
+      //   },
+      //   ports: { ...ports },
+      // });
+      // const security = new Rect({
+      //   attrs: {
+      //     text: { text: "数据安全" },
+      //     body: {
+      //       fill: "#409EF6",
+      //       stroke: "#409EF6",
+      //       color: "#333",
+      //     },
+      //     label: {
+      //       fontSize: 16,
+      //       fill: "#333",
+      //       fontWeight: 800,
+      //     },
+      //   },
+      //   "edit-text": {
+      //     contenteditable: "false",
+      //     class: "x6-edit-text",
+      //     style: {
+      //       width: "100%",
+      //       textAlign: "center",
+      //       fontSize: 12,
+      //       color: "rgba(0,0,0,0.85)",
+      //     },
+      //   },
+      //   text: {
+      //     fontSize: 12,
+      //     fill: "rgba(0,0,0,0.85)",
+      //     textWrap: {
+      //       text: "",
+      //       width: -10,
+      //     },
+      //   },
+      //   ports: { ...ports },
+      // });
+      // const indexCenter = new Rect({
+      //   attrs: {
+      //     text: { text: "指标中心" },
+      //     body: {
+      //       fill: "#A2F6FC",
+      //       stroke: "#A2F6FC",
+      //       color: "#333",
+      //     },
+      //     label: {
+      //       fontSize: 16,
+      //       fill: "#333",
+      //       fontWeight: 800,
+      //     },
+      //   },
+      //   "edit-text": {
+      //     contenteditable: "false",
+      //     class: "x6-edit-text",
+      //     style: {
+      //       width: "100%",
+      //       textAlign: "center",
+      //       fontSize: 12,
+      //       color: "rgba(0,0,0,0.85)",
+      //     },
+      //   },
+      //   text: {
+      //     fontSize: 12,
+      //     fill: "rgba(0,0,0,0.85)",
+      //     textWrap: {
+      //       text: "",
+      //       width: -10,
+      //     },
+      //   },
+      //   ports: { ...ports },
+      // });
       stencil.load(
-        [collect, flink, service, security, indexCenter],
+        [collect, flink],
+        // [collect, flink, service, security, indexCenter],
         "processLibrary"
       );
       // stencil.load([c2, r2, r3, c3], 'staffPool')
       console.log(graph.toJSON());
       //绑定事件
-      graph.on("cell:dblclick", ({ cell, e }) => {
-        const p = graph.clientToGraph(e.clientX, e.clientY);
-        cell.addTools([
-          {
-            name: "editableCell",
-            args: {
-              x: p.x,
-              y: p.y,
-            },
-          },
-        ]);
+      //双击节点打开节点配置
+      graph.on("cell:dblclick", ({ cell, view }) => {// cell 基类对象 view 视图对象
+        // 目标数据logic
+        this.showModal(cell, view); // 显示子组件，顺便传递过去cell view，保持graph context
       });
       // 节点删除操作
-      // 鼠标 Hover 时添加删除按钮
-      // graph.on('node:mouseenter', ({ node }) => {
-      //   if (node === target) {
-      //     node.addTools({
-      //       name: 'button-remove',
-      //       args: {
-      //         x: 0,
-      //         y: 0,
-      //         offset: { x: 10, y: 10 },
-      //       },
-      //     })
-      //   }
-      // })
-
-      // 鼠标移开时删除删除按钮
-      // graph.on('node:mouseleave', ({ node }) => {
-      //   node.removeTools()
-      // })
+      graph.on("node:mouseenter", ({ node }) => {
+        // 鼠标 Hover 时添加删除按钮
+        node.addTools({
+          name: "button-remove",
+          args: {
+            x: 0,
+            y: 0,
+            offset: { x: 10, y: 10 },
+          },
+        });
+      });
+      graph.on("node:removed", ({ node, options }) => {
+        if (!options.ui) {
+          return;
+        }
+        const cellId = node.getTargetCellId();
+        const target = graph.getCellById(cellId);
+        target && target.setPortProp(target.id + "_in", "connected", false);
+      });
+      graph.on("node:mouseleave", ({ node }) => {
+        // 鼠标移开时删除删除按钮
+        node.removeTools();
+      });
       // 线删除操作
       graph.on("edge:mouseenter", ({ edge }) => {
+        // 鼠标 Hover 时添加删除按钮
         edge.addTools([
           "target-arrowhead",
           {
@@ -794,8 +487,8 @@ export default {
         const target = graph.getCellById(cellId);
         target && target.setPortProp(target.id + "_in", "connected", false);
       });
-      // 鼠标移开时删除删除按钮
       graph.on("edge:mouseleave", ({ edge }) => {
+        // 鼠标移开时删除删除按钮
         edge.removeTools();
       });
       graph.on("node:contextmenu", ({ cell, view }) => {
@@ -846,6 +539,23 @@ export default {
         }
       });
     },
+    showModal(cell, view) {
+      this.cell = cell;
+      this.view = view;
+      this.dialogVisible = true;
+    },
+    // eventListen() {
+    //   const { graph } = FlowGraph;
+    //   // 监听节点双击事件
+    //   graph.on("node:dblclick", ({ cell, view }) => {
+    //     // cell 基类对象 view 视图对象
+    //     // 目标数据logic
+    //     if (cell.shape === "cylinder") {
+    //       // 判断是你设置的节点shape类型为`cylinder`
+    //       this.$refs.childRef.showModal(cell, view); // 显示子组件，顺便传递过去cell view，保持graph context
+    //     }
+    //   });
+    // },
     showPorts(ports, show) {
       for (let i = 0, len = ports.length; i < len; i = i + 1) {
         ports[i].style.visibility = show ? "visible" : "hidden";
@@ -862,13 +572,11 @@ export default {
   font-family: sans-serif;
   display: flex;
 }
-
 .app-stencil {
-  width: 250px;
-  border: 1px solid #f0f0f0;
+  width: 160px;
+  border: 1px solid #ffffff;
   position: relative;
 }
-
 .app-content {
   flex: 1;
   height: 100%;
@@ -876,9 +584,8 @@ export default {
   margin-right: 8px;
   box-shadow: 0 0 10px 1px #e9e9e9;
 }
-
 .x6-graph-scroller {
-  border: 1px solid #f0f0f0;
+  border: 1px solid #fffcfc;
   margin-left: -1px;
 }
 </style>
