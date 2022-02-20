@@ -8,41 +8,48 @@
     custom-class="demo-drawer"
   >
     <div class="demo-drawer__content">
-      <el-form :model="form">
-        <el-form-item label="节点名称" :label-width="formLabelWidth">
+      <el-form :model="form" label-width="100px">
+        <el-form-item label="节点名称" prop="name" >
           <el-input v-model="form.name" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="描述" :label-width="formLabelWidth">
-          <el-input v-model="form.desc" type="textarea"></el-input>
+        <el-form-item label="描述" prop="description">
+          <el-input v-model="form.description" type="textarea"></el-input>
         </el-form-item>
-        <el-form-item label="超时失败">
-          <el-switch v-model="form.overTime"></el-switch>
+        <el-form-item label="超时失败" prop="timeoutFlag">
+          <el-switch v-model="form.timeoutFlag"></el-switch>
         </el-form-item>
-        <!-- <el-form-item label="汇聚作业">
-          <el-select v-model="form.work" clearable placeholder="请选择">
-            <el-option v-for="item in state.workOptions" :key="item.key" :label="item.key" :value="item.value" />
-          </el-select>
-        </el-form-item> -->
-        <el-form-item label="源表">
+        <el-form-item label="汇聚作业" prop="taskParams">
+          <el-input class="flex-1" v-model="form.taskParams"></el-input>
+          <el-button class="flex-1" @click="chooseWork">选择</el-button>
+        </el-form-item>
+        <el-form-item label="源表" prop="originTable">
           <el-input v-model="form.originTable"></el-input>
         </el-form-item>
-        <el-form-item label="目标表">
+        <el-form-item label="目标表" targetTable>
           <el-input v-model="form.targetTable"></el-input>
         </el-form-item>
       </el-form>
       <div class="demo-drawer__footer">
-        <el-button @click="cancelForm">取消</el-button>
-        <el-button type="primary" :loading="loading" @click="$refs.drawer.close()">{{ loading ? '提交中 ...' : '提交' }}</el-button>
+        <el-button @click="handleClose">取消</el-button>
+
+
+
+        
+        <el-button type="primary"  @click="onCommit">确定</el-button>
       </div>
     </div>
   </el-drawer>
+  <work-convergence :dialog-table-visible="state.tableVisible" @close="closeModal" @give-code="getCode"/>
 </template>
 
 <script>
   import { defineComponent, reactive, toRefs, ref, onMounted, watch, getCurrentInstance } from "vue";
   import { ElMessageBox } from 'element-plus'
+  import { ElMessage } from 'element-plus'
+  import WorkConvergence from "./WorkConvergence.vue";
 
   export default defineComponent({
+  components: { WorkConvergence },
     name: "cellFrom",
     props: {
       visible: {
@@ -57,50 +64,72 @@
       const dialogVisible = ref(false)
       const  form = reactive({ // 声明查询信息
         name: null,
-        desc: null,
-        overTime: null,
-        work: '',
+        description: null,
+        timeoutFlag: null,
+        taskParams: '',
         originTable: null,
         targetTable: null,
       })
       const state = reactive({
         drawer : false,
-        workOptions: [], 
+        projectCode: '',
+        code: '',
+        location: '',
+        tableVisible: false,
       })
+      const onCommit = () => {
+        proxy.$axios.post(`/dolphinscheduler/projects/process-definition`,{
+          code: state.code,
+          projectCode: state.projectCode,
+          name: form.name,
+          location: state.location
+        })
+        .then((res) => {
+          let resq = res.data
+          if(resq.code == 200){
+            ElMessage.success('修改状态成功')
+            getData()
+          }else if(resq.code == 400){
+            ElMessageBox.alert(resq.msg, '提示', {
+              confirmButtonText: '确定',
+              type: 'warning'
+            })
+            .catch(() => {})
+          }else{
+            ElMessage.error(resq.msg)
+          }
+        });
+      }
       watch([visible],(newval,oldval) => {
         console.log(newval)
         dialogVisible.value = newval[0]
       })
-      const handleClose = (done) => {
-        if (state.loading) {
-          return emit('close')
-        }
-        ElMessageBox.confirm('Do you want to submit?')
-        .then(() => {
-          state.loading = true
-          state.timer = setTimeout(() => {
-            done()
-            // 动画关闭需要一定的时间
-            setTimeout(() => {
-              state.loading = false
-            }, 400)
-          }, 2000)
-        })
-        .catch(() => {
-          // catch error
-        })
+      const getCode = (e,i,j) => {
+        console.log(e);
+        console.log(i);
+        form.taskParams = e;
+        form.originTable = i;
+        form.targetTable = j;
       }
-      const cancelForm = () => {
-        state.loading = false
-        state.dialog = false
-        clearTimeout(state.timer)
+      const handleClose = () => {
+        emit('close')
+      }
+      const chooseWork = () => {
+        state.tableVisible = true
+      }
+      const closeModal = () => {
+        state.tableVisible = false
       }
       return {
         form,
+        state,
+        dialogVisible,
         ...toRefs(state),
         handleClose,
-        cancelForm,
-        dialogVisible,
+        getCode,
+        onCommit,
+        chooseWork,
+        closeModal,
       }
     }
   })

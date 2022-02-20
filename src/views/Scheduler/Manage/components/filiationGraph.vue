@@ -175,7 +175,7 @@ export default {
 
       /******************************** 左侧模型栏 ****************************/
       const stencil = new Stencil({
-        title: "Components",
+        title: "数据集成",
         target: graph,
         search: false, // 搜索
         collapsable: true,
@@ -184,7 +184,7 @@ export default {
         groups: [
           {
             name: "processLibrary",
-            title: "数据集成",
+            title: "包含数据采集和数据开发",
           },
         ],
         layoutOptions: {
@@ -544,18 +544,9 @@ export default {
       this.view = view;
       this.dialogVisible = true;
     },
-    // eventListen() {
-    //   const { graph } = FlowGraph;
-    //   // 监听节点双击事件
-    //   graph.on("node:dblclick", ({ cell, view }) => {
-    //     // cell 基类对象 view 视图对象
-    //     // 目标数据logic
-    //     if (cell.shape === "cylinder") {
-    //       // 判断是你设置的节点shape类型为`cylinder`
-    //       this.$refs.childRef.showModal(cell, view); // 显示子组件，顺便传递过去cell view，保持graph context
-    //     }
-    //   });
-    // },
+    closeModal(){
+      this.dialogVisible = false;
+    },
     showPorts(ports, show) {
       for (let i = 0, len = ports.length; i < len; i = i + 1) {
         ports[i].style.visibility = show ? "visible" : "hidden";

@@ -19,7 +19,6 @@
     </div>
   </div>
   <!-- 定时管理弹窗 -->
-  <!-- <time-control :dialog-form-visible='state.dialogFormVisible' @close='closeModal'></time-control> -->
   <index :visible="state.visible" @close="closeModal" :project-code="state.projectCode" :code="state.code"/>
 </template>
 
@@ -27,20 +26,17 @@
 import { defineComponent, getCurrentInstance, ref, onMounted, reactive } from "vue";
 import { useRouter } from 'vue-router'
 import DocTree from "../Manage/components/DocTree.vue";
-import timeControl from "./components/TimeCol.vue";
 import { ElMessage } from 'element-plus'
 import FiliationGraph from "./components/filiationGraph.vue";
 import Index from "./components/index.vue";
 
 export default defineComponent({
-  components: { DocTree, timeControl, FiliationGraph, Index },
+  components: { DocTree, FiliationGraph, Index },
   name: "WorkManage",
-  setup() {
-   
+  setup() { 
     const { proxy } = getCurrentInstance()
     const router = useRouter()
     const state = reactive({
-      dialogFormVisible: false,
       code: '',
       projectCode: '',
       releaseState: '',
@@ -122,7 +118,6 @@ export default defineComponent({
     }
     //关闭弹框
     const closeModal = () => {
-      state.dialogFormVisible = false
       state.visible = false
       // getData()
     }
