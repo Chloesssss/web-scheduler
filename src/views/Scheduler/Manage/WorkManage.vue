@@ -41,32 +41,39 @@ export default defineComponent({
       projectCode: '',
       releaseState: '',
       visible: false,
+      taskDefinition: [],
+      taskRelation: [],
     })
     const getCode = (e,i) => {
       console.log(e);
       console.log(i);
       state.code = e;
       state.projectCode=i;
-     
+      
     }
     //保存
     const onSave = () => {
-      proxy.$axios.post('/dolphinscheduler/projects/process-definition', {
-        locations: '',
-        name: '',
+      //修改
+      proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`, {
+        code: state.code,
         projectCode: state.projectCode,
-        taskDefinition: [],
-        taskRelation: [],
-        tenantCode: '',
-      }).then(({data}) => {
-        if(data.code === 200) {
-          ElMessage.success('保存成功')
-        } else {
-          ElMessage.error(data.msg)
-        }
-      }).catch(e => {
-        ElMessage.error('保存失败请重试！')
+        name: state.docName,
+        locations: state.locations,
+        taskDefinition: state.taskDefinition,
+        taskRelation: state.taskRelation,
+        tenantCode: "123456"
       })
+      .then((res) => {
+        let resq = res.data
+        if(resq.code==200){
+          ElMessage.success('修改成功')
+          router.push({path: 'listing'})
+        }else{
+          ElMessage.error(resq.msg)
+        }
+      }).catch((error) => {
+        ElMessage.error("保存失败")
+      });
     }
     //上下线
     const onLine = () => {
@@ -90,6 +97,7 @@ export default defineComponent({
         }else{
           ElMessage.error(resq.msg)
         }
+        console.log(resq.code);
       });
     }
     //前往监控

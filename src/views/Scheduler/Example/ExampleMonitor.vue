@@ -39,7 +39,7 @@
       <el-table-column prop="definitionName" label="作业名称" show-overflow-tooltip/>
       <el-table-column prop="name" label="实例名称" show-overflow-tooltip>
         <template #default="{row}">
-          <el-link @click="taskRouter(row.id)">{{ row.name }}</el-link>
+          <el-link @click="taskRouter(row)">{{ row.name }}</el-link>
         </template>
       </el-table-column>
       <el-table-column prop="state" label="状态" show-overflow-tooltip>
@@ -77,7 +77,7 @@
 
 <script>
 import { defineComponent, getCurrentInstance, ref, onMounted, reactive } from "vue";
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { Pagination } from '@/../common/constants'
 import { cloneDeep } from 'lodash'
 import { ElMessage } from 'element-plus'
@@ -88,6 +88,7 @@ export default defineComponent({
     const { proxy } = getCurrentInstance();
     const pageObj = reactive(cloneDeep(Pagination))
     const router = useRouter()
+    const route = useRoute()
     const searchObj = reactive({ // 声明查询信息
       definitionName: null,
       name: null,
@@ -119,7 +120,6 @@ export default defineComponent({
       deCode: '',
     })
     const getData = (page) => {
-      
       page && (pageObj.current = page.current)
       proxy.$axios.post('/dolphinscheduler/projects/process-instances/query-instances-page', {
         executorName: searchObj.definitionName,
@@ -155,23 +155,26 @@ export default defineComponent({
     }
     //实例任务
     const taskRouter = (row) => {
-      if(proxy.$route.query.projectCode&&proxy.$route.query.code){
+      if(route.query.code&&route.query.project){
         state.projectCode = proxy.$route.query.projectCode
         state.processDefineCode = proxy.$route.query.code
-        state.id = proxy.$route.query.id
-      } else {
-        state.projectCode = row.processDefinitionCode
+      }else{
+        state.projectCode = row.projectCode
+        state.processDefineCode = row.code
+        console.log(state.projectCode)
+        console.log(state.processDefineCode);
       }
       state.id = row.id
+      console.log(row.id);
       router.push({path: 'exampleTaskMonitor',query:{id:state.id, projectCode: state.projectCode, code: state.processDefineCode, }})
     }
     const onDelete = (row) => {
       proxy.$axios.delete(`/dolphinscheduler/projects/process-instances/${row.id}`,{data: { id: row.id, projectCode: state.projectCode }}).then(({data}) => {
-          getData()
-          ElMessage.error(data.msg)
-        }).catch(({ data }) => {
-          ElMessage.success(data.msg)
-        })
+        getData()
+        ElMessage.error(data.msg)
+      }).catch(({ data }) => {
+        ElMessage.success(data.msg)
+      })
     }
     return {
       pageObj,

@@ -51,13 +51,17 @@ export default {
         if (valid) {
           if(!props.id) { // 新增
             const formObjTemp = cloneDeep(formObj)
-            formObjTemp.parentId = props.parentId
+            formObjTemp.projectCode = props.parentId
+            formObjTemp.timeout = 0
             delete formObjTemp.id
             proxy.$axios.post('/dolphinscheduler/projects/process-definition', formObjTemp).then(({ data }) => {
-              if (data.code) { // 0成功 1失败
-                ElMessage.error(data.msg)
-              } else {
+              if (data.code = 200) { // 0成功 1失败
                 ElMessage.success('保存成功')
+                proxy.$refs.Form.resetFields()
+                emit('onOk')
+                
+              } else {
+                ElMessage.error(data.msg)
                 proxy.$refs.Form.resetFields()
                 emit('onOk')
               }

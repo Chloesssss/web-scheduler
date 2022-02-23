@@ -67,7 +67,7 @@
 
 <script>
 import { defineComponent, getCurrentInstance, ref, onMounted, reactive } from "vue";
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Pagination } from '@/../common/constants'
 import { cloneDeep } from 'lodash'
 import { ElMessage } from 'element-plus'
@@ -80,6 +80,7 @@ export default defineComponent({
     const { proxy } = getCurrentInstance();
     const pageObj = reactive(cloneDeep(Pagination))
     const router = useRouter()
+    const route = useRoute()
     const searchObj = reactive({ // 声明查询信息
       runStatus: '',
       name: '',
@@ -228,11 +229,18 @@ export default defineComponent({
       })
       state.multipleSelection = arrList
     }
-    //实例监控
+    //下穿到实例监控
     const examRouter = (row) =>{
-      state.id = row.id
+      if(route.query.code&&route.query.project){
+        state.projectCode = proxy.$route.query.projectCode
+        state.code = proxy.$route.query.code
+      }else{
+        state.projectCode = row.projectCode
+        state.code = row.code
+        console.log(state.projectCode)
+        console.log(state.code);
+      }
       router.push({path: 'exampleMonitor',query: { id: state.id, projectCode: state.projectCode, code: state.code }})
-
     }
     return {
       pageObj,

@@ -1,8 +1,8 @@
 <template>
   <el-drawer
     ref="drawer"
-    v-model="dialogVisible"
-    title="数据采集调度节点"
+    v-model="flinkVisible"
+    title="数据开发调度节点"
     :before-close="handleClose"
     direction="rtl"
     custom-class="demo-drawer"
@@ -22,12 +22,6 @@
           <el-input class="flex-1" v-model="form.taskParams"></el-input>
           <el-button class="flex-1" @click="chooseWork">选择</el-button>
         </el-form-item>
-        <el-form-item label="源表" prop="originTable">
-          <el-input v-model="form.originTable"></el-input>
-        </el-form-item>
-        <el-form-item label="目标表" targetTable>
-          <el-input v-model="form.targetTable"></el-input>
-        </el-form-item>
       </el-form>
       <div class="demo-drawer__footer">
         <el-button @click="handleClose">取消</el-button>
@@ -35,20 +29,20 @@
       </div>
     </div>
   </el-drawer>
-  <work-convergence :dialog-table-visible="state.tableVisible" @close="closeModal" @give-code="getCode"/>
+  <flink-convergence :dialog-table-visible="state.tableVisible" @close="closeModal" @give-code="getCode" :id="state.id" />
 </template>
 
 <script>
   import { defineComponent, reactive, toRefs, ref, onMounted, watch, getCurrentInstance } from "vue";
   import { ElMessageBox } from 'element-plus'
   import { ElMessage } from 'element-plus'
-  import WorkConvergence from "./WorkConvergence.vue";
+  import FlinkConvergence from "./FlinkConvergence.vue";
 
   export default defineComponent({
-  components: { WorkConvergence },
+  components: { FlinkConvergence },
     name: "cellFrom",
     props: {
-      visible: {
+        visible: {
         type: Boolean,
         default: false
       },
@@ -57,14 +51,12 @@
     setup(props, {emit}) {
       const { proxy } = getCurrentInstance();
       const { visible } = toRefs(props)
-      const dialogVisible = ref(false)
+      const flinkVisible = ref(false)
       const  form = reactive({ // 声明查询信息
         name: null,
         description: null,
         timeoutFlag: null,
         taskParams: '',
-        originTable: null,
-        targetTable: null,
       })
       const state = reactive({
         drawer : false,
@@ -72,6 +64,7 @@
         code: '',
         location: '',
         tableVisible: false,
+        id: 'flink',
       })
       const onCommit = () => {
         proxy.$axios.post(`/dolphinscheduler/projects/process-definition`,{
@@ -98,14 +91,11 @@
       }
       watch([visible],(newval,oldval) => {
         console.log(newval)
-        dialogVisible.value = newval[0]
+        flinkVisible.value = newval[0]
       })
-      const getCode = (e,i,j) => {
+      const getCode = (e) => {
         console.log(e);
-        console.log(i);
         form.taskParams = e;
-        form.originTable = i;
-        form.targetTable = j;
       }
       const handleClose = () => {
         emit('close')
@@ -119,7 +109,7 @@
       return {
         form,
         state,
-        dialogVisible,
+        flinkVisible,
         ...toRefs(state),
         handleClose,
         getCode,

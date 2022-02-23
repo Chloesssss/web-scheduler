@@ -98,6 +98,7 @@ export default defineComponent({
       tmpCurrent: '',
       code: '',
       projectCode: '',
+      currentNodeName: '', //当前选中的节点名
     })
     //获取目录
     const getTreeData = () => {
@@ -121,7 +122,23 @@ export default defineComponent({
         state.projectCode = 0
       }
       emit("giveCode", state.code,state.projectCode);
-      //proxy.$emit("giveProjectCode", state.projectCode);
+      if (data.children==null) {
+        state.currentNodeName = data.label
+        proxy.$axios.get(`/dolphinscheduler/projects/process-definition/taskTree/${state.code}`, { params: { code: state.code, projectCode:state.projectCode }}).then(({data}) => {
+          if (data.datas) {
+            for (let item in formObj) {
+              formObj[item] = data.datas ? data.datas[item] : proxy.$refs.Form.resetFields()
+            }
+            formObj.jobName = data.datas.alias
+            formObj.useRemote = data.datas.useRemote || true
+            formObj.useResult = data.datas.useResult || false
+            formObj.maxRowNum = data.datas.maxRowNum || 100
+            formObj.useSession = data.datas.useSession || false
+            changeEditor(data.datas.statement)
+          } else {
+          }
+        })
+      }
     }
     // 保存当前点击
     const saveNodeClick = (data,node) => {

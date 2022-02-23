@@ -5,16 +5,20 @@
   </div>
   <!-- 执行策略配置 -->
   <config-cell :visible="dialogVisible" @close="closeModal" />
+  <!-- 开发执行策略配置 -->
+  <config-flink-cell :visible="flinkVisible" @close="closeModal" />
 </template>
 
 <script>
 import { Graph, Shape, Addon, FunctionExt } from "@antv/x6";
 import ConfigCell from "./ConfigCell.vue";
+import ConfigFlinkCell from './ConfigFlinkCell.vue';
+import { circle } from '@antv/x6/lib/registry/marker/circle';
 const { Stencil } = Addon;
 const { Rect, Polygon } = Shape;
 
 export default {
-  components: { ConfigCell },
+  components: { ConfigCell, ConfigFlinkCell },
   name: "index",
   mounted() {
     this.init();
@@ -22,6 +26,7 @@ export default {
   data() {
     return {
       dialogVisible: false,
+      flinkVisible: false,
       cell: null, // graph context.cell
       view: null, // graph context.view
     };
@@ -124,7 +129,7 @@ export default {
         keyboard: {
           enabled: true,
         },
-        embedding: {
+        embedding: { // 将一个节点拖动到另一个节点中，使其成为另一节点的子节点
           enabled: true,
           findParent({ node }) {
             const bbox = node.getBBox();
@@ -184,7 +189,7 @@ export default {
         groups: [
           {
             name: "processLibrary",
-            title: "包含数据采集和数据开发",
+            title: "dataSource",
           },
         ],
         layoutOptions: {
@@ -275,6 +280,7 @@ export default {
       };
       //设计画布左侧节点样式
       const collect = new Rect({
+        id: "collect",
         attrs: {
           text: { text: "数据采集" },
           body: {
@@ -290,16 +296,6 @@ export default {
             fontWeight: 800,
           },
         },
-        "edit-text": {
-          contenteditable: "false",
-          class: "x6-edit-text",
-          style: {
-            width: "100%",
-            textAlign: "center",
-            fontSize: 12,
-            color: "rgba(0,0,0,0.85)",
-          },
-        },
         text: {
           fontSize: 12,
           fill: "rgba(0,0,0,0.85)",
@@ -311,6 +307,7 @@ export default {
         ports: { ...ports },
       });
       const flink = new Rect({
+        id: "flink",
         attrs: {
           text: { text: "数据开发", fill: "end" },
           body: {
@@ -435,12 +432,25 @@ export default {
         "processLibrary"
       );
       // stencil.load([c2, r2, r3, c3], 'staffPool')
+      graph.toJSON()
       console.log(graph.toJSON());
       //绑定事件
       //双击节点打开节点配置
-      graph.on("cell:dblclick", ({ cell, view }) => {// cell 基类对象 view 视图对象
+      graph.on("cell:dblclick", ({ cell, view, a, b, c }) => {// cell 基类对象 view 视图对象
         // 目标数据logic
-        this.showModal(cell, view); // 显示子组件，顺便传递过去cell view，保持graph context
+        this.showflink(cell, view)
+        console.log('<--->', { cell, view, a, b, c });
+        console.log(Node.id)
+        console.log(graph.toJSON());
+        if(collect){
+          // this.showModal(cell, view);
+          // console.log(stencil.collect);
+        } else if(flink){
+          this.showflink(cell, view)
+          console.log(stencil.flink);
+        }
+        // console.log(flink);
+         // 显示子组件，顺便传递过去cell view，保持graph context
       });
       // 节点删除操作
       graph.on("node:mouseenter", ({ node }) => {
@@ -458,9 +468,6 @@ export default {
         if (!options.ui) {
           return;
         }
-        const cellId = node.getTargetCellId();
-        const target = graph.getCellById(cellId);
-        target && target.setPortProp(target.id + "_in", "connected", false);
       });
       graph.on("node:mouseleave", ({ node }) => {
         // 鼠标移开时删除删除按钮
@@ -483,9 +490,6 @@ export default {
         if (!options.ui) {
           return;
         }
-        const cellId = edge.getTargetCellId();
-        const target = graph.getCellById(cellId);
-        target && target.setPortProp(target.id + "_in", "connected", false);
       });
       graph.on("edge:mouseleave", ({ edge }) => {
         // 鼠标移开时删除删除按钮
@@ -544,8 +548,14 @@ export default {
       this.view = view;
       this.dialogVisible = true;
     },
+    showflink(cell, view){
+      this.cell = cell;
+      this.view = view;
+      this.flinkVisible = true;
+    },
     closeModal(){
       this.dialogVisible = false;
+      this.flinkVisible = false;
     },
     showPorts(ports, show) {
       for (let i = 0, len = ports.length; i < len; i = i + 1) {

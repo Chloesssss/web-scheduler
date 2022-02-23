@@ -23,7 +23,20 @@
       </el-form>
       <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" @selection-change="selectChoose" stripe ref="multipleTable">
         <el-table-column type="selection" width="55" />
-        <el-table-column v-for="(header, index) in state.tableHeaders" :key="index" :prop="header.name" :label="header.title" :min-width="header.title.length < 6 ? header.width: header.title.length * 20" show-overflow-tooltip/>
+        <el-table-column prop="id" label="编号" show-overflow-tooltip/>
+        <el-table-column prop="name" label="名称" show-overflow-tooltip/>
+        <el-table-column prop="alias" label="描述" show-overflow-tooltip/>
+        <el-table-column prop="state" label="状态" show-overflow-tooltip>
+          <template #default="{row}">
+            <el-tag
+              :type="row.state === '0' ? '' : 'danger'"
+              disable-transitions
+            >{{ row.state === '0' ? '上线' : '下线' }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" show-overflow-tooltip/>
+        <el-table-column prop="updateTime" label="更新时间" show-overflow-tooltip/>
+        
       </el-table>
     </div>
     <!-- 表格底部分页显示 -->
@@ -85,26 +98,21 @@ export default defineComponent({
       //   },
       // ],
       // motifList: [],
-      id: "",
       tableData: [],
-      tableHeaders: [],
-      projectCode: "",
-      code: "",
       doMessage: {},
       selectVal: '',
       selectData: '',
     });
     const getData = (row) => {
-      proxy.$axios.post(`/dolphinscheduler/projects/dbus/queryJobByPage`, {
+      proxy.$axios.post(`/dolphinscheduler/projects/dlink/queryGroupPage`, {
         // runStatus: searchObj.runStatus,
         current: pageObj.current,
         size: pageObj.size,
-        name: searchObj.name,
-      }).then(({ data: { data } }) => {
-        state.tableHeaders = data.table.headers
-        state.tableData = data.table.bodies
-        pageObj.total = data.total;
-      });
+        // name: searchObj.name,
+      }).then(({data}) => {
+        state.tableData = data.data.data
+        pageObj.total = data.data.total
+        })
     };
     onMounted(() => {
       getData();
