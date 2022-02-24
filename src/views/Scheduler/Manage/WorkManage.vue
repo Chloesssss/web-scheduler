@@ -14,7 +14,7 @@
         <i @click="onSetTime" class="el-icon-video-pause mr-10 cursor-pointer" style="width:100px;"> 定时管理</i>
       </div>
       <div style="width: 100%,hight: 100%">
-        <filiation-graph  />
+        <filiation-graph :code="state.code" :project-code="state.projectCode" @save="onSave" :work-name="state.workName"/>
       </div>
     </div>
   </div>
@@ -43,18 +43,20 @@ export default defineComponent({
       visible: false,
       taskDefinition: [],
       taskRelation: [],
+      workName: '',
+      motif: '',
     })
-    const getCode = (e,i) => {
-      console.log(e);
-      console.log(i);
+    const getCode = (e,i,j,k) => {
+      console.log(j);
+      console.log(k);
       state.code = e;
-      state.projectCode=i;
-      
+      state.projectCode = i;
+      state.workName = j;
+      state.motif = k;
     }
     //保存
     const onSave = () => {
-      //修改
-      proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`, {
+      proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`, { //调用编辑接口
         code: state.code,
         projectCode: state.projectCode,
         name: state.docName,
@@ -105,7 +107,7 @@ export default defineComponent({
       if(state.projectCode===0){
         router.push({path: 'workMonitor', query: {projectCode: state.code, code: null}})
       }else if(state.code&&state.projectCode){
-        router.push({path: 'workMonitor', query: {projectCode: state.projectCode, code:state.code}})
+        router.push({path: 'workMonitor', query: {projectCode: state.projectCode, code: state.code, name: state.workName, motif: state.motif }})
       }else{
         ElMessage.error("请先选择左侧作业树节点")
       }
@@ -117,12 +119,12 @@ export default defineComponent({
       proxy.$axios.post('/dolphinscheduler/projects/executors/start-process-instance', {
         projectCode: state.projectCode,
       }).then(({data}) => {
-        ElMessage[data.code === 0 ? 'success': 'error'](data.msg)
+        ElMessage[data.code === 200 ? 'success': 'error'](data.msg)
       })
     }
     //定时管理
     const onSetTime = () => {
-      state.visible = true
+      state.visible = state.projectCode?true:false; 
     }
     //关闭弹框
     const closeModal = () => {

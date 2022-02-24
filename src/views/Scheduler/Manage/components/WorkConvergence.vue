@@ -125,13 +125,15 @@ export default defineComponent({
     //   });
     // };
     //获取选中值
-    const selectChoose = (val) => {
-      state.selectData = val;
+    const selectChoose = (val,row) => {
+      let valList = val,arrList=[];
+      valList.map((row)=>{
+        emit("giveCode", row.name, row.sourceTableName, row.targetTableName, row);
+      })
       if (val.length > 1) {
         proxy.$refs.multipleTable.clearSelection();
         proxy.$refs.multipleTable.toggleRowSelection(val.pop());
       }
-      emit("giveCode", row.name, row.sourceTableName, row.targetTableName);
     }
     const onCancel = () => {
       emit('close')

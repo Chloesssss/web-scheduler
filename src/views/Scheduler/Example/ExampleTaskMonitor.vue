@@ -6,10 +6,10 @@
   </el-breadcrumb>
   <el-main>
     <div style="width:90%" >
-      <div style="width=100%;height:25%">作业名称：{{ state.definitionName }}</div>
+      <div style="width=100%;height:25%">作业名称：{{ state.workName }}</div>
         <el-descriptions :column="2" style="margin-top:15px">
-          <el-descriptions-item label="实例名称：">{{ state.sourceName }}</el-descriptions-item>
-          <el-descriptions-item label="运行状态：">{{ state.runState }}</el-descriptions-item>
+          <el-descriptions-item label="实例名称：">{{ state.name }}</el-descriptions-item>
+          <el-descriptions-item label="运行状态：">{{ state.runState === 'SUCCESS' ? '成功' : (state.runState === 'FAILURE' ? '失败' : '运行中') }}</el-descriptions-item>
         </el-descriptions>
       </div>
       <div style="width:100% ">
@@ -56,7 +56,7 @@
 
 <script>
 import { defineComponent, getCurrentInstance, ref, onMounted, reactive } from "vue";
-import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { Pagination } from '@/../common/constants'
 import { cloneDeep } from 'lodash'
 import { ElMessage } from 'element-plus'
@@ -68,7 +68,7 @@ export default defineComponent({
   setup() {
     const { proxy } = getCurrentInstance();
     const pageObj = reactive(cloneDeep(Pagination))
-    const router = useRouter()
+    const route = useRoute()
     const searchObj = reactive({ // 声明查询信息
       runStatus: null,
       name: null,
@@ -90,8 +90,8 @@ export default defineComponent({
           value: 2
         },
       ],
-      definitionName: '',
-      sourceName: '',
+      workName: '',
+      name: '',
       runState: '',
       fromOptions: [],
       tableData: [],
@@ -99,21 +99,8 @@ export default defineComponent({
       code: '',
       log: '',
       dialogVisible: false,
+
     })
-    //获取作业信息
-    const getDetail = () =>{
-      proxy.$axios.get(`/dolphinscheduler/projects/process-instances/query-instances-page`,{
-        current: 1,
-        size: 10,
-        projectCode: state.projectCode,
-        processDefineCode: state.code
-      }).then(({data}) => {
-        state.definitionName = data.definitionName
-        state.sourceName = data.name
-        state.runState = data.state
-        ElMessage.error(data.msg)
-      })
-    }
     //获取节点数据
     const getData = (page) => {
       page && (pageObj.current = page.current)
@@ -121,6 +108,7 @@ export default defineComponent({
         current: page ? page.current : pageObj.current,
         size: pageObj.size,
         projectCode: state.projectCode,
+        processInstanceId: state.code,
       }).then(({data}) => {
         state.tableData = data.data.totalList
         pageObj.total = data.data.total
@@ -135,9 +123,11 @@ export default defineComponent({
       getData()
     }
     onMounted(() => {
-      getDetail()
+      state.workName = proxy.$route.query.workName
+      state.name = proxy.$route.query.processInstanceName
+      state.runState = proxy.$route.query.state
       state.projectCode = proxy.$route.query.projectCode
-      state.code = proxy.$route.query.code
+      state.code = proxy.$route.query.id
       getData()
     });
     const onDetail = (row) => {

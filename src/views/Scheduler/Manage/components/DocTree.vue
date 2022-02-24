@@ -99,6 +99,7 @@ export default defineComponent({
       code: '',
       projectCode: '',
       currentNodeName: '', //当前选中的节点名
+      motif: '',//作业主题名（根节点名）
     })
     //获取目录
     const getTreeData = () => {
@@ -117,28 +118,14 @@ export default defineComponent({
     const onTreeClick = (data,node) => {
       state.code = data.code
       if (data.children===null) {
+        state.currentNodeName = data.label
         state.projectCode = node.parent.data.code
       } else {
         state.projectCode = 0
+        state.motif = data.label
       }
-      emit("giveCode", state.code,state.projectCode);
-      if (data.children==null) {
-        state.currentNodeName = data.label
-        proxy.$axios.get(`/dolphinscheduler/projects/process-definition/taskTree/${state.code}`, { params: { code: state.code, projectCode:state.projectCode }}).then(({data}) => {
-          if (data.datas) {
-            for (let item in formObj) {
-              formObj[item] = data.datas ? data.datas[item] : proxy.$refs.Form.resetFields()
-            }
-            formObj.jobName = data.datas.alias
-            formObj.useRemote = data.datas.useRemote || true
-            formObj.useResult = data.datas.useResult || false
-            formObj.maxRowNum = data.datas.maxRowNum || 100
-            formObj.useSession = data.datas.useSession || false
-            changeEditor(data.datas.statement)
-          } else {
-          }
-        })
-      }
+      console.log(data.label);
+      emit("giveCode", state.code, state.projectCode, state.currentNodeName, state.motif);
     }
     // 保存当前点击
     const saveNodeClick = (data,node) => {
@@ -148,11 +135,11 @@ export default defineComponent({
         state.tmpCurrent = data // 缓存当前分类数据，主要用于新增时防止再次点击输入框当前值变化
       }
     }
-    const createWorkOk =() => {
+    const createWorkOk =() => {// 创建根目录
       state.createWorkVisible = false
       getTreeData()
     }
-    const workMenuOk =() => {
+    const workMenuOk =() => {// 创建作业
       state.workMenuVisible = false
       getTreeData()
     }
@@ -161,25 +148,30 @@ export default defineComponent({
       switch (command) {
         case 'delete':
         DeleteConfirm().then(() => {
-          if (data.isLeaf) {
+          if (data.children === null&&state.projectCode != 0) {
             proxy.$axios.delete(`/dolphinscheduler/projects/process-definition/delete?code=${state.code}&projectCode=${state.projectCode}`,
             ).then((data) => {
-              ElMessage.success(data.data.msg)
-              console.log(state.code)
-              getTreeData()
+              if(data.code = 200){
+                ElMessage.success("删除工作流作业成功")
+                getTreeData()
+              }else {
+                ElMessage.error(data.data.msg)
+              }
             }).catch(e => {
-              ElMessage.success(data.data.msg)
+              ElMessage.error('请求失败！请重试！')
               getTreeData()
             })
           } else {
             proxy.$axios.delete(`/dolphinscheduler/projects/${state.code}`,
             ).then((data) => {
-              ElMessage.success(data.data.msg)
-              console.log(state.code)
-              getTreeData()
+              if(data.code = 200){
+                ElMessage.success("删除项目成功")
+                getTreeData()
+              }else {
+                ElMessage.error(data.data.msg)
+              }
             }).catch(e => {
-              ElMessage.success(data.data.msg)
-              getTreeData()
+              ElMessage.error('请求失败！请重试！')
             })
           }
         })

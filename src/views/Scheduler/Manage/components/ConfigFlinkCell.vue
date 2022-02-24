@@ -8,18 +8,18 @@
     custom-class="demo-drawer"
   >
     <div class="demo-drawer__content">
-      <el-form :model="form" label-width="100px">
+      <el-form :model="taskDefinition" label-width="100px" ref="form">
         <el-form-item label="节点名称" prop="name" >
-          <el-input v-model="form.name" autocomplete="off"></el-input>
+          <el-input v-model="taskDefinition.name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="描述" prop="description">
-          <el-input v-model="form.description" type="textarea"></el-input>
+          <el-input v-model="taskDefinition.description" type="textarea"></el-input>
         </el-form-item>
         <el-form-item label="超时失败" prop="timeoutFlag">
-          <el-switch v-model="form.timeoutFlag"></el-switch>
+          <el-switch v-model="taskDefinition.timeoutFlag"></el-switch>
         </el-form-item>
         <el-form-item label="汇聚作业" prop="taskParams">
-          <el-input class="flex-1" v-model="form.taskParams"></el-input>
+          <el-input class="flex-1" v-model="taskDefinition.taskParams" disabled></el-input>
           <el-button class="flex-1" @click="chooseWork">选择</el-button>
         </el-form-item>
       </el-form>
@@ -29,7 +29,7 @@
       </div>
     </div>
   </el-drawer>
-  <flink-convergence :dialog-table-visible="state.tableVisible" @close="closeModal" @give-code="getCode" :id="state.id" />
+  <flink-convergence :dialog-table-visible="state.tableVisible" @close="closeModal" @give-code="getCode" />
 </template>
 
 <script>
@@ -46,13 +46,16 @@
         type: Boolean,
         default: false
       },
+      code: [Number, String],
+      projectCode: [Number, String],
+      name: String,
     },
     emits:['close'],
     setup(props, {emit}) {
       const { proxy } = getCurrentInstance();
-      const { visible } = toRefs(props)
+      const { visible, code, projectCode, name } = toRefs(props)
       const flinkVisible = ref(false)
-      const  form = reactive({ // 声明查询信息
+      const  taskDefinition = reactive({ // 声明查询信息
         name: null,
         description: null,
         timeoutFlag: null,
@@ -64,40 +67,45 @@
         code: '',
         location: '',
         tableVisible: false,
-        id: 'flink',
+        name: ''
       })
       const onCommit = () => {
-        proxy.$axios.post(`/dolphinscheduler/projects/process-definition`,{
+        proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`,{
           code: state.code,
           projectCode: state.projectCode,
-          name: form.name,
-          location: state.location
-        })
-        .then((res) => {
-          let resq = res.data
-          if(resq.code == 200){
-            ElMessage.success('修改状态成功')
-            getData()
-          }else if(resq.code == 400){
-            ElMessageBox.alert(resq.msg, '提示', {
-              confirmButtonText: '确定',
-              type: 'warning'
-            })
-            .catch(() => {})
-          }else{
-            ElMessage.error(resq.msg)
+          name: state.name,
+          location: state.location,
+          taskType: DLINK
+        }).then(({ data }) => {
+          if (data.code = 200) {
+            ElMessage.success('保存成功')
+            proxy.$refs.form.resetFields()
+            emit('close')
+          } else {
+            ElMessage.error(data.msg)
+            proxy.$refs.form.resetFields()
+            emit('close')
           }
+        }).catch(e=> {
+          ElMessage.error('请求失败！请重试！')
         });
       }
-      watch([visible],(newval,oldval) => {
+      onMounted(() => {
+        watch()
+      });
+      watch([visible, code, projectCode, name],(newval,oldval) => {
+        state.code = code
+        state.projectCode = projectCode
+        state.name = name
         console.log(newval)
         flinkVisible.value = newval[0]
       })
       const getCode = (e) => {
         console.log(e);
-        form.taskParams = e;
+        taskDefinition.taskParams = e;
       }
       const handleClose = () => {
+        proxy.$refs.form.resetFields()
         emit('close')
       }
       const chooseWork = () => {
@@ -107,7 +115,7 @@
         state.tableVisible = false
       }
       return {
-        form,
+        taskDefinition,
         state,
         flinkVisible,
         ...toRefs(state),

@@ -118,17 +118,18 @@ export default defineComponent({
       processDefineCode: '',
       pjCode: '',
       deCode: '',
+      multipleSelection: [],
     })
     const getData = (page) => {
       page && (pageObj.current = page.current)
       proxy.$axios.post('/dolphinscheduler/projects/process-instances/query-instances-page', {
-        executorName: searchObj.definitionName,
+        definitionName: searchObj.definitionName,
         searchVal: searchObj.name,
         stateType: searchObj.stateType,
         current: page ? page.current : pageObj.current,
         size: pageObj.size,
         projectCode: state.projectCode,
-        processDefineCode: state.processDefineCode, 
+        processDefineCode: state.processDefineCode,
       }).then(({data}) => {
         state.tableData = data.data.totalList
         pageObj.total = data.data.total
@@ -143,6 +144,9 @@ export default defineComponent({
       getData()
     }
     onMounted(() => {
+      searchObj.definitionName = proxy.$route.query.workName
+      state.projectCode = proxy.$route.query.projectCode
+      state.processDefineCode = proxy.$route.query.code
       getData()
     });
     //获取批量选中值
@@ -153,25 +157,83 @@ export default defineComponent({
       })
       state.multipleSelection = arrList
     }
+    const handleMore = (command, row) => {
+      switch (command) {
+        //暂停
+        case 'stopRun' :
+          proxy.$axios.delete(`/dolphinscheduler/projects/executors/execute`,{
+            execType: "PAUSE",
+            processInstanceId: row.id,
+            projectCode: row.projectCode,
+          }).then(({data}) => {
+            if(data.code = 200){
+              ElMessage.success("实例已暂停")
+              getData()
+            }else {
+              ElMessage.error(data.data.msg)
+            }
+          }).catch(({ data }) => {
+            ElMessage.error('请求失败！请重试！')
+          })
+          break;
+        //停止
+        case 'onStop' :
+          proxy.$axios.delete(`/dolphinscheduler/projects/executors/execute`,{
+            execType: "STOP",
+            processInstanceId: row.id,
+            projectCode: row.projectCode,
+          }).then(({data}) => {
+            if(data.code = 200){
+              ElMessage.success("实例已停止")
+              getData()
+            }else {
+              ElMessage.error(data.data.msg)
+            }
+          }).catch(({ data }) => {
+            ElMessage.error('请求失败！请重试！')
+          })
+        break;
+      }
+    }
     //实例任务
     const taskRouter = (row) => {
-      if(route.query.code&&route.query.project){
+      if(route.query.code&&route.query.projectCode){
         state.projectCode = proxy.$route.query.projectCode
         state.processDefineCode = proxy.$route.query.code
       }else{
         state.projectCode = row.projectCode
-        state.processDefineCode = row.code
         console.log(state.projectCode)
-        console.log(state.processDefineCode);
       }
       state.id = row.id
       console.log(row.id);
-      router.push({path: 'exampleTaskMonitor',query:{id:state.id, projectCode: state.projectCode, code: state.processDefineCode, }})
+      router.push({path: 'exampleTaskMonitor',query:{id:state.id, projectCode: state.projectCode, code: state.processDefineCode, processInstanceName:row.name, workName: row.definitionName, state: row.state }})
     }
+    //重跑、停止、暂停、恢复
+    const reRun = (row) => {
+      proxy.$axios.delete(`/dolphinscheduler/projects/executors/execute`,{
+        execType: "REPEAT_RUNNING",
+        processInstanceId: row.id,
+        projectCode: row.projectCode,
+      }).then(({data}) => {
+        if(data.code = 200){
+          ElMessage.success("实例开始重跑")
+          getData()
+        }else {
+          ElMessage.error(data.data.msg)
+        }
+      }).catch(({ data }) => {
+        ElMessage.error('请求失败！请重试！')
+      })
+    }
+    //删除
     const onDelete = (row) => {
-      proxy.$axios.delete(`/dolphinscheduler/projects/process-instances/${row.id}`,{data: { id: row.id, projectCode: state.projectCode }}).then(({data}) => {
-        getData()
-        ElMessage.error(data.msg)
+      proxy.$axios.delete(`/dolphinscheduler/projects/process-instances/${row.id}?id=${row.id}&projectCode=${row.projectCode}`).then(({data}) => {
+        if(data.code = 200){
+          ElMessage.success("删除实例任务成功")
+          getData()
+        }else {
+          ElMessage.error(data.data.msg)
+        }
       }).catch(({ data }) => {
         ElMessage.success(data.msg)
       })
@@ -182,6 +244,8 @@ export default defineComponent({
       state,
       onPageChange,
       fetchData,
+      handleMore,
+      reRun,
       onDelete,
       handleSelectionChange,
       taskRouter,

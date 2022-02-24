@@ -2,15 +2,15 @@
   <!-- 作业监控 -->
   <div>
     <el-form :inline="true" ref="searchform" :model="searchObj">
-      <el-form-item label="作业状态">
+      <el-form-item label="作业状态" prop="runStatus">
         <el-select filterable clearable v-model="searchObj.runStatus" placeholder="请选择">
           <el-option v-for="item in state.runStatusOptions" :key="item.key" :label="item.key" :value="item.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="作业名称">
+      <el-form-item label="作业名称" prop="name">
         <el-input v-model="searchObj.name" clearable placeholder="作业名称" maxlength="50" class="mr-10" />
       </el-form-item>
-      <el-form-item label="作业主题">
+      <el-form-item label="作业主题" prop="motif">
         <el-select filterable clearable v-model="searchObj.motif" placeholder="请选择">
           <el-option v-for="item in state.motifList" :key="item.key" :label="item.label" :value="item.label" />
         </el-select>
@@ -106,6 +106,9 @@ export default defineComponent({
       doMessage: {},
     })
     const getData = (row) => {
+      searchObj.name = proxy.$route.query.name
+      searchObj.motif = proxy.$route.query.motif
+
       //通过路由传参
       state.projectCode = proxy.$route.query.projectCode
       state.code = proxy.$route.query.code
@@ -161,20 +164,20 @@ export default defineComponent({
           onLine(row)
         break;
         case 'onDownLine' :
-          proxy.$axios.get(``).then(({data}) => {
-            Message(data.code, '下线')
-            fetchData()
-          })
+          onLine(row)
         break;
         case 'onDelete' :
         DeleteConfirm().then(() => {
-          proxy.$axios.delete(`/dolphinscheduler/projects/process-definition/delete?code=${state.code}&projectCode=${state.projectCode}`,
+          proxy.$axios.delete(`/dolphinscheduler/projects/process-definition/delete?code=${row.code}&projectCode=${row.projectCode}`,
           ).then((data) => {
-            ElMessage.success(data.data.msg)
-            console.log(state.code)
-            fetchData()
+            if(data.code = 200){
+              ElMessage.success("删除成功")
+              fetchData()
+            }else {
+              ElMessage.error(data.data.msg)
+            }
           }).catch(e => {
-            ElMessage.success(data.data.msg)
+            ElMessage.error('请求失败！请重试！')
             fetchData()
           })
           
@@ -186,15 +189,15 @@ export default defineComponent({
     const onLine = (row) => {
       let releaState = row.releaseStateCN === '下线' ? 'OFFLINE' : 'ONLINE'
       console.log(releaState);
-      proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/${state.code}`,{
+      proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/${row.code}`,{
         code: row.code,
-        projectCode: state.projectCode,
+        projectCode: row.projectCode,
         releaseState: releaState,
       })
       .then((res) => {
         let resq = res.data
         if(resq.code == 200){
-          ElMessage.success('修改状态成功')
+          ElMessage.success('操作成功')
           getData()
         }else if(resq.code == 400){
           ElMessageBox.alert(resq.msg, '提示', {
@@ -240,7 +243,7 @@ export default defineComponent({
         console.log(state.projectCode)
         console.log(state.code);
       }
-      router.push({path: 'exampleMonitor',query: { id: state.id, projectCode: state.projectCode, code: state.code }})
+      router.push({path: 'exampleMonitor',query: { id: state.id, projectCode: state.projectCode, code: state.code,workName: row.name }})
     }
     return {
       pageObj,

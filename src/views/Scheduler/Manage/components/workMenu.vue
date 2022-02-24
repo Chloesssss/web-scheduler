@@ -59,7 +59,6 @@ export default {
                 ElMessage.success('保存成功')
                 proxy.$refs.Form.resetFields()
                 emit('onOk')
-                
               } else {
                 ElMessage.error(data.msg)
                 proxy.$refs.Form.resetFields()

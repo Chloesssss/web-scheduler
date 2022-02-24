@@ -4,12 +4,13 @@
     <div class="app-content" id="flowContainer" ref="container"></div>
   </div>
   <!-- 执行策略配置 -->
-  <config-cell :visible="dialogVisible" @close="closeModal" />
+  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :projectCode="state.projectCode" :name="state.name"/>
   <!-- 开发执行策略配置 -->
-  <config-flink-cell :visible="flinkVisible" @close="closeModal" />
+  <config-flink-cell :visible="state.flinkVisible" @close="closeModal" :code="state.code" :projectCode="state.projectCode" :name="state.name"/>
 </template>
 
 <script>
+import { defineComponent, reactive, toRefs, ref, onMounted, watch, getCurrentInstance } from 'vue'
 import { Graph, Shape, Addon, FunctionExt } from "@antv/x6";
 import ConfigCell from "./ConfigCell.vue";
 import ConfigFlinkCell from './ConfigFlinkCell.vue';
@@ -17,24 +18,34 @@ import { circle } from '@antv/x6/lib/registry/marker/circle';
 const { Stencil } = Addon;
 const { Rect, Polygon } = Shape;
 
-export default {
+export default defineComponent({
   components: { ConfigCell, ConfigFlinkCell },
-  name: "index",
-  mounted() {
-    this.init();
+  name: "filiationGraph",
+  props: {
+    code: [String, Number],
+    projectCode: [String, Number],
+    workName: '',
   },
-  data() {
-    return {
+  emits:['save'],
+  setup(props, {emit}) {
+    const { proxy } = getCurrentInstance();
+    const { code, projectCode, workName } = toRefs(props)
+    const state = reactive({
+      cell: '',
+      view: false,
+      code: '',
+      projectCode: '',
       dialogVisible: false,
       flinkVisible: false,
-      cell: null, // graph context.cell
-      view: null, // graph context.view
-    };
-  },
-  methods: {
-    init() {
+      name: '',
+      currentDragObj: {
+        offsetX: 0,
+        offsetY: 0
+      },
+    })
+    const init= () => {
       const graph = new Graph({
-        container: this.$refs.container,
+        container: document.getElementById('flowContainer'),
         width: "100%",
         height: "100%",
         grid: {
@@ -198,7 +209,7 @@ export default {
           rowHeight: 70,
         },
       });
-      this.$refs.stencilContainer.appendChild(stencil.container);
+      proxy.$refs.stencilContainer.appendChild(stencil.container)
       // 初始化图形
       const ports = {
         groups: {
@@ -282,7 +293,6 @@ export default {
       const collect = new Rect({
         id: "collect",
         attrs: {
-          text: { text: "数据采集" },
           body: {
             fill: "#EFF4FF",
             stroke: "#5F95FF",
@@ -294,6 +304,7 @@ export default {
             fontSize: 16,
             fill: "#333",
             fontWeight: 800,
+            text: "数据采集",
           },
         },
         text: {
@@ -309,7 +320,6 @@ export default {
       const flink = new Rect({
         id: "flink",
         attrs: {
-          text: { text: "数据开发", fill: "end" },
           body: {
             fill: "#efdbff",
             stroke: "#9254de",
@@ -320,134 +330,27 @@ export default {
             fontSize: 16,
             fill: "#333",
             fontWeight: 800,
+            text: "数据开发",
           },
         },
         ports: { ...ports },
       });
-      // const service = new Rect({
-      //   attrs: {
-      //     text: { text: "数据服务" },
-      //     body: {
-      //       fill: "#E6A23C",
-      //       stroke: "#E6A23C",
-      //       color: "#333",
-      //     },
-      //     label: {
-      //       fontSize: 16,
-      //       fill: "#333",
-      //       fontWeight: 800,
-      //     },
-      //   },
-      //   "edit-text": {
-      //     contenteditable: "false",
-      //     class: "x6-edit-text",
-      //     style: {
-      //       width: "100%",
-      //       textAlign: "center",
-      //       fontSize: 12,
-      //       color: "rgba(0,0,0,0.85)",
-      //     },
-      //   },
-      //   text: {
-      //     fontSize: 12,
-      //     fill: "rgba(0,0,0,0.85)",
-      //     textWrap: {
-      //       text: "",
-      //       width: -10,
-      //     },
-      //   },
-      //   ports: { ...ports },
-      // });
-      // const security = new Rect({
-      //   attrs: {
-      //     text: { text: "数据安全" },
-      //     body: {
-      //       fill: "#409EF6",
-      //       stroke: "#409EF6",
-      //       color: "#333",
-      //     },
-      //     label: {
-      //       fontSize: 16,
-      //       fill: "#333",
-      //       fontWeight: 800,
-      //     },
-      //   },
-      //   "edit-text": {
-      //     contenteditable: "false",
-      //     class: "x6-edit-text",
-      //     style: {
-      //       width: "100%",
-      //       textAlign: "center",
-      //       fontSize: 12,
-      //       color: "rgba(0,0,0,0.85)",
-      //     },
-      //   },
-      //   text: {
-      //     fontSize: 12,
-      //     fill: "rgba(0,0,0,0.85)",
-      //     textWrap: {
-      //       text: "",
-      //       width: -10,
-      //     },
-      //   },
-      //   ports: { ...ports },
-      // });
-      // const indexCenter = new Rect({
-      //   attrs: {
-      //     text: { text: "指标中心" },
-      //     body: {
-      //       fill: "#A2F6FC",
-      //       stroke: "#A2F6FC",
-      //       color: "#333",
-      //     },
-      //     label: {
-      //       fontSize: 16,
-      //       fill: "#333",
-      //       fontWeight: 800,
-      //     },
-      //   },
-      //   "edit-text": {
-      //     contenteditable: "false",
-      //     class: "x6-edit-text",
-      //     style: {
-      //       width: "100%",
-      //       textAlign: "center",
-      //       fontSize: 12,
-      //       color: "rgba(0,0,0,0.85)",
-      //     },
-      //   },
-      //   text: {
-      //     fontSize: 12,
-      //     fill: "rgba(0,0,0,0.85)",
-      //     textWrap: {
-      //       text: "",
-      //       width: -10,
-      //     },
-      //   },
-      //   ports: { ...ports },
-      // });
       stencil.load(
         [collect, flink],
-        // [collect, flink, service, security, indexCenter],
         "processLibrary"
       );
-      // stencil.load([c2, r2, r3, c3], 'staffPool')
       graph.toJSON()
       console.log(graph.toJSON());
       //绑定事件
       //双击节点打开节点配置
-      graph.on("cell:dblclick", ({ cell, view, a, b, c }) => {// cell 基类对象 view 视图对象
+      graph.on("cell:dblclick", ({ node }) => {// cell 基类对象 view 视图对象
         // 目标数据logic
-        this.showflink(cell, view)
-        console.log('<--->', { cell, view, a, b, c });
-        console.log(Node.id)
-        console.log(graph.toJSON());
-        if(collect){
-          // this.showModal(cell, view);
-          // console.log(stencil.collect);
-        } else if(flink){
-          this.showflink(cell, view)
-          console.log(stencil.flink);
+        console.log(node.getAttrs().label.text);
+        console.log(state.projectCode)
+        if(node.getAttrs().label.text === "数据采集"){
+          showModal()
+        } else if(node.getAttrs().label.text === "数据开发"){
+          showflink()
         }
         // console.log(flink);
          // 显示子组件，顺便传递过去cell view，保持graph context
@@ -524,16 +427,14 @@ export default {
       graph.on(
         "node:mouseenter",
         FunctionExt.debounce(() => {
-          console.log("mouseenter");
           const ports = container.querySelectorAll(".x6-port-body");
-          this.showPorts(ports, true);
+          showPorts(ports, true);
         }),
         500
       );
       graph.on("node:mouseleave", () => {
-        console.log("mouseleave");
         const ports = container.querySelectorAll(".x6-port-body");
-        this.showPorts(ports, false);
+        showPorts(ports, false);
       });
       graph.bindKey("backspace", () => {
         console.log("backspace");
@@ -542,28 +443,47 @@ export default {
           graph.removeCells(cells);
         }
       });
-    },
-    showModal(cell, view) {
-      this.cell = cell;
-      this.view = view;
-      this.dialogVisible = true;
-    },
-    showflink(cell, view){
-      this.cell = cell;
-      this.view = view;
-      this.flinkVisible = true;
-    },
-    closeModal(){
-      this.dialogVisible = false;
-      this.flinkVisible = false;
-    },
-    showPorts(ports, show) {
-      for (let i = 0, len = ports.length; i < len; i = i + 1) {
-        ports[i].style.visibility = show ? "visible" : "hidden";
-      }
-    },
+    }
+    const showModal = () => {
+      state.dialogVisible = true;
+    }
+    const showflink = () => {
+      state.flinkVisible = true;
+    }
+    const closeModal = () => {
+      state.dialogVisible = false;
+      state.flinkVisible = false;
+    }
+    // 控制连接桩显示/隐藏
+    const showPorts = (ports, show) => {
+      // for (let i = 0, len = ports.length; i < len; i = i + 1) {
+      //   ports[i].style.visibility = show ? "visible" : "hidden";
+      // }
+    }
+    const getData = () => {
+      
+    }
+    watch([code, projectCode, workName],(newval,oldval) => {
+      state.code = code
+      state.projectCode = projectCode
+      state.name = workName
+    })
+    onMounted(() => {
+      getData()
+      init()
+      showPorts()
+    })
+    return{
+      state,
+      getData,
+      init,
+      showModal,
+      showflink,
+      closeModal,
+      showPorts,
+    }
   },
-};
+});
 </script>
 
 <style scoped>

@@ -66,7 +66,6 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
-    id: String
   },
   emits:['close'],
   emits:['giveCode'],
@@ -107,10 +106,10 @@ export default defineComponent({
       proxy.$axios.post(`/dolphinscheduler/projects/dlink/queryGroupPage`, {
         // runStatus: searchObj.runStatus,
         current: pageObj.current,
-        size: pageObj.size,
-        // name: searchObj.name,
+        pageSize: pageObj.size,
+        name: searchObj.name,
       }).then(({data}) => {
-        state.tableData = data.data.data
+        state.tableData = data.data.totalList
         pageObj.total = data.data.total
         })
     };
@@ -133,19 +132,28 @@ export default defineComponent({
     //   });
     // };
     //获取选中值
-    const selectChoose = (val) => {
-      state.selectData = val;
+    const selectChoose = (val,row) => {
+      let valList = val,arrList=[];
+      valList.map((row)=>{
+        emit("giveCode", row.name);
+        console.log(row.name);
+      })
       if (val.length > 1) {
         proxy.$refs.multipleTable.clearSelection();
         proxy.$refs.multipleTable.toggleRowSelection(val.pop());
       }
-      emit("giveCode", row.name, row.sourceTableName, row.targetTableName);
     }
     const onCancel = () => {
       emit('close')
     }
     const onCommit = (row) => {
-      emit('close')
+      console.log(row);
+      if(row){
+        selectChoose()
+        emit('close')
+      } else {
+        emit('close')
+      }
     }
     return {
       dialogTableVisible,
@@ -163,4 +171,7 @@ export default defineComponent({
 });
 </script>
 <style lang="scss" scoped>
+.checkTable > .el-table__header-wrapper > table > thead > tr > th:first-child > div {
+	display: none!important;
+}
 </style>
