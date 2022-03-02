@@ -227,7 +227,6 @@
         }else{
           Object.assign(formObj,{ startTime: '', endTime: '', failureStrategy: '', crontab: '' })
         }
-        console.log(formObj.taget);
       },{deep:true})
       onMounted(() => {
         state.projectCode = projectCode

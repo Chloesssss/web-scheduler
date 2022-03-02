@@ -14,7 +14,7 @@
         <i @click="onSetTime" class="el-icon-video-pause mr-10 cursor-pointer" style="width:100px;"> 定时管理</i>
       </div>
       <div style="width: 100%,hight: 100%">
-        <filiation-graph :code="state.code" :project-code="state.projectCode" @save="onSave" :work-name="state.workName"/>
+        <filiation-graph :code="state.code" :project-code="state.projectCode" :work-name="state.workName" ref="filiateGraph"/>
       </div>
     </div>
   </div>
@@ -47,8 +47,6 @@ export default defineComponent({
       motif: '',
     })
     const getCode = (e,i,j,k) => {
-      console.log(j);
-      console.log(k);
       state.code = e;
       state.projectCode = i;
       state.workName = j;
@@ -56,26 +54,7 @@ export default defineComponent({
     }
     //保存
     const onSave = () => {
-      proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`, { //调用编辑接口
-        code: state.code,
-        projectCode: state.projectCode,
-        name: state.docName,
-        locations: state.locations,
-        taskDefinition: state.taskDefinition,
-        taskRelation: state.taskRelation,
-        tenantCode: "123456"
-      })
-      .then((res) => {
-        let resq = res.data
-        if(resq.code==200){
-          ElMessage.success('修改成功')
-          router.push({path: 'listing'})
-        }else{
-          ElMessage.error(resq.msg)
-        }
-      }).catch((error) => {
-        ElMessage.error("保存失败")
-      });
+      proxy.$refs.filiateGraph.save()
     }
     //上下线
     const onLine = () => {
@@ -99,20 +78,17 @@ export default defineComponent({
         }else{
           ElMessage.error(resq.msg)
         }
-        console.log(resq.code);
       });
     }
     //前往监控
     const onMonitior = () => {
       if(state.projectCode===0){
-        router.push({path: 'workMonitor', query: {projectCode: state.code, code: null}})
+        router.push({path: 'workMonitor', query: {projectCode: state.code, code: null, motif: state.motif}})
       }else if(state.code&&state.projectCode){
         router.push({path: 'workMonitor', query: {projectCode: state.projectCode, code: state.code, name: state.workName, motif: state.motif }})
       }else{
-        ElMessage.error("请先选择左侧作业树节点")
+        ElMessage.warning("请先选择左侧作业树节点")
       }
-      // console.log(state.projectCode)
-      // console.log(state.code);
     }
     //立即执行
     const onCommitConfig = () => {

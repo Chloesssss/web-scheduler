@@ -107,8 +107,10 @@ export default defineComponent({
     })
     const getData = (row) => {
       searchObj.name = proxy.$route.query.name
-      searchObj.motif = proxy.$route.query.motif
+      if(proxy.$route.query.name){
 
+      }
+      searchObj.motif = proxy.$route.query.motif
       //通过路由传参
       state.projectCode = proxy.$route.query.projectCode
       state.code = proxy.$route.query.code
@@ -188,7 +190,6 @@ export default defineComponent({
     //上下线
     const onLine = (row) => {
       let releaState = row.releaseStateCN === '下线' ? 'OFFLINE' : 'ONLINE'
-      console.log(releaState);
       proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/${row.code}`,{
         code: row.code,
         projectCode: row.projectCode,
@@ -240,8 +241,6 @@ export default defineComponent({
       }else{
         state.projectCode = row.projectCode
         state.code = row.code
-        console.log(state.projectCode)
-        console.log(state.code);
       }
       router.push({path: 'exampleMonitor',query: { id: state.id, projectCode: state.projectCode, code: state.code,workName: row.name }})
     }

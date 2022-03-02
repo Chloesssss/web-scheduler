@@ -135,8 +135,7 @@ export default defineComponent({
     const selectChoose = (val,row) => {
       let valList = val,arrList=[];
       valList.map((row)=>{
-        emit("giveCode", row.name);
-        console.log(row.name);
+        emit("giveCode", row.name, row, row.id);
       })
       if (val.length > 1) {
         proxy.$refs.multipleTable.clearSelection();
@@ -147,7 +146,6 @@ export default defineComponent({
       emit('close')
     }
     const onCommit = (row) => {
-      console.log(row);
       if(row){
         selectChoose()
         emit('close')

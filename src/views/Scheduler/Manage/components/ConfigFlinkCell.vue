@@ -16,10 +16,13 @@
           <el-input v-model="taskDefinition.description" type="textarea"></el-input>
         </el-form-item>
         <el-form-item label="超时失败" prop="timeoutFlag">
-          <el-switch v-model="taskDefinition.timeoutFlag"></el-switch>
+           <el-radio-group v-model="taskDefinition.status" size="mini">
+            <el-radio-button label="0">启用</el-radio-button>
+            <el-radio-button label="1">禁用</el-radio-button>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="汇聚作业" prop="taskParams">
-          <el-input class="flex-1" v-model="taskDefinition.taskParams" disabled></el-input>
+        <el-form-item label="汇聚作业" prop="taskWork">
+          <el-input class="flex-1" v-model="taskDefinition.taskWork" disabled></el-input>
           <el-button class="flex-1" @click="chooseWork">选择</el-button>
         </el-form-item>
       </el-form>
@@ -48,18 +51,26 @@
       },
       code: [Number, String],
       projectCode: [Number, String],
-      name: String,
+      workName: '',
+      taskCode: [Number, String],
     },
-    emits:['close'],
+    emits:['close', 'onCommit'],
     setup(props, {emit}) {
       const { proxy } = getCurrentInstance();
-      const { visible, code, projectCode, name } = toRefs(props)
+      const { visible, code, projectCode, workName, taskCode } = toRefs(props)
       const flinkVisible = ref(false)
-      const  taskDefinition = reactive({ // 声明查询信息
-        name: null,
-        description: null,
-        timeoutFlag: null,
+      const  taskDefinition = reactive({ // 声明表单信息
+        name: '',
+        description: '',
+        status: 0,
+        timeoutFlag: '',
+        taskWork: '',
         taskParams: '',
+        taskType: "DLINK",
+        projectCode: '',
+        code: '',
+        callTaskId: '',
+        id: ''
       })
       const state = reactive({
         drawer : false,
@@ -69,40 +80,47 @@
         tableVisible: false,
         name: ''
       })
+      //超时失败
+      const onStatus = () => {
+        if (taskDefinition.status == '0') {
+          taskDefinition.timeoutFlag = 'OPEN'
+        }else if (taskDefinition.status == '1') {
+          taskDefinition.timeoutFlag = 'CLOSE'
+        }
+      }
       const onCommit = () => {
-        proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`,{
-          code: state.code,
-          projectCode: state.projectCode,
-          name: state.name,
-          location: state.location,
-          taskType: DLINK
-        }).then(({ data }) => {
-          if (data.code = 200) {
-            ElMessage.success('保存成功')
-            proxy.$refs.form.resetFields()
-            emit('close')
-          } else {
-            ElMessage.error(data.msg)
-            proxy.$refs.form.resetFields()
-            emit('close')
-          }
-        }).catch(e=> {
-          ElMessage.error('请求失败！请重试！')
-        });
+        onStatus()
+        watch()
+        emit("onCommit", taskDefinition );
+        emit('close')
       }
       onMounted(() => {
-        watch()
       });
-      watch([visible, code, projectCode, name],(newval,oldval) => {
+      watch([visible, code, projectCode, workName, taskCode],(newval,oldval) => {
         state.code = code
         state.projectCode = projectCode
-        state.name = name
-        console.log(newval)
+        taskDefinition.code = code
+        taskDefinition.projectCode = projectCode
+        taskDefinition.id = taskCode
+        console.log(taskDefinition.id);
+        state.name = workName
         flinkVisible.value = newval[0]
+        if(flinkVisible.value == true && state.projectCode){
+          proxy.$axios.get(`/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
+          .then(({data}) => {
+            if(data.code == 200){
+              Object.assign(taskDefinition, data.data.taskDefinition)
+            }else{
+              ElMessage.error(data.msg)
+            }
+          })
+        }
       })
-      const getCode = (e) => {
-        console.log(e);
-        taskDefinition.taskParams = e;
+      const getCode = (e, k, x) => {
+        var m = JSON.stringify(k)
+        taskDefinition.taskWork = e;
+        taskDefinition.taskParams = m;
+        taskDefinition.callTaskId = x;
       }
       const handleClose = () => {
         proxy.$refs.form.resetFields()
@@ -112,6 +130,7 @@
         state.tableVisible = true
       }
       const closeModal = () => {
+        proxy.$refs.form.resetFields()
         state.tableVisible = false
       }
       return {

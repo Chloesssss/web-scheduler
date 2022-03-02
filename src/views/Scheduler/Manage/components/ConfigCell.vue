@@ -16,7 +16,10 @@
           <el-input v-model="taskDefinition.description" type="textarea"></el-input>
         </el-form-item>
         <el-form-item label="超时失败" prop="timeoutFlag">
-          <el-switch v-model="taskDefinition.timeoutFlag"></el-switch>
+           <el-radio-group v-model="taskDefinition.status" size="mini">
+            <el-radio-button label="0">启用</el-radio-button>
+            <el-radio-button label="1">禁用</el-radio-button>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="汇聚作业" prop="taskWork">
           <el-input class="flex-1" v-model="taskDefinition.taskWork" disabled></el-input>
@@ -54,21 +57,28 @@
       },
       code: [Number, String],
       projectCode: [Number, String],
+      workName: '',
+      taskCode: [Number, String],
     },
-    emits:['close'],
+    emits:['close', 'onCommit'],
     setup(props, {emit}) {
       const { proxy } = getCurrentInstance();
-      const { visible, code, projectCode } = toRefs(props)
+      const { visible, code, projectCode, workName, taskCode } = toRefs(props)
       const dialogVisible = ref(false)
-      const  taskDefinition = reactive({ // 声明查询信息
+      const  taskDefinition = reactive({ // 声明表单信息
         name: '',
         description: '',
+        status: 0,
         timeoutFlag: '',
         taskWork: '',
         originTable: '',
         targetTable: '',
         taskParams: '',
         taskType: "COLLECT",
+        projectCode: '',
+        code: '',
+        callTaskId: '',
+        id: '',
       })
       const state = reactive({
         drawer : false,
@@ -79,45 +89,52 @@
         name: '',
       })
       //获取作业名、源表名、目标表名
-      const getCode = (e,i,j,k) => {
-        console.log(k);
+      const getCode = (e,i,j,k,x) => {
         var m = JSON.stringify(k)
-        console.log(m);
         taskDefinition.taskWork = e;
         taskDefinition.originTable = i;
         taskDefinition.targetTable = j;
         taskDefinition.taskParams = m;
+        taskDefinition.callTaskId = x;
+      }
+      //超时失败
+      const onStatus = () => {
+        if (taskDefinition.status == '0') {
+          taskDefinition.timeoutFlag = 'OPEN'
+        }else if (taskDefinition.status == '1') {
+          taskDefinition.timeoutFlag = 'CLOSE'
+        }
       }
       //提交
       const onCommit = () => {
+        onStatus()
         getCode()
-        console.log(taskDefinition.taskParams);
-        proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`, {
-          code: state.code,
-          projectCode: state.projectCode,
-          name: state.name,
-          ...taskDefinition,
-        }).then(({ data }) => {
-          if (data.code = 200) {
-            ElMessage.success('保存成功')
-            proxy.$refs.form.resetFields()
-            emit('close')
-          } else {
-            ElMessage.error(data.msg)
-            proxy.$refs.form.resetFields()
-            emit('close')
-          }
-        }).catch(e=> {
-          ElMessage.error('请求失败！请重试！')
-        });
+        watch()
+        console.log(taskDefinition);
+        emit("onCommit", taskDefinition);
+        emit('close')
       }
       onMounted(() => {
-        watch()
       });
-      watch([visible, code, projectCode],(newval,oldval) => {
+      watch([visible, code, projectCode, workName, taskCode],(newval,oldval) => {
         state.code = code
         state.projectCode = projectCode
+        taskDefinition.code = code
+        taskDefinition.projectCode = projectCode
+        taskDefinition.id = taskCode
+        console.log(taskDefinition.id);
+        state.name = workName
         dialogVisible.value = newval[0]
+        if(dialogVisible.value == true && state.projectCode){
+          proxy.$axios.get(`/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
+          .then(({data}) => {
+            if(data.code == 200){
+              Object.assign(taskDefinition, data.data.taskDefinition)
+            }else{
+              ElMessage.error(data.msg)
+            }
+          })
+        }
       })
       const handleClose = () => {
         proxy.$refs.form.resetFields()
@@ -128,6 +145,7 @@
         state.tableVisible = true
       }
       const closeModal = () => {
+        //proxy.$refs.form.resetFields()
         state.tableVisible = false
       }
       return {

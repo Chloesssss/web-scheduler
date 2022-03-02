@@ -13,7 +13,7 @@
         </el-descriptions>
       </div>
       <div style="width:100% ">
-        <dag-graph />
+        <dag-graph :code="state.deCode" :projectCode="state.projectCode" :runStatus="state.runState"/>
       </div>
     <div>
       <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" stripe >
@@ -99,7 +99,7 @@ export default defineComponent({
       code: '',
       log: '',
       dialogVisible: false,
-
+      deCode: '',// 工作流定义id
     })
     //获取节点数据
     const getData = (page) => {
@@ -128,12 +128,12 @@ export default defineComponent({
       state.runState = proxy.$route.query.state
       state.projectCode = proxy.$route.query.projectCode
       state.code = proxy.$route.query.id
+      state.deCode = proxy.$route.query.code
       getData()
     });
     const onDetail = (row) => {
       state.dialogVisible = true
-      console.log(row.id)
-      proxy.$axios.get(`/dolphinscheduler/log/detail?taskInstanceId=${row.id}`).then((res) =>{
+      proxy.$axios.get(`/dolphinscheduler/log/task-log?taskInstanceId=${row.id}`).then((res) =>{
         state.log = res.data.data
       })
     }

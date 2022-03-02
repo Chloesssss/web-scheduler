@@ -1,232 +1,213 @@
 <template>
-  <div id="containered" ref="containered" />
+  <div id="containered" ref="containered" >
+  </div>
 </template>
 
-<script lang="ts" setup>
-/*eslint-disable */
-import { ref, computed, onMounted } from 'vue'
+<script>
+import { defineComponent, reactive, toRefs, ref, onMounted, watch, getCurrentInstance } from 'vue'
 import { Graph, Shape } from '@antv/x6';
+import { GridLayout, DagreLayout } from '@antv/layout'
+import '@antv/x6-vue-shape'
 
-const graph = ref<any>({}) // 流程图
-const containered = ref<HTMLElement>() // 流程图挂载dom节点
-
-const init = () => {
-  graph.value = new Graph({
-    container: containered.value,
-    height: 300,
-    background: {
-      color: '#fffbe6', // 设置画布背景颜色
-    },
-    grid: {
-      size: 10,      // 网格大小 10px
-      visible: true, // 渲染网格背景
-    },
-    snapline: { // 对齐线
-    enabled: true,
-    sharp: true, // 是否显示截断的对齐线-对齐线变短
-    },
-    selecting: { // 点选/框选，默认禁用。
-      enabled: true,
-      // rubberband: true, // 框选
-      // 是否显示节点的选择框，默认为 false，建议使用下面的样式定制方法去定制自己的选择框样式。
-      // showNodeSelectionBox: true // 节点的选择框
-    },
-    keyboard: { // 键盘事件可用于绑定快捷键
-      enabled: true
-    },
-    // 开启撤销/重做
-    history: {
-      enabled: true,
-      ignoreChange: true
-    },
-    // 剪切板用于复制/粘贴节点和边，并支持跨画布的复制/粘贴，创建画布时通过以下配置启用。
-    clipboard: {
-      enabled: true
-      // useLocalStorage: true // 保存到 localStorage
-    },
-    // panning: true, // 普通画布(未开启 scroller 模式)通过开启 panning 选项来支持拖拽平移。
-    // 使画布具备滚动、平移、居中、缩放等能力
-    scroller: {
-      enabled: true,
-      pageVisible: false, // 是否分页，默认为 false。
-      pageBreak: false, // 是否显示分页符，默认为 false。
-      pannable: true // 启用画布平移
-    },
-    mousewheel: { // 鼠标滚轮缩放
-      enabled: true,
-      // 是否为全局事件，设置为 true 时滚轮事件绑定在 document 上，否则绑定在画布容器上。默认为 false。
-      global: true,
-      modifiers: ['ctrl', 'meta']
-    },
-    highlighting: {
-      // 连线过程中，节点可以被链接时被使用
-      // nodeAvailable: {},
-      // 拖动节点进行嵌入操作过程中，节点可以被嵌入时被使用
-      embedding: {
-        name: 'stroke',
-        args: {
-          attrs: {
-            fill: '#fff',
-            stroke: '#47C769',
-          },
+export default defineComponent({
+  props: {
+    code: [String, Number],
+    projectCode: [String, Number],
+    runStatus: '',
+  },
+  setup(props) {
+    const { proxy } = getCurrentInstance();
+    const { code, projectCode, runStatus } = toRefs(props)
+    const state = reactive({
+      code: '',
+      projectCode: '',
+      status: [
+        {
+          key: '下线',
+          value: 0
         },
-      },
-      // 连线过程中，链接桩可以被链接时被使用
-      magnetAvailable: { // 高亮
-        name: 'stroke',
-        args: {
-          attrs: {
-            fill: '#fff',
-            stroke: '#47C769',
-          },
+        {
+          key: '上线',
+          value: 1
         },
-      },
-      // 连线过程中，自动吸附到链接桩时被使用
-      magnetAdsorbed: {
-        name: 'stroke',
-        args: {
-          attrs: {
-            fill: '#fff',
-            stroke: '#31d0c6',
-          },
-        },
-      },
-    },
-    // 连线规则
-    connecting: {
-      snap: true, // 当 snap 设置为 true 时连线的过程中距离节点或者连接桩 50px 时会触发自动吸附
-      allowBlank: false, // 是否允许连接到画布空白位置的点，默认为 true
-      allowLoop: false, // 是否允许创建循环连线，即边的起始节点和终止节点为同一节点，默认为 true
-      allowMulti: false, // 当设置为 false 时，在起始和终止节点之间只允许创建一条边
-      highlight: true, // 拖动边时，是否高亮显示所有可用的连接桩或节点，默认值为 false。
-      sourceAnchor: { // 当连接到节点时，通过 sourceAnchor 来指定源节点的锚点。
-        name: 'center'
-      },
-      targetAnchor: 'center', // 当连接到节点时，通过 targetAnchor 来指定目标节点的锚点。
-      connector: 'rounded', // 连接器将起点、路由返回的点、终点加工为 元素的 d 属性，决定了边渲染到画布后的样式，默认值为 normal。
-      connectionPoint: 'boundary', // 指定连接点，默认值为 boundary。
-      router: { // 实体关系路由，由 Z 字形的斜角线段组成。
-        name: 'er',
-        args: {
-          direction: 'T',
-        },
-      },
-      validateMagnet({ magnet, cell }) {
-        // 表示被点击的链接桩
-        // console.log('magnet', e, magnet, view, cell);
-        // if (magnet.getAttribute('port-group') === 'in') { //前置节点不能作为起点
-        //   return false
-        // }
-        return true
-      },
-      createEdge() { // 连接的过程中创建新的边
-        return new Shape.Edge({
-          attrs: {
-            line: {
-              stroke: '#136fff',
-              strokeWidth: 1,
-              targetMarker: {
-                name: 'classic',
-                size: 7
-              }
+      ],
+      runStatus: '',
+      nodeData: [],
+      taskType: '',
+    })
+    const generateNewNodeObj = (newNodeObj) => {
+      const node = {
+        id: newNodeObj.taskId, // String，可选，节点的唯一标识
+        x: newNodeObj.leftPos - state.currentDragObj.offsetX,       // Number，必选，节点位置的 x 值
+        y: newNodeObj.topPos - state.currentDragObj.offsetY,       // Number，必选，节点位置的 y 值
+        width: 160,   // Number，可选，节点大小的 width 值
+        height: 30,  // Number，可选，节点大小的 height 值
+        label: newNodeObj.name, // String，节点标签
+        shape: 'vue-shape', // 使用 rect 渲染
+        component: {
+          template: `<div class="flex align-items-center height-a-hundred-percent pl-10" style="background-color: #ecf5ff; border-radius: 5px; border:1px solid #b3d8ff">
+                        <img style="width: 18px;height: 18px" :src="image" class="mr-10">
+                        <div style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{item.name}}</div>
+                      </div>`,
+          setup() {
+            return {
+              item: newNodeObj,
+              image: require('@/assets/flink.svg')
             }
           }
-        })
-      },
-      // 在移动边的时候判断连接是否有效，
-      // 如果返回 false，当鼠标放开的时候，不会连接到当前元素，
-      // 否则会连接到当前元素。
-      // 可以连接的节点，链接桩会变色
-      validateConnection({ sourceMagnet, targetMagnet, sourceCell, targetCell  }: any) {
-        // 只能从输出链接桩创建连接
-        if (!sourceMagnet || sourceMagnet.getAttribute('port-group') === 'in') {
-          return false
-        }
-        // 只能连接到输入链接桩
-        if (!targetMagnet || targetMagnet.getAttribute('port-group') !== 'in') {
-          return false
-        }
-        return true
-      },
-      // 当停止拖动边的时候根据 validateEdge 返回值来判断边是否生效，如果返回 false, 该边会被清除。
-      validateEdge({ edge }) {
-        const { source, target } = edge
-        
-        return true
-      }
-    },
-  });
-  const node1 = new Shape.Rect({
-    width: 130,
-    height: 70,
-    attrs: {
-      text: { text: "数据采集" },
-      body: {
-        fill: "#EFF4FF",
-        stroke: "#5F95FF",
-        color: "#333",
-        rx: 50,
-        ry: 20,
-      },
-      label: {
-        fontSize: 16,
-        fill: "#333",
-        fontWeight: 800,
-      },
-    },
-    text: {
-      fontSize: 12,
-      fill: "rgba(0,0,0,0.85)",
-      textWrap: {
-        text: "",
-        width: -10,
-      },
-    },
-  })
-  const node2 = new Shape.Rect({
-    width: 130,
-    height: 70,
-    attrs: {
-      text: { text: "数据开发", fill: "end" },
-      body: {
-        fill: "#efdbff",
-        stroke: "#9254de",
-        rx: 50,
-        ry: 20,
-      },
-      label: {
-        fontSize: 16,
-        fill: "red",
-        fontWeight: 800,
-      },
-    },
-  })
-
-  const edge = new Shape.Edge({
-    id: 'edge1',
-    source: node1,
-    target: node2,
-    zIndex: 1,
-    attrs: {
-      line: {
-        stroke: '#136fff',
-        strokeWidth: 1,
-        targetMarker: {
-          name: 'classic',
-          size: 7
+        },
+        ports: {
+          groups: {
+            in: {
+              position: 'top',
+              attrs: {
+                circle: {
+                  r: 4,
+                  magnet: true,
+                  stroke: '#108ee9',
+                  strokeWidth: 2,
+                  fill: '#fff'
+                }
+              }
+            },
+            out: {
+              position: 'bottom',
+              attrs: {
+                circle: {
+                  r: 4,
+                  magnet: true,
+                  stroke: '#31d0c6',
+                  strokeWidth: 2,
+                  fill: '#fff'
+                }
+              }
+            }
+          },
+          items: [
+            {
+              id: newNodeObj.taskId + '_in',
+              group: 'in',
+            },
+            {
+              id: newNodeObj.taskId + '_out',
+              group: 'out',
+            },
+          ],
         }
       }
+      return node
     }
-  })
-
-  graph.value.addNode(node1)
-  graph.value.addNode(node2)
-  graph.value.addEdge(edge)
-}
-
-onMounted(() => {
-  init()
+    const generateImag = () => {
+      const nodeData = {
+        // 节点
+        nodes: [
+        ],
+        // 边
+        edges: [
+        ],
+      };
+      const collect = new Shape.Rect({
+        attrs: {
+          body: {
+            fill: "#EFF4FF",
+            stroke: "#5F95FF",
+            color: "#333",
+            rx: 50,
+            ry: 20,
+          },
+          label: {
+            fontSize: 16,
+            fill: "#333",
+            fontWeight: 800,
+            text: "数据采集",
+          },
+        },
+        text: {
+          fontSize: 12,
+          fill: "rgba(0,0,0,0.85)",
+          textWrap: {
+            text: "",
+            width: -10,
+          },
+        },
+      })
+      const flink = new Shape.Rect({
+        attrs: {
+          body: {
+            fill: "#EFF4FF",
+            stroke: "#5F95FF",
+            color: "#333",
+            rx: 50,
+            ry: 20,
+          },
+          label: {
+            fontSize: 16,
+            fill: "#333",
+            fontWeight: 800,
+            text: "数据开发",
+          },
+        },
+        text: {
+          fontSize: 12,
+          fill: "rgba(0,0,0,0.85)",
+          textWrap: {
+            text: "",
+            width: -10,
+          },
+        },
+      })
+      // 回显实例节点和状态
+      if(state.taskType == "COLLECT"){
+        graph.addNode(collect)
+      }
+      nodeData.nodes.push(state.nodeData)
+      console.log(nodeData);
+      const graph = new Graph({
+        container: document.getElementById('containered'),
+        height: 300,
+        background: {
+          color: '#fffbe6', // 设置画布背景颜色
+        },
+        grid: {
+          size: 10,      // 网格大小 10px
+          visible: true, // 渲染网格背景
+        },
+        // autoResize: true,
+      });
+      graph.centerContent()
+      graph.fromJSON(nodeData)
+    }
+    const onCancel = () => {
+      emit('close', '')
+    }
+    watch([code, projectCode, runStatus],(newval,oldval) => {//获取
+      state.code = code
+      state.projectCode = projectCode
+      state.runStatus = runStatus
+      if(state.projectCode){
+        proxy.$axios.get(`/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
+        .then(({data}) => {
+          if(data.code == 200){
+            state.taskType = data.data.taskDefinition[0].taskType
+            state.nodeData = data.data.processPagingQueryVO.locations
+            console.log(state.nodeData);
+            console.log(state.taskType);
+          }else{
+            // ElMessage.error(data.msg)
+          }
+        })
+      } else {
+        //ElMessage.warning('请选择作业树子节点')
+      }
+    })
+    onMounted(() => {
+      generateImag()
+    })
+    return {
+      state,
+      onCancel,
+    }
+  }
 })
-
 
 </script>

@@ -124,7 +124,6 @@ export default defineComponent({
         state.projectCode = 0
         state.motif = data.label
       }
-      console.log(data.label);
       emit("giveCode", state.code, state.projectCode, state.currentNodeName, state.motif);
     }
     // 保存当前点击
@@ -151,7 +150,8 @@ export default defineComponent({
           if (data.children === null&&state.projectCode != 0) {
             proxy.$axios.delete(`/dolphinscheduler/projects/process-definition/delete?code=${state.code}&projectCode=${state.projectCode}`,
             ).then((data) => {
-              if(data.code = 200){
+              if(data.data.code == 200){
+                console.log();
                 ElMessage.success("删除工作流作业成功")
                 getTreeData()
               }else {
@@ -164,7 +164,7 @@ export default defineComponent({
           } else {
             proxy.$axios.delete(`/dolphinscheduler/projects/${state.code}`,
             ).then((data) => {
-              if(data.code = 200){
+              if(data.data.code == 200){
                 ElMessage.success("删除项目成功")
                 getTreeData()
               }else {

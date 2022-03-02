@@ -4,9 +4,9 @@
     <div class="app-content" id="flowContainer" ref="container"></div>
   </div>
   <!-- 执行策略配置 -->
-  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :projectCode="state.projectCode" :name="state.name"/>
+  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :projectCode="state.projectCode" :taskCode="state.currentCode" :workName="state.name" @onCommit="getCollect"/>
   <!-- 开发执行策略配置 -->
-  <config-flink-cell :visible="state.flinkVisible" @close="closeModal" :code="state.code" :projectCode="state.projectCode" :name="state.name"/>
+  <config-flink-cell :visible="state.flinkVisible" @close="closeModal" :code="state.code" :projectCode="state.projectCode" :taskCode="state.currentCode" :workName="state.name" @onCommit="getFlink"/>
 </template>
 
 <script>
@@ -14,7 +14,8 @@ import { defineComponent, reactive, toRefs, ref, onMounted, watch, getCurrentIns
 import { Graph, Shape, Addon, FunctionExt } from "@antv/x6";
 import ConfigCell from "./ConfigCell.vue";
 import ConfigFlinkCell from './ConfigFlinkCell.vue';
-import { circle } from '@antv/x6/lib/registry/marker/circle';
+import { ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus';
 const { Stencil } = Addon;
 const { Rect, Polygon } = Shape;
 
@@ -26,7 +27,6 @@ export default defineComponent({
     projectCode: [String, Number],
     workName: '',
   },
-  emits:['save'],
   setup(props, {emit}) {
     const { proxy } = getCurrentInstance();
     const { code, projectCode, workName } = toRefs(props)
@@ -38,31 +38,55 @@ export default defineComponent({
       dialogVisible: false,
       flinkVisible: false,
       name: '',
-      currentDragObj: {
-        offsetX: 0,
-        offsetY: 0
-      },
+      length: '',
+      codeList: [],
+      taskCode: '',
+      nodeDtos: [],
+      currentCode: '',
+      arrList:[],
+      flinkSet: [], //开发节点配置
+      collectSet: [], //采集节点配置
+      taskDefinition: [],
     })
+    let graph = null
     const init= () => {
-      const graph = new Graph({
+      const nodeData = {
+        // 节点
+        nodes: [
+        ],
+        // 边
+        edges: [
+        ],
+      };
+      // 修改的时候回显数据
+      if(state.nodeDtos.length) { // 回显节点
+        state.nodeDtos.forEach(x => {
+          nodeData.nodes.push(generateNewNodeObj(x))
+        })
+      }
+      // 定义边
+      Graph.registerConnector(
+        'algo-edge',
+        (source, target) => {
+          const offset = 4
+          const control = 80
+          const v1 = { x: source.x, y: source.y + offset + control }
+          const v2 = { x: target.x, y: target.y - offset - control }
+
+          return `M ${source.x} ${source.y}
+                  L ${source.x} ${source.y + offset}
+                  C ${v1.x} ${v1.y} ${v2.x} ${v2.y} ${target.x} ${target.y - offset}
+                  L ${target.x} ${target.y}`
+        },
+        true,
+      )
+      graph = new Graph({
         container: document.getElementById('flowContainer'),
-        width: "100%",
-        height: "100%",
-        grid: {
-          size: 10,
-          visible: true,
-          type: "doubleMesh",
-          args: [
-            {
-              color: "#f5f5f5",
-              thickness: 1,
-            },
-            {
-              color: "#f8f8f8",
-              thickness: 1,
-              factor: 4,
-            },
-          ],
+        grid: true,
+        scroller: {
+          enabled: true,
+          pageVisible: false,
+          pageBreak: false,
         },
         snapline: {
           enabled: true,
@@ -82,77 +106,65 @@ export default defineComponent({
           movable: true,
           showNodeSelectionBox: true,
         },
+        // 连线规则
         connecting: {
-          anchor: "center",
-          connectionPoint: "anchor",
-          allowBlank: false,
-          highlight: true,
           snap: true,
+          allowBlank: false,
+          allowLoop: false,
+          highlight: true,
+          sourceAnchor: {
+            name: 'bottom',
+            args: {
+              dx: 0,
+            },
+          },
+          targetAnchor: {
+            name: 'center',
+            args: {
+              dx: 0,
+            },
+          },
+          connectionPoint: 'anchor',
+          connector: 'algo-edge',
           createEdge() {
-            return new Shape.Edge({
+            return graph.createEdge({
               attrs: {
                 line: {
-                  stroke: "#A2B1C3",
+                  strokeDasharray: '5 5',
+                  stroke: '#808080',
                   strokeWidth: 1,
                   targetMarker: {
-                    name: "classic",
-                    size: 7,
+                    name: 'block',
+                    args: {
+                      size: '6',
+                    },
                   },
                 },
               },
-            });
+            })
           },
-          validateConnection({
-            sourceView,
-            targetView,
-            sourceMagnet,
-            targetMagnet,
-          }) {
-            if (sourceView === targetView) {
-              return false;
-            }
-            if (!sourceMagnet) {
-              return false;
-            }
-            if (!targetMagnet) {
-              return false;
-            }
-            return true;
+          validateMagnet({ magnet }) {
+            return magnet.getAttribute('port-group') !== 'in'
           },
-        },
-        highlighting: {
-          magnetAvailable: {
-            name: "stroke",
-            args: {
-              padding: 4,
-              attrs: {
-                strokeWidth: 4,
-                stroke: "rgba(223,234,255)",
-              },
-            },
-          },
-        },
-        snapline: true,
-        history: true,
-        clipboard: {
-          enabled: true,
-        },
-        keyboard: {
-          enabled: true,
-        },
-        embedding: { // 将一个节点拖动到另一个节点中，使其成为另一节点的子节点
-          enabled: true,
-          findParent({ node }) {
-            const bbox = node.getBBox();
-            return this.getNodes().filter((node) => {
-              // 只有 data.parent 为 true 的节点才是父节点
-              const data = node.getData();
-              if (data && data.parent) {
-                const targetBBox = node.getBBox();
-                return bbox.isIntersectWithRect(targetBBox);
-              }
-              return false;
-            });
+          validateConnection({ sourceView, targetView, sourceMagnet, targetMagnet }) {
+            // 只能从输出链接桩创建连接
+            if (!sourceMagnet || sourceMagnet.getAttribute('port-group') === 'in') {
+              return false
+            }
+
+            // 只能连接到输入链接桩
+            if (!targetMagnet || targetMagnet.getAttribute('port-group') !== 'in') {
+              return false
+            }
+
+            // 判断目标链接桩是否可连接
+            const portId = targetMagnet.getAttribute('port')
+            const node = targetView.cell
+            const port = node.getPort(portId)
+            if (port && port.connected) {
+              return false
+            }
+            return true
           },
         },
       });
@@ -213,85 +225,51 @@ export default defineComponent({
       // 初始化图形
       const ports = {
         groups: {
-          top: {
-            position: "top",
+          in: {
+            position: 'top',
             attrs: {
               circle: {
                 r: 4,
                 magnet: true,
-                stroke: "#5F95FF",
+                stroke: '#108ee9',
                 strokeWidth: 2,
-                fill: "#fff",
+                fill: '#fff',
                 style: {
                   visibility: "hidden",
                 },
-              },
-            },
+              }
+            }
           },
-          right: {
-            position: "right",
+          out: {
+            position: 'bottom',
             attrs: {
               circle: {
                 r: 4,
                 magnet: true,
-                stroke: "#5F95FF",
+                stroke: '#31d0c6',
                 strokeWidth: 2,
-                fill: "#fff",
+                fill: '#fff',
                 style: {
                   visibility: "hidden",
                 },
-              },
-            },
-          },
-          bottom: {
-            position: "bottom",
-            attrs: {
-              circle: {
-                r: 4,
-                magnet: true,
-                stroke: "#5F95FF",
-                strokeWidth: 2,
-                fill: "#fff",
-                style: {
-                  visibility: "hidden",
-                },
-              },
-            },
-          },
-          left: {
-            position: "left",
-            attrs: {
-              circle: {
-                r: 4,
-                magnet: true,
-                stroke: "#5F95FF",
-                strokeWidth: 2,
-                fill: "#fff",
-                style: {
-                  visibility: "hidden",
-                },
-              },
-            },
-          },
+              }
+            }
+          }
         },
         items: [
           {
-            group: "top",
+            id: state.currentCode + '_in',
+            group: 'in',
           },
           {
-            group: "right",
-          },
-          {
-            group: "bottom",
-          },
-          {
-            group: "left",
+            id: state.currentCode + '_out',
+            group: 'out',
           },
         ],
-      };
+      }
       //设计画布左侧节点样式
       const collect = new Rect({
-        id: "collect",
+        id: state.currentCode,
         attrs: {
           body: {
             fill: "#EFF4FF",
@@ -318,7 +296,7 @@ export default defineComponent({
         ports: { ...ports },
       });
       const flink = new Rect({
-        id: "flink",
+        id: state.currentCode,
         attrs: {
           body: {
             fill: "#efdbff",
@@ -340,20 +318,32 @@ export default defineComponent({
         "processLibrary"
       );
       graph.toJSON()
-      console.log(graph.toJSON());
       //绑定事件
+      // 拖拽
+      graph.on('node:added', ({ node }) => {
+        state.length = graph.getNodes().length
+        state.arrList.push(node.id)
+        getNodeCode(1)
+        state.currentCode=node.id
+        console.log(graph.toJSON());
+        // for(let i = 0, len = graph.getNodes().length; i <= len; i++ ){
+        //   for(let j = 0, len = graph.getNodes().length; j < len; j = i++ ){
+        //     state.arrList[i] = state.taskCode[j]
+        //   }
+        // }
+      })
       //双击节点打开节点配置
-      graph.on("cell:dblclick", ({ node }) => {// cell 基类对象 view 视图对象
-        // 目标数据logic
-        console.log(node.getAttrs().label.text);
-        console.log(state.projectCode)
+      graph.on("cell:dblclick", ({ node }) => {
+        console.log(state.arrList);
+        let index = state.arrList.indexOf(node.id)
+        console.log(state.taskCode);
+        state.currentCode=state.taskCode[index]
+        console.log(state.currentCode);
         if(node.getAttrs().label.text === "数据采集"){
           showModal()
         } else if(node.getAttrs().label.text === "数据开发"){
           showflink()
         }
-        // console.log(flink);
-         // 显示子组件，顺便传递过去cell view，保持graph context
       });
       // 节点删除操作
       graph.on("node:mouseenter", ({ node }) => {
@@ -371,6 +361,14 @@ export default defineComponent({
         if (!options.ui) {
           return;
         }
+        let index = state.arrList.indexOf(node.id)
+        if(index > -1){
+          state.arrList.splice(index, 1);
+          state.taskCode.splice(index,1);
+          state.codeList.splice(index,1);
+        }	
+        console.log(state.taskCode);
+        state.length = graph.getNodes().length
       });
       graph.on("node:mouseleave", ({ node }) => {
         // 鼠标移开时删除删除按钮
@@ -443,6 +441,17 @@ export default defineComponent({
           graph.removeCells(cells);
         }
       });
+      // state.length = 
+    }
+    //获取采集节点配置信息
+    const getCollect = (i) => {
+      state.collectSet = i
+      console.log(state.collectSet);
+    }
+    //获取开发节点配置信息
+    const getFlink = (j) => {
+      state.flinkSet = j
+      console.log(state.flinkSet);
     }
     const showModal = () => {
       state.dialogVisible = true;
@@ -456,31 +465,113 @@ export default defineComponent({
     }
     // 控制连接桩显示/隐藏
     const showPorts = (ports, show) => {
-      // for (let i = 0, len = ports.length; i < len; i = i + 1) {
-      //   ports[i].style.visibility = show ? "visible" : "hidden";
-      // }
+      for (let i = 0, len = ports.length; i < len; i = i + 1) {
+        ports[i].style.visibility = show ? "visible" : "hidden";
+      }
     }
-    const getData = () => {
-      
+    //生成节点标识
+    const getNodeCode = (flag) => {
+      proxy.$axios.get(`/dolphinscheduler/projects/process-definition/gen-task-codes?genNum=1`).then(({data}) => {
+        if(data.code === 200) {
+          state.codeList.push(data.data)
+          console.log(state.codeList.toString());
+          state.taskCode = state.codeList.toString().split(",")
+          console.log(state.taskCode);
+          console.log(state.arrList);
+          if(flag===1){
+            let index = state.arrList.indexOf(state.currentCode)
+            state.currentCode=state.taskCode[index]
+            //console.log(state.currentCode);
+          }else{
+            state.currentCode=""
+          }
+        } else {
+        }
+      }).catch(e => {
+        ElMessage.error('保存失败请重试！')
+      })
     }
+    //将流程相关内容转化为JSON
+    //保存画布配置
+    const save = () => {
+      getCollect()
+      getFlink()
+      state.taskDefinition.push(state.flinkSet,state.collectSet)
+
+      console.log(state.arrList);
+      let index = state.arrList.indexOf(graph.getNodes().map(x => x.id))
+      console.log(state.taskCode);
+      state.currentCode=state.taskCode[index]
+      console.log(state.currentCode);
+      const locations = graph.getNodes().map(x => ({
+        x: x.position().x,
+        y: x.position().y,
+      }))
+      console.log(locations);
+      // const taskDefinition = {}
+      const taskRelation = graph.getEdges().map(y => ({
+        id: 0,
+        name: '',
+        preTaskCode: y.getSource().cell,
+        postTaskCode: y.getTarget().cell,
+        processDefinitionCode: state.code,
+        projectCode: state.projectCode,
+        postTaskVersion: 1,
+        preTaskVersion: y.getSource().cell==0 ? 0 : 1,
+      }))
+      console.log(taskRelation);
+      proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`, {
+        code: state.code,
+        name: state.name,
+        projectCode: state.projectCode,
+        locations: locations,
+        taskCodes: state.taskCode,
+        taskRelation: taskRelation,
+        taskDefinition: state.taskDefinition,
+      }).then(({data}) => {
+        if(data.code === 200) {
+          ElMessage.success('保存成功')
+        } else {
+          ElMessage.error(data.msg)
+        }
+      }).catch(e => {
+        ElMessage.error('保存失败请重试！')
+      })
+    // }
+    }
+    //监听树节点code获取画布节点位置信息
     watch([code, projectCode, workName],(newval,oldval) => {
       state.code = code
       state.projectCode = projectCode
       state.name = workName
+      if(state.projectCode){
+        proxy.$axios.get(`/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
+        .then(({data}) => {
+          if(data.code == 200){
+            ElMessage.success(data.msg)
+            // state.locations = data.data.processPagingQueryVO.locations
+          }else{
+            // ElMessage.error(data.msg)
+          }
+          console.log(state.locations);
+        })
+      } else {
+        //ElMessage.warning('请选择作业树子节点')
+      }
     })
     onMounted(() => {
-      getData()
       init()
-      showPorts()
     })
     return{
       state,
-      getData,
       init,
       showModal,
       showflink,
       closeModal,
       showPorts,
+      save,
+      getCollect,
+      getFlink,
     }
   },
 });

@@ -128,7 +128,7 @@ export default defineComponent({
     const selectChoose = (val,row) => {
       let valList = val,arrList=[];
       valList.map((row)=>{
-        emit("giveCode", row.name, row.sourceTableName, row.targetTableName, row);
+        emit("giveCode", row.name, row.sourceTableName, row.targetTableName, row, row.id);
       })
       if (val.length > 1) {
         proxy.$refs.multipleTable.clearSelection();

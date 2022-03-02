@@ -202,10 +202,9 @@ export default defineComponent({
         state.processDefineCode = proxy.$route.query.code
       }else{
         state.projectCode = row.projectCode
-        console.log(state.projectCode)
+        state.processDefineCode = row.processDefinitionCode
       }
       state.id = row.id
-      console.log(row.id);
       router.push({path: 'exampleTaskMonitor',query:{id:state.id, projectCode: state.projectCode, code: state.processDefineCode, processInstanceName:row.name, workName: row.definitionName, state: row.state }})
     }
     //重跑、停止、暂停、恢复
