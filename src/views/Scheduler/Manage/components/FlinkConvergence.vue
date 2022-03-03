@@ -146,12 +146,7 @@ export default defineComponent({
       emit('close')
     }
     const onCommit = (row) => {
-      if(row){
-        selectChoose()
-        emit('close')
-      } else {
-        emit('close')
-      }
+      emit('close')
     }
     return {
       dialogTableVisible,

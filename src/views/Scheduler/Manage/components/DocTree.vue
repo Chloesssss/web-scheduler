@@ -125,6 +125,7 @@ export default defineComponent({
         state.motif = data.label
       }
       emit("giveCode", state.code, state.projectCode, state.currentNodeName, state.motif);
+      console.log(state.motif);
     }
     // 保存当前点击
     const saveNodeClick = (data,node) => {

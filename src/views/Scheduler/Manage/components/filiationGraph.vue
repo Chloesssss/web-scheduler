@@ -325,20 +325,11 @@ export default defineComponent({
         state.arrList.push(node.id)
         getNodeCode(1)
         state.currentCode=node.id
-        console.log(graph.toJSON());
-        // for(let i = 0, len = graph.getNodes().length; i <= len; i++ ){
-        //   for(let j = 0, len = graph.getNodes().length; j < len; j = i++ ){
-        //     state.arrList[i] = state.taskCode[j]
-        //   }
-        // }
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node }) => {
-        console.log(state.arrList);
         let index = state.arrList.indexOf(node.id)
-        console.log(state.taskCode);
         state.currentCode=state.taskCode[index]
-        console.log(state.currentCode);
         if(node.getAttrs().label.text === "数据采集"){
           showModal()
         } else if(node.getAttrs().label.text === "数据开发"){
@@ -367,7 +358,6 @@ export default defineComponent({
           state.taskCode.splice(index,1);
           state.codeList.splice(index,1);
         }	
-        console.log(state.taskCode);
         state.length = graph.getNodes().length
       });
       graph.on("node:mouseleave", ({ node }) => {
@@ -397,7 +387,6 @@ export default defineComponent({
         edge.removeTools();
       });
       graph.on("node:contextmenu", ({ cell, view }) => {
-        console.log("contextmenu", cell, view);
         const oldText = cell.attr("text/textWrap/text");
         const elem = view.container.querySelector(".x6-edit-text");
         if (elem == null) {
@@ -435,7 +424,6 @@ export default defineComponent({
         showPorts(ports, false);
       });
       graph.bindKey("backspace", () => {
-        console.log("backspace");
         const cells = graph.getSelectedCells();
         if (cells.length) {
           graph.removeCells(cells);
@@ -445,13 +433,12 @@ export default defineComponent({
     }
     //获取采集节点配置信息
     const getCollect = (i) => {
-      state.collectSet = i
+      state.collectSet.push(i)
       console.log(state.collectSet);
     }
     //获取开发节点配置信息
     const getFlink = (j) => {
-      state.flinkSet = j
-      console.log(state.flinkSet);
+      state.flinkSet.push(j)
     }
     const showModal = () => {
       state.dialogVisible = true;
@@ -474,14 +461,10 @@ export default defineComponent({
       proxy.$axios.get(`/dolphinscheduler/projects/process-definition/gen-task-codes?genNum=1`).then(({data}) => {
         if(data.code === 200) {
           state.codeList.push(data.data)
-          console.log(state.codeList.toString());
           state.taskCode = state.codeList.toString().split(",")
-          console.log(state.taskCode);
-          console.log(state.arrList);
           if(flag===1){
             let index = state.arrList.indexOf(state.currentCode)
             state.currentCode=state.taskCode[index]
-            //console.log(state.currentCode);
           }else{
             state.currentCode=""
           }
@@ -494,40 +477,40 @@ export default defineComponent({
     //将流程相关内容转化为JSON
     //保存画布配置
     const save = () => {
-      getCollect()
-      getFlink()
-      state.taskDefinition.push(state.flinkSet,state.collectSet)
-
-      console.log(state.arrList);
+     // state.taskDefinition=state.flinkSet.concat(state.collectSet)
+      // if(state.collectSet != {} && state.flinkSet != {}){
+      //   state.taskDefinition.push(state.collectSet)
+      //   state.taskDefinition.push(state.flinkSet)
+      // }else if(state.flinkSet != {} && state.collectSet == {}){
+      //   state.taskDefinition.push(state.flinkSet)
+      // }else{
+      //   state.taskDefinition.push(state.collectSet)
+      // }
+      console.log(state.collectSet);
       let index = state.arrList.indexOf(graph.getNodes().map(x => x.id))
-      console.log(state.taskCode);
       state.currentCode=state.taskCode[index]
-      console.log(state.currentCode);
       const locations = graph.getNodes().map(x => ({
         x: x.position().x,
         y: x.position().y,
       }))
-      console.log(locations);
-      // const taskDefinition = {}
-      const taskRelation = graph.getEdges().map(y => ({
+      const taskRelation = ({
         id: 0,
         name: '',
-        preTaskCode: y.getSource().cell,
-        postTaskCode: y.getTarget().cell,
+        preTaskCode: 0,
+        //postTaskCode: state.flinkSet.map(x => x.id),
         processDefinitionCode: state.code,
         projectCode: state.projectCode,
         postTaskVersion: 1,
-        preTaskVersion: y.getSource().cell==0 ? 0 : 1,
-      }))
-      console.log(taskRelation);
+        preTaskVersion: 0,
+      })
       proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`, {
         code: state.code,
         name: state.name,
         projectCode: state.projectCode,
-        locations: locations,
+        coordinatesList: locations,
         taskCodes: state.taskCode,
         taskRelation: taskRelation,
-        taskDefinition: state.taskDefinition,
+        taskDefinition: state.collectSet,
       }).then(({data}) => {
         if(data.code === 200) {
           ElMessage.success('保存成功')
@@ -553,7 +536,6 @@ export default defineComponent({
           }else{
             // ElMessage.error(data.msg)
           }
-          console.log(state.locations);
         })
       } else {
         //ElMessage.warning('请选择作业树子节点')

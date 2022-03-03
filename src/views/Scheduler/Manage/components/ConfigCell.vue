@@ -78,7 +78,7 @@
         projectCode: '',
         code: '',
         callTaskId: '',
-        id: '',
+        id: 0,
       })
       const state = reactive({
         drawer : false,
@@ -88,7 +88,7 @@
         tableVisible: false,
         name: '',
       })
-      //获取作业名、源表名、目标表名
+      //获取作业名、源表名、目标表名，选中的整条数据，id
       const getCode = (e,i,j,k,x) => {
         var m = JSON.stringify(k)
         taskDefinition.taskWork = e;
@@ -96,33 +96,26 @@
         taskDefinition.targetTable = j;
         taskDefinition.taskParams = m;
         taskDefinition.callTaskId = x;
+        console.log(taskDefinition.taskParams);
       }
       //超时失败
       const onStatus = () => {
-        if (taskDefinition.status == '0') {
+        if (taskDefinition.status == 0) {
           taskDefinition.timeoutFlag = 'OPEN'
-        }else if (taskDefinition.status == '1') {
+        }else if (taskDefinition.status == 1) {
           taskDefinition.timeoutFlag = 'CLOSE'
         }
       }
-      //提交
-      const onCommit = () => {
-        onStatus()
-        getCode()
-        watch()
-        console.log(taskDefinition);
-        emit("onCommit", taskDefinition);
-        emit('close')
-      }
       onMounted(() => {
+        onStatus()
+        watch
       });
       watch([visible, code, projectCode, workName, taskCode],(newval,oldval) => {
         state.code = code
         state.projectCode = projectCode
         taskDefinition.code = code
         taskDefinition.projectCode = projectCode
-        taskDefinition.id = taskCode
-        console.log(taskDefinition.id);
+        taskDefinition.id = taskCode.value
         state.name = workName
         dialogVisible.value = newval[0]
         if(dialogVisible.value == true && state.projectCode){
@@ -131,17 +124,22 @@
             if(data.code == 200){
               Object.assign(taskDefinition, data.data.taskDefinition)
             }else{
-              ElMessage.error(data.msg)
+              // ElMessage.error(data.msg)
             }
           })
         }
       })
+      //提交
+      const onCommit = () => {
+        console.log(taskDefinition.id);
+        emit("onCommit", taskDefinition);
+        emit('close')
+      }
       const handleClose = () => {
         proxy.$refs.form.resetFields()
         emit('close')
       }
       const chooseWork = () => {
-        getCode()
         state.tableVisible = true
       }
       const closeModal = () => {
@@ -158,6 +156,7 @@
         onCommit,
         chooseWork,
         closeModal,
+        onStatus,
       }
     }
   })

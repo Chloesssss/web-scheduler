@@ -80,6 +80,14 @@
         tableVisible: false,
         name: ''
       })
+      //获取作业名、选中的整条数据、id
+      const getCode = (e, k, x) => {
+        var m = JSON.stringify(k)
+        taskDefinition.taskWork = e;
+        taskDefinition.taskParams = m;
+        taskDefinition.callTaskId = x;
+        console.log(taskDefinition.taskWork);
+      }
       //超时失败
       const onStatus = () => {
         if (taskDefinition.status == '0') {
@@ -89,12 +97,12 @@
         }
       }
       const onCommit = () => {
-        onStatus()
         watch()
         emit("onCommit", taskDefinition );
         emit('close')
       }
       onMounted(() => {
+        onStatus()
       });
       watch([visible, code, projectCode, workName, taskCode],(newval,oldval) => {
         state.code = code
@@ -116,12 +124,6 @@
           })
         }
       })
-      const getCode = (e, k, x) => {
-        var m = JSON.stringify(k)
-        taskDefinition.taskWork = e;
-        taskDefinition.taskParams = m;
-        taskDefinition.callTaskId = x;
-      }
       const handleClose = () => {
         proxy.$refs.form.resetFields()
         emit('close')
