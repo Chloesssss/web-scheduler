@@ -44,18 +44,7 @@ export default defineComponent({
         height: 30,  // Number，可选，节点大小的 height 值
         label: newNodeObj.name, // String，节点标签
         shape: 'vue-shape', // 使用 rect 渲染
-        component: {
-          template: `<div class="flex align-items-center height-a-hundred-percent pl-10" style="background-color: #ecf5ff; border-radius: 5px; border:1px solid #b3d8ff">
-                        <img style="width: 18px;height: 18px" :src="image" class="mr-10">
-                        <div style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{item.name}}</div>
-                      </div>`,
-          setup() {
-            return {
-              item: newNodeObj,
-              image: require('@/assets/flink.svg')
-            }
-          }
-        },
+        
         ports: {
           groups: {
             in: {
@@ -192,6 +181,12 @@ export default defineComponent({
             state.nodeData = data.data.processPagingQueryVO.locations
             console.log(state.nodeData);
             console.log(state.taskType);
+            state.nodeData = data.data.processPagingQueryVO.locations.map(x => ({
+              x: Number(x.leftPos),
+              y: Number(x.topPos),
+              taskId: x.taskId,
+              name: state.menuObj.find(y => y.taskId === x.taskId).name,
+            }))
           }else{
             // ElMessage.error(data.msg)
           }

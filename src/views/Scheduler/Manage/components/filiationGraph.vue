@@ -4,7 +4,7 @@
     <div class="app-content" id="flowContainer" ref="container"></div>
   </div>
   <!-- 执行策略配置 -->
-  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :projectCode="state.projectCode" :taskCode="state.currentCode" :workName="state.name" @onCommit="getCollect"/>
+  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :projectCode="state.projectCode" :taskCode="state.currentCode" :workName="state.name" @getCollect="getCollect"/>
   <!-- 开发执行策略配置 -->
   <config-flink-cell :visible="state.flinkVisible" @close="closeModal" :code="state.code" :projectCode="state.projectCode" :taskCode="state.currentCode" :workName="state.name" @onCommit="getFlink"/>
 </template>
@@ -47,6 +47,8 @@ export default defineComponent({
       flinkSet: [], //开发节点配置
       collectSet: [], //采集节点配置
       taskDefinition: [],
+      taskRelation: [],
+      setDocId: [],//配置后的对应节点id数组
     })
     let graph = null
     const init= () => {
@@ -433,6 +435,11 @@ export default defineComponent({
     }
     //获取采集节点配置信息
     const getCollect = (i) => {
+      console.log(i.id);
+      state.setDocId.push(i.id) //配置后节点对应的id
+      console.log(state.setDocId);
+      let index = state.setDocId.indexOf(i.id)
+      
       state.collectSet.push(i)
       console.log(state.collectSet);
     }
@@ -477,16 +484,15 @@ export default defineComponent({
     //将流程相关内容转化为JSON
     //保存画布配置
     const save = () => {
-     // state.taskDefinition=state.flinkSet.concat(state.collectSet)
-      // if(state.collectSet != {} && state.flinkSet != {}){
-      //   state.taskDefinition.push(state.collectSet)
-      //   state.taskDefinition.push(state.flinkSet)
-      // }else if(state.flinkSet != {} && state.collectSet == {}){
-      //   state.taskDefinition.push(state.flinkSet)
-      // }else{
-      //   state.taskDefinition.push(state.collectSet)
-      // }
-      console.log(state.collectSet);
+      if(state.collectSet != null && state.flinkSet != null){
+        state.taskDefinition.push(state.collectSet)
+        state.taskDefinition.push(state.flinkSet)
+      }else if(state.flinkSet != null && state.collectSet == null){
+        state.taskDefinition.push(state.flinkSet)
+      }else{
+        state.taskDefinition.push(state.collectSet)
+      }
+      console.log(state.taskDefinition);
       let index = state.arrList.indexOf(graph.getNodes().map(x => x.id))
       state.currentCode=state.taskCode[index]
       const locations = graph.getNodes().map(x => ({
@@ -503,14 +509,18 @@ export default defineComponent({
         postTaskVersion: 1,
         preTaskVersion: 0,
       })
+      state.taskRelation.push(taskRelation)
       proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`, {
         code: state.code,
         name: state.name,
         projectCode: state.projectCode,
         coordinatesList: locations,
-        taskCodes: state.taskCode,
-        taskRelation: taskRelation,
+        taskCodes: state.taskCode.toString(),
+        taskRelation: state.taskRelation,
         taskDefinition: state.collectSet,
+        description: '',
+        timeout: 0,
+        globalParams: '',
       }).then(({data}) => {
         if(data.code === 200) {
           ElMessage.success('保存成功')

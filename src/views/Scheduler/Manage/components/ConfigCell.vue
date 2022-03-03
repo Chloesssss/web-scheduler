@@ -60,7 +60,7 @@
       workName: '',
       taskCode: [Number, String],
     },
-    emits:['close', 'onCommit'],
+    emits:['close', 'getCollect'],
     setup(props, {emit}) {
       const { proxy } = getCurrentInstance();
       const { visible, code, projectCode, workName, taskCode } = toRefs(props)
@@ -132,7 +132,7 @@
       //提交
       const onCommit = () => {
         console.log(taskDefinition.id);
-        emit("onCommit", taskDefinition);
+        emit("getCollect", taskDefinition);
         emit('close')
       }
       const handleClose = () => {
