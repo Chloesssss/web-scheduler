@@ -174,7 +174,7 @@ export default defineComponent({
       state.projectCode = projectCode
       state.runStatus = runStatus
       if(state.projectCode){
-        proxy.$axios.get(`/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
+        proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
         .then(({data}) => {
           if(data.code == 200){
             state.taskType = data.data.taskDefinition[0].taskType

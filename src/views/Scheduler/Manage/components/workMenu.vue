@@ -54,7 +54,7 @@ export default {
             formObjTemp.projectCode = props.parentId
             formObjTemp.timeout = 0
             delete formObjTemp.id
-            proxy.$axios.post('/dolphinscheduler/projects/process-definition', formObjTemp).then(({ data }) => {
+            proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/process-definition', formObjTemp).then(({ data }) => {
               if (data.code == 200) { // 0成功 1失败
                 ElMessage.success('保存成功')
                 proxy.$refs.Form.resetFields()
@@ -73,7 +73,7 @@ export default {
             formObjTemp.projectCode = props.parentId
             delete formObjTemp.parentId
             delete formObjTemp.isLeaf
-            proxy.$axios.put('/dolphinscheduler/projects/process-definition/name', formObjTemp).then(({ data }) => {
+            proxy.$axios.put('/dolphinscheduler-api/dolphinscheduler/projects/process-definition/name', formObjTemp).then(({ data }) => {
               if (data.code == 200) { // 0成功 1失败
                 ElMessage.success(data.msg)
                 emit('onOk')

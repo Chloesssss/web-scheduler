@@ -63,7 +63,7 @@ export default defineComponent({
     //上下线
     const onLine = () => {
       let releaseState = proxy.$route.queryreleaseState === '下线' ? 'OFFLINE' : 'ONLINE'
-      proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/${state.code}`,{
+      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/release/${state.code}`,{
         code: state.code,
         projectCode: state.projectCode,
         releaseState: releaseState,
@@ -96,7 +96,7 @@ export default defineComponent({
     }
     //立即执行
     const onCommitConfig = () => {
-      proxy.$axios.post('/dolphinscheduler/projects/executors/start-process-instance', {
+      proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/executors/start-process-instance', {
         projectCode: state.projectCode,
       }).then(({data}) => {
         ElMessage[data.code === 200 ? 'success': 'error'](data.msg)

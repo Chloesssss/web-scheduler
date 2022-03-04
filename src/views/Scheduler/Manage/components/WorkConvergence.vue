@@ -93,7 +93,7 @@ export default defineComponent({
       selectData: '',
     });
     const getData = (row) => {
-      proxy.$axios.post(`/dolphinscheduler/projects/dbus/queryJobByPage`, {
+      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dbus/queryJobByPage`, {
         // runStatus: searchObj.runStatus,
         current: pageObj.current,
         size: pageObj.size,
@@ -118,7 +118,7 @@ export default defineComponent({
     };
     //获取下拉列表主题名
     // const getMotif = () => {
-    //   proxy.$axios.get("/dolphinscheduler/projects/view-tree").then((res) => {
+    //   proxy.$axios.get("/dolphinscheduler-api/dolphinscheduler/projects/view-tree").then((res) => {
     //     state.motifList = res.data.data;
     //   });
     // };

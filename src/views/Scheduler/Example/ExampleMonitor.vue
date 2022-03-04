@@ -122,7 +122,7 @@ export default defineComponent({
     })
     const getData = (page) => {
       page && (pageObj.current = page.current)
-      proxy.$axios.post('/dolphinscheduler/projects/process-instances/query-instances-page', {
+      proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/process-instances/query-instances-page', {
         definitionName: searchObj.definitionName,
         searchVal: searchObj.name,
         stateType: searchObj.stateType,
@@ -161,7 +161,7 @@ export default defineComponent({
       switch (command) {
         //暂停
         case 'stopRun' :
-          proxy.$axios.delete(`/dolphinscheduler/projects/executors/execute`,{
+          proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
             execType: "PAUSE",
             processInstanceId: row.id,
             projectCode: row.projectCode,
@@ -178,7 +178,7 @@ export default defineComponent({
           break;
         //停止
         case 'onStop' :
-          proxy.$axios.delete(`/dolphinscheduler/projects/executors/execute`,{
+          proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
             execType: "STOP",
             processInstanceId: row.id,
             projectCode: row.projectCode,
@@ -209,7 +209,7 @@ export default defineComponent({
     }
     //重跑、停止、暂停、恢复
     const reRun = (row) => {
-      proxy.$axios.delete(`/dolphinscheduler/projects/executors/execute`,{
+      proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
         execType: "REPEAT_RUNNING",
         processInstanceId: row.id,
         projectCode: row.projectCode,
@@ -226,7 +226,7 @@ export default defineComponent({
     }
     //删除
     const onDelete = (row) => {
-      proxy.$axios.delete(`/dolphinscheduler/projects/process-instances/${row.id}?id=${row.id}&projectCode=${row.projectCode}`).then(({data}) => {
+      proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-instances/${row.id}?id=${row.id}&projectCode=${row.projectCode}`).then(({data}) => {
         if(data.code = 200){
           ElMessage.success("删除实例任务成功")
           getData()

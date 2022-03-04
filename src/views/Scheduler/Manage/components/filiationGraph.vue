@@ -504,7 +504,7 @@ export default defineComponent({
     }
     //生成节点标识
     const getNodeCode = (flag) => {
-      proxy.$axios.get(`/dolphinscheduler/projects/process-definition/gen-task-codes?genNum=1`).then(({data}) => {
+      proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/gen-task-codes?genNum=1`).then(({data}) => {
         if(data.code === 200) {
           state.codeList.push(data.data)
           state.taskCode = state.codeList.toString().split(",")
@@ -533,7 +533,7 @@ export default defineComponent({
         x: x.position().x,
         y: x.position().y,
       }))
-      proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`, {
+      proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/${state.code}`, {
         code: state.code,
         name: state.name,
         projectCode: state.projectCode,
@@ -560,7 +560,7 @@ export default defineComponent({
       state.projectCode = projectCode
       state.name = workName
       if(state.projectCode){
-        proxy.$axios.get(`/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
+        proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
         .then(({data}) => {
           if(data.code == 200){
             ElMessage.success(data.msg)
