@@ -88,8 +88,6 @@ export default defineComponent({
       id: "",
       tableData: [],
       tableHeaders: [],
-      projectCode: "",
-      code: "",
       doMessage: {},
       selectVal: '',
       selectData: '',
@@ -138,7 +136,7 @@ export default defineComponent({
     const onCancel = () => {
       emit('close')
     }
-    const onCommit = (row) => {
+    const onCommit = () => {
       emit('close')
     }
     return {

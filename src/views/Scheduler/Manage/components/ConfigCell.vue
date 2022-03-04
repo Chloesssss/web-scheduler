@@ -16,10 +16,8 @@
           <el-input v-model="taskDefinition.description" type="textarea"></el-input>
         </el-form-item>
         <el-form-item label="超时失败" prop="timeoutFlag">
-           <el-radio-group v-model="taskDefinition.status" size="mini">
-            <el-radio-button label="0">启用</el-radio-button>
-            <el-radio-button label="1">禁用</el-radio-button>
-          </el-radio-group>
+          <el-switch v-model="taskDefinition.timeoutFlag" inline-prompt active-text="启用" @change="onStatus" inactive-text="禁用" active-value="OPEN" inactive-value="CLOSE">
+          </el-switch>
         </el-form-item>
         <el-form-item label="汇聚作业" prop="taskWork">
           <el-input class="flex-1" v-model="taskDefinition.taskWork" disabled></el-input>
@@ -42,7 +40,7 @@
 </template>
 
 <script>
-  import { defineComponent, reactive, toRefs, ref, onMounted, watch, getCurrentInstance, callWithAsyncErrorHandling } from "vue";
+  import { defineComponent, reactive, toRefs, ref, onMounted, watch, getCurrentInstance } from "vue";
   import { ElMessageBox } from 'element-plus'
   import { ElMessage } from 'element-plus'
   import WorkConvergence from "./WorkConvergence.vue";
@@ -68,8 +66,7 @@
       const  taskDefinition = reactive({ // 声明表单信息
         name: '',
         description: '',
-        status: 0,
-        timeoutFlag: '',
+        timeoutFlag: "CLOSE",
         taskWork: '',
         originTable: '',
         targetTable: '',
@@ -78,7 +75,7 @@
         projectCode: '',
         code: '',
         callTaskId: '',
-        id: 0,
+        nodeId: 0,
       })
       const state = reactive({
         drawer : false,
@@ -100,38 +97,40 @@
       }
       //超时失败
       const onStatus = () => {
-        if (taskDefinition.status == 0) {
-          taskDefinition.timeoutFlag = 'OPEN'
-        }else if (taskDefinition.status == 1) {
-          taskDefinition.timeoutFlag = 'CLOSE'
+        if (taskDefinition.timeoutFlag == "OPEN") {
+          taskDefinition.timeoutNotifyStrategy = "WARN"
+        }else if (taskDefinition.timeoutFlag == "CLOSE") {
+          taskDefinition.timeoutNotifyStrategy = "FAILED"
         }
+        console.log(taskDefinition.timeoutNotifyStrategy);
       }
       onMounted(() => {
-        onStatus()
         watch
       });
       watch([visible, code, projectCode, workName, taskCode],(newval,oldval) => {
         state.code = code
         state.projectCode = projectCode
-        taskDefinition.code = code
+        taskDefinition.code = taskCode.value
         taskDefinition.projectCode = projectCode
-        taskDefinition.id = taskCode.value
+        taskDefinition.nodeId = taskCode.value
         state.name = workName
         dialogVisible.value = newval[0]
-        if(dialogVisible.value == true && state.projectCode){
-          proxy.$axios.get(`/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
-          .then(({data}) => {
-            if(data.code == 200){
-              Object.assign(taskDefinition, data.data.taskDefinition)
-            }else{
-              // ElMessage.error(data.msg)
-            }
-          })
+        taskCode.value = newval[1];
+        if(dialogVisible.value){
+          if(taskCode.value){
+            proxy.$axios.get(`/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
+            .then(({data}) => {
+              if(data.code == 200){
+                Object.assign(taskDefinition, data.data.taskDefinition)
+              }else{
+                // ElMessage.error(data.msg)
+              }
+            })
+          }
         }
       })
       //提交
       const onCommit = () => {
-        console.log(taskDefinition.id);
         emit("getCollect", taskDefinition);
         emit('close')
       }

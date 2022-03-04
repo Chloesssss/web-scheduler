@@ -4,9 +4,9 @@
     <div class="app-content" id="flowContainer" ref="container"></div>
   </div>
   <!-- 执行策略配置 -->
-  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :projectCode="state.projectCode" :taskCode="state.currentCode" :workName="state.name" @getCollect="getCollect"/>
+  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.currentCode" :work-name="state.name" @get-collect="getCollect"/>
   <!-- 开发执行策略配置 -->
-  <config-flink-cell :visible="state.flinkVisible" @close="closeModal" :code="state.code" :projectCode="state.projectCode" :taskCode="state.currentCode" :workName="state.name" @onCommit="getFlink"/>
+  <config-flink-cell :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.currentCode" :work-name="state.name" @get-flink="getFlink"/>
 </template>
 
 <script>
@@ -37,18 +37,20 @@ export default defineComponent({
       projectCode: '',
       dialogVisible: false,
       flinkVisible: false,
-      name: '',
-      length: '',
-      codeList: [],
-      taskCode: '',
+      name: '',// 工作流作业名
+      length: '',// 画布上的节点个数
+      codeList: [],// 后端接口返回节点id数组
+      taskCode: '',// 后端接口返回节点id字符串
       nodeDtos: [],
-      currentCode: '',
-      arrList:[],
-      flinkSet: [], //开发节点配置
-      collectSet: [], //采集节点配置
-      taskDefinition: [],
-      taskRelation: [],
-      setDocId: [],//配置后的对应节点id数组
+      currentCode: '',// 当前节点id
+      arrList:[],// 节点id数组（原）
+      taskDefinition: [],// 节点配置表单信息
+      taskRelation: [],// 节点关系
+      setDocId: [],// 配置后的对应节点id数组
+      postTaskCode: '',// edge指向的节点id（若节点无节点关系指向，则指向它自己的id，则该节点为末端节点）
+      preTaskCode: '',//发出edge的节点id（若节点无输入桩的链接，则该id为0，即该节点为初始节点）
+      postTaskVersion: 0,//指向的节点版本（有指向为后置节点版本号，无指向1（指向自己））
+      preTaskVersion: 0,//指向自己的节点版本（有前置节点1，无前置节点0）
     })
     let graph = null
     const init= () => {
@@ -82,7 +84,7 @@ export default defineComponent({
         },
         true,
       )
-      graph = new Graph({
+      graph = new Graph({ // 新建画布
         container: document.getElementById('flowContainer'),
         grid: true,
         scroller: {
@@ -323,10 +325,15 @@ export default defineComponent({
       //绑定事件
       // 拖拽
       graph.on('node:added', ({ node }) => {
+        console.log(graph.getEdges().length);
         state.length = graph.getNodes().length
         state.arrList.push(node.id)
         getNodeCode(1)
         state.currentCode=node.id
+      })
+      //回显边
+      graph.on('edge:added', ({ edge }) => {
+        
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node }) => {
@@ -359,6 +366,7 @@ export default defineComponent({
           state.arrList.splice(index, 1);
           state.taskCode.splice(index,1);
           state.codeList.splice(index,1);
+          state.taskDefinition.splice(index,1)
         }	
         state.length = graph.getNodes().length
       });
@@ -431,29 +439,24 @@ export default defineComponent({
           graph.removeCells(cells);
         }
       });
-      // state.length = 
     }
     //获取采集节点配置信息
     const getCollect = (i) => {
-      console.log(i.id);
-      state.setDocId.push(i.id) //配置后节点对应的id
-      console.log(state.setDocId);
-      let index = state.setDocId.indexOf(i.id)
-      
-      state.collectSet.push(i)
-      console.log(state.collectSet);
+      state.setDocId.push(i.nodeId)
+      state.taskDefinition.push({ value: JSON.parse(JSON.stringify(i)) })
     }
     //获取开发节点配置信息
     const getFlink = (j) => {
-      state.flinkSet.push(j)
+      state.setDocId.push(j.nodeId)
+      state.taskDefinition.push({ value: JSON.parse(JSON.stringify(j)) })
     }
-    const showModal = () => {
+    const showModal = () => {// 节点配置抽屉弹出
       state.dialogVisible = true;
     }
     const showflink = () => {
       state.flinkVisible = true;
     }
-    const closeModal = () => {
+    const closeModal = () => {//节点配置抽屉关闭
       state.dialogVisible = false;
       state.flinkVisible = false;
     }
@@ -462,6 +465,42 @@ export default defineComponent({
       for (let i = 0, len = ports.length; i < len; i = i + 1) {
         ports[i].style.visibility = show ? "visible" : "hidden";
       }
+    }
+    //节点关系配置
+    const setRelation = () => {
+      if ( graph.getNodes().length == 1 ) {
+        state.preTaskCode = 0
+        state.postTaskCode = state.currentCode
+        state.postTaskVersion = 1
+        state.preTaskVersion = 0
+      } else if ( graph.getNodes().length > 1 && graph.getEdges().length == 0 ) {
+        state.preTaskCode = 0
+        state.postTaskCode = state.currentCode
+        state.postTaskVersion = 1
+        state.preTaskVersion = 0
+      } else {
+        let index = state.taskCode.indexOf(state.currentCode)
+        state.preTaskCode = state.taskCode[index-1]
+        state.postTaskCode = state.taskCode[index]
+        state.postTaskVersion = 1
+        state.preTaskVersion = 1
+      }
+      const taskRelation = ({// 节点关系
+        id: 0,
+        name: '',
+        preTaskCode: state.preTaskCode,
+        postTaskCode: state.postTaskCode,
+        processDefinitionCode: state.code,
+        projectCode: state.projectCode,
+        postTaskVersion: state.postTaskVersion,
+        preTaskVersion: state.preTaskVersion,
+      })
+      for (let i = 0, len = graph.getNodes().length; i < len; i++ ){
+        let index = state.setDocId.indexOf(state.currentCode)
+        state.setDocId[index]
+        state.taskRelation.push(taskRelation)
+      }
+      console.log(state.taskRelation);
     }
     //生成节点标识
     const getNodeCode = (flag) => {
@@ -484,32 +523,16 @@ export default defineComponent({
     //将流程相关内容转化为JSON
     //保存画布配置
     const save = () => {
-      if(state.collectSet != null && state.flinkSet != null){
-        state.taskDefinition.push(state.collectSet)
-        state.taskDefinition.push(state.flinkSet)
-      }else if(state.flinkSet != null && state.collectSet == null){
-        state.taskDefinition.push(state.flinkSet)
-      }else{
-        state.taskDefinition.push(state.collectSet)
-      }
-      console.log(state.taskDefinition);
-      let index = state.arrList.indexOf(graph.getNodes().map(x => x.id))
+      setRelation()
+      console.log(state.taskRelation)
+      let taskDefinition = state.taskDefinition.map(x => x.value);
+      console.log(taskDefinition);
+      let index = state.arrList.indexOf(graph.getNodes().map(x => x.id))//根据下标获取节点id
       state.currentCode=state.taskCode[index]
-      const locations = graph.getNodes().map(x => ({
+      const locations = graph.getNodes().map(x => ({// 节点位置
         x: x.position().x,
         y: x.position().y,
       }))
-      const taskRelation = ({
-        id: 0,
-        name: '',
-        preTaskCode: 0,
-        //postTaskCode: state.flinkSet.map(x => x.id),
-        processDefinitionCode: state.code,
-        projectCode: state.projectCode,
-        postTaskVersion: 1,
-        preTaskVersion: 0,
-      })
-      state.taskRelation.push(taskRelation)
       proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${state.code}`, {
         code: state.code,
         name: state.name,
@@ -517,7 +540,7 @@ export default defineComponent({
         coordinatesList: locations,
         taskCodes: state.taskCode.toString(),
         taskRelation: state.taskRelation,
-        taskDefinition: state.collectSet,
+        taskDefinition: taskDefinition,
         description: '',
         timeout: 0,
         globalParams: '',
@@ -530,7 +553,6 @@ export default defineComponent({
       }).catch(e => {
         ElMessage.error('保存失败请重试！')
       })
-    // }
     }
     //监听树节点code获取画布节点位置信息
     watch([code, projectCode, workName],(newval,oldval) => {
@@ -557,6 +579,7 @@ export default defineComponent({
     return{
       state,
       init,
+      setRelation,
       showModal,
       showflink,
       closeModal,

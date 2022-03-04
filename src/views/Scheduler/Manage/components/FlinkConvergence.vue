@@ -145,7 +145,7 @@ export default defineComponent({
     const onCancel = () => {
       emit('close')
     }
-    const onCommit = (row) => {
+    const onCommit = () => {
       emit('close')
     }
     return {
@@ -164,7 +164,5 @@ export default defineComponent({
 });
 </script>
 <style lang="scss" scoped>
-.checkTable > .el-table__header-wrapper > table > thead > tr > th:first-child > div {
-	display: none!important;
-}
+
 </style>

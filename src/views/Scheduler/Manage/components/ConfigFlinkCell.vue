@@ -16,10 +16,8 @@
           <el-input v-model="taskDefinition.description" type="textarea"></el-input>
         </el-form-item>
         <el-form-item label="超时失败" prop="timeoutFlag">
-           <el-radio-group v-model="taskDefinition.status" size="mini">
-            <el-radio-button label="0">启用</el-radio-button>
-            <el-radio-button label="1">禁用</el-radio-button>
-          </el-radio-group>
+          <el-switch v-model="taskDefinition.timeoutFlag" inline-prompt active-text="启用" @change="onStatus" inactive-text="禁用" active-value="OPEN" inactive-value="CLOSE">
+          </el-switch>
         </el-form-item>
         <el-form-item label="汇聚作业" prop="taskWork">
           <el-input class="flex-1" v-model="taskDefinition.taskWork" disabled></el-input>
@@ -54,7 +52,7 @@
       workName: '',
       taskCode: [Number, String],
     },
-    emits:['close', 'onCommit'],
+    emits:['close', 'getFlink'],
     setup(props, {emit}) {
       const { proxy } = getCurrentInstance();
       const { visible, code, projectCode, workName, taskCode } = toRefs(props)
@@ -62,15 +60,14 @@
       const  taskDefinition = reactive({ // 声明表单信息
         name: '',
         description: '',
-        status: 0,
-        timeoutFlag: '',
+        timeoutFlag: "CLOSE",
         taskWork: '',
         taskParams: '',
         taskType: "DLINK",
         projectCode: '',
         code: '',
         callTaskId: '',
-        id: ''
+        nodeId: '',
       })
       const state = reactive({
         drawer : false,
@@ -78,7 +75,7 @@
         code: '',
         location: '',
         tableVisible: false,
-        name: ''
+        name: '',
       })
       //获取作业名、选中的整条数据、id
       const getCode = (e, k, x) => {
@@ -90,27 +87,21 @@
       }
       //超时失败
       const onStatus = () => {
-        if (taskDefinition.status == '0') {
-          taskDefinition.timeoutFlag = 'OPEN'
-        }else if (taskDefinition.status == '1') {
-          taskDefinition.timeoutFlag = 'CLOSE'
+        if (taskDefinition.timeoutFlag == "OPEN") {
+          taskDefinition.timeoutNotifyStrategy = "WARN"
+        }else if (taskDefinition.timeoutFlag == "CLOSE") {
+          taskDefinition.timeoutNotifyStrategy = "FAILED"
         }
       }
-      const onCommit = () => {
-        watch()
-        emit("onCommit", taskDefinition );
-        emit('close')
-      }
       onMounted(() => {
-        onStatus()
+        watch
       });
       watch([visible, code, projectCode, workName, taskCode],(newval,oldval) => {
         state.code = code
         state.projectCode = projectCode
-        taskDefinition.code = code
+        taskDefinition.code = taskCode.value
         taskDefinition.projectCode = projectCode
-        taskDefinition.id = taskCode
-        console.log(taskDefinition.id);
+        taskDefinition.nodeId = taskCode.value
         state.name = workName
         flinkVisible.value = newval[0]
         if(flinkVisible.value == true && state.projectCode){
@@ -119,11 +110,16 @@
             if(data.code == 200){
               Object.assign(taskDefinition, data.data.taskDefinition)
             }else{
-              ElMessage.error(data.msg)
+              //ElMessage.error(data.msg)
             }
           })
         }
       })
+      //提交
+      const onCommit = () => {
+        emit("getFlink", taskDefinition);
+        emit('close')
+      }
       const handleClose = () => {
         proxy.$refs.form.resetFields()
         emit('close')
@@ -132,7 +128,7 @@
         state.tableVisible = true
       }
       const closeModal = () => {
-        proxy.$refs.form.resetFields()
+        // proxy.$refs.form.resetFields()
         state.tableVisible = false
       }
       return {
@@ -145,6 +141,7 @@
         onCommit,
         chooseWork,
         closeModal,
+        onStatus,
       }
     }
   })
