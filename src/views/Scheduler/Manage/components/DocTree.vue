@@ -69,7 +69,7 @@ import { defineComponent, getCurrentInstance, ref, onMounted, reactive, toRefs }
 import { ElMessage } from 'element-plus'
 import {useRouter ,useRoute} from "vue-router";
 import CreateWork from "./CreateWork.vue";
-import WorkMenu from "./WorkMenu.vue";
+import WorkMenu from "./workMenu.vue";
 import { DeleteConfirm } from '@/../common/utils/index.js'
 
 export default defineComponent({
