@@ -158,7 +158,7 @@ export default defineComponent({
         name: row.name,
         projectCode: state.projectCode
       })
-      router.push({path: 'workManage', query: {projectCode: state.projectCode, code: state.code, releaseState: row.releaseStateCN }})
+      router.push({path: 'workManage', query: {projectCode: row.projectCode, code: row.code, releaseState: row.releaseStateCN, name: row.name }})
     }
     const handleMore = (command, row) => {
       switch (command) {

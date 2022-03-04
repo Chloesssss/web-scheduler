@@ -2,7 +2,7 @@
   <div class=" flex" style="overflow: hidden;">
     <div class="overflow-auto mr-20" style="width: 100%;min-width: 250px ">
       <main class="flex">
-        <doc-tree ref="mychild" @give-code="getCode"/>
+        <doc-tree ref="mychild" @give-code="getCode" @onEdit="getWorkEdit"/>
       </main>  
     </div>
     <div style="width: 100%">
@@ -24,7 +24,7 @@
 
 <script>
 import { defineComponent, getCurrentInstance, ref, onMounted, reactive } from "vue";
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DocTree from "../Manage/components/DocTree.vue";
 import { ElMessage } from 'element-plus'
 import FiliationGraph from "./components/filiationGraph.vue";
@@ -36,6 +36,7 @@ export default defineComponent({
   setup() { 
     const { proxy } = getCurrentInstance()
     const router = useRouter()
+    const route = useRoute()
     const state = reactive({
       code: '',
       projectCode: '',
@@ -45,6 +46,9 @@ export default defineComponent({
       taskRelation: [],
       workName: '',
       motif: '',
+      workCode: '',
+      workProjectCode: '',
+      workMonitorName: '',
     })
     const getCode = (e,i,j,k) => {
       state.code = e;
@@ -107,6 +111,15 @@ export default defineComponent({
       state.visible = false
       // getData()
     }
+    //作业监控编辑跳转
+    const getWorkEdit = () => {
+      state.workCode = proxy.$route.query.code
+      state.workProjectCode = proxy.$route.query.projectCode
+      state.workMonitorName = proxy.$route.query.name
+    }
+    onMounted(() => {
+      getWorkEdit()
+    })
     return {
       state,
       getCode,
@@ -116,6 +129,7 @@ export default defineComponent({
       onCommitConfig,
       onSetTime,
       closeModal,
+      getWorkEdit,
     }
   },
 });

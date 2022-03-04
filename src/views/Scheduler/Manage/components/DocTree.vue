@@ -16,6 +16,7 @@
         node-key="id"
         highlight-current
         default-expand-allid
+        :default-expanded-keys="state.defaultShowNodes"
         @node-click="onTreeClick"
         :expand-on-click-node="true" 
         :filter-node-method="filterNode"       
@@ -75,7 +76,7 @@ import { DeleteConfirm } from '@/../common/utils/index.js'
 export default defineComponent({
   name: "DocTree",
   components: { CreateWork, WorkMenu },
-  emits:['giveCode'],
+  emits:['giveCode','onEdit'],
   setup(props,{emit}) {
     const { proxy } = getCurrentInstance()
     const router = useRouter()
@@ -100,6 +101,7 @@ export default defineComponent({
       projectCode: '',
       currentNodeName: '', //当前选中的节点名
       motif: '',//作业主题名（根节点名）
+      defaultShowNodes: [],
     })
     //获取目录
     const getTreeData = () => {
@@ -116,6 +118,7 @@ export default defineComponent({
     }
     //点击目录
     const onTreeClick = (data,node) => {
+      state.defaultShowNodes.push(data.id)
       state.code = data.code
       if (data.children===null) {
         state.currentNodeName = data.label
@@ -125,7 +128,6 @@ export default defineComponent({
         state.motif = data.label
       }
       emit("giveCode", state.code, state.projectCode, state.currentNodeName, state.motif);
-      console.log(state.motif);
     }
     // 保存当前点击
     const saveNodeClick = (data,node) => {
@@ -134,6 +136,10 @@ export default defineComponent({
       if(state.dataId != -1){
         state.tmpCurrent = data // 缓存当前分类数据，主要用于新增时防止再次点击输入框当前值变化
       }
+    }
+    //作业监控编辑跳转选中相应作业节点
+    const setCheckedNodes = () => {
+      proxy.$refs.treeRef.setCheckedNodes()
     }
     const createWorkOk =() => {// 创建根目录
       state.createWorkVisible = false
@@ -220,6 +226,7 @@ export default defineComponent({
     }
     onMounted(() => {
       getTreeData()
+      emit('onEdit')
     })
     return {
       ...toRefs(state),
@@ -235,6 +242,7 @@ export default defineComponent({
       changeDom,
       searchAll,
       filterNode,
+      setCheckedNodes,
     }
   },
 });
