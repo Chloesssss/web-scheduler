@@ -1,0 +1,168 @@
+<template>
+  <!-- 汇聚作业选择列表 -->
+  <el-dialog title="汇聚作业选择列表" v-model="dialogTableVisible" @close="onCancel" width="1448px">
+    <div>
+      <el-form :inline="true" ref="searchform" :model="searchObj">
+        <!-- <el-form-item label="作业状态">
+          <el-select filterable clearable v-model="searchObj.runStatus" placeholder="请选择" >
+            <el-option  v-for="item in state.runStatusOptions" :key="item.key" :label="item.key" :value="item.value" />
+          </el-select>
+        </el-form-item> -->
+        <el-form-item label="作业名称">
+          <el-input v-model="searchObj.name" clearable placeholder="作业名称" maxlength="50" class="mr-10" />
+        </el-form-item>
+        <!-- <el-form-item label="作业主题">
+          <el-select filterable clearable v-model="searchObj.motif" placeholder="请选择" >
+            <el-option v-for="item in state.motifList" :key="item.key" :label="item.label" :value="item.label" />
+          </el-select>
+        </el-form-item> -->
+        <el-form-item>
+          <el-button type="primary" @click="fetchData()">查询</el-button>
+          <!-- <el-button @click="reset">重置</el-button> -->
+        </el-form-item>
+      </el-form>
+      <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" @selection-change="selectChoose" stripe ref="multipleTable">
+        <el-table-column type="selection" width="55" />
+        <el-table-column prop="id" label="编号" show-overflow-tooltip/>
+        <el-table-column prop="name" label="名称" show-overflow-tooltip/>
+        <el-table-column prop="alias" label="描述" show-overflow-tooltip/>
+        <el-table-column prop="state" label="状态" show-overflow-tooltip>
+          <template #default="{row}">
+            <el-tag
+              :type="row.state === '0' ? '' : 'danger'"
+              disable-transitions
+            >{{ row.state === '0' ? '上线' : '下线' }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" show-overflow-tooltip/>
+        <el-table-column prop="updateTime" label="更新时间" show-overflow-tooltip/>
+        
+      </el-table>
+    </div>
+    <!-- 表格底部分页显示 -->
+    <pagination :pages="pageObj" @on-page-change="onPageChange()" />
+    <template #footer >
+      <span class="dialog-footer" >
+        <el-button @click="onCancel">取 消</el-button>
+        <el-button type="primary" @click="onCommit()">确 定</el-button>
+      </span>
+    </template>
+  </el-dialog>
+</template>
+
+<script>
+import { defineComponent, getCurrentInstance, ref, toRefs, onMounted, reactive, } from "vue";
+import { useRouter } from "vue-router";
+import { Pagination } from "@/../common/constants";
+import { cloneDeep } from "lodash";
+import { ElMessage } from "element-plus";
+import { Message } from "@/../common/utils/message";
+import { DeleteConfirm } from "@/../common/utils/index.js";
+
+export default defineComponent({
+  name: "workConver",
+  props: {
+    dialogTableVisible: {
+      type: Boolean,
+      default: false
+    },
+  },
+  emits:['close'],
+  emits:['giveCode'],
+  setup(props, {emit}) {
+    const { proxy } = getCurrentInstance();
+    const pageObj = reactive(cloneDeep(Pagination));
+    const { dialogTableVisible } = toRefs(props)
+    const router = useRouter();
+    const searchObj = reactive({
+      // 声明查询信息
+      // runStatus: "",
+      name: "",
+      // motif: "",
+    });
+    const state = reactive({
+      loading: false,
+      // runStatusOptions: [
+      //   {
+      //     key: "下线",
+      //     value: 0,
+      //   },
+      //   {
+      //     key: "上线",
+      //     value: 1,
+      //   },
+      //   {
+      //     key: '未运行',
+      //     value: 2
+      //   },
+      // ],
+      // motifList: [],
+      tableData: [],
+      doMessage: {},
+      selectVal: '',
+      selectData: '',
+    });
+    const getData = (row) => {
+      proxy.$axios.post(`/dolphinscheduler/projects/dlink/queryGroupPage`, {
+        // runStatus: searchObj.runStatus,
+        current: pageObj.current,
+        pageSize: pageObj.size,
+        name: searchObj.name,
+      }).then(({data}) => {
+        state.tableData = data.data.totalList
+        pageObj.total = data.data.total
+        })
+    };
+    onMounted(() => {
+      getData();
+      // getMotif();
+    });
+    //分页
+    const onPageChange = (data) => {
+      getData();
+    };
+    //查询
+    const fetchData = () => {
+      getData();
+    };
+    //获取下拉列表主题名
+    // const getMotif = () => {
+    //   proxy.$axios.get("/dolphinscheduler/projects/view-tree").then((res) => {
+    //     state.motifList = res.data.data;
+    //   });
+    // };
+    //获取选中值
+    const selectChoose = (val,row) => {
+      let valList = val,arrList=[];
+      valList.map((row)=>{
+        emit("giveCode", row.name, row, row.id);
+      })
+      if (val.length > 1) {
+        proxy.$refs.multipleTable.clearSelection();
+        proxy.$refs.multipleTable.toggleRowSelection(val.pop());
+      }
+    }
+    const onCancel = () => {
+      emit('close')
+    }
+    const onCommit = () => {
+      emit('close')
+    }
+    return {
+      dialogTableVisible,
+      pageObj,
+      searchObj,
+      state,
+      getData,
+      onPageChange,
+      fetchData,
+      selectChoose,
+      onCancel,
+      onCommit,
+    };
+  },
+});
+</script>
+<style lang="scss" scoped>
+
+</style>
