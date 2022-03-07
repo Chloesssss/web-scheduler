@@ -152,7 +152,7 @@
           if(valid) {
             if(state.flagCode){
               // 修改定时调度
-              proxy.$axios.put(`/dolphinscheduler/projects/schedules/${state.flagCode}`, {
+              proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/schedules/${state.flagCode}`, {
                 id: state.flagCode,
                 projectCode: state.projectCode,
                 processDefinitionCode: state.code,
@@ -176,7 +176,7 @@
               })
             } else {
               // 新增定时调度
-              proxy.$axios.post(`/dolphinscheduler/projects/schedules`, {
+              proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/schedules`, {
                 projectCode: state.projectCode,
                 processDefinitionCode: state.code,
                 startTime: formObj.startTime,
@@ -206,7 +206,7 @@
       watch([visible, code, projectCode],(newValue,oldValue) => {
         timeVisible.value = newValue[0];
         if(timeVisible.value){
-            proxy.$axios.post(`/dolphinscheduler/projects/schedules/query-schedules-page?current=1&size=1&projectCode=${state.projectCode}&processDefinitionCode=${state.code}`)
+            proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/schedules/query-schedules-page?current=1&size=1&projectCode=${state.projectCode}&processDefinitionCode=${state.code}`)
             .then((data) => {
               let resq =data.data
               if(resq.code == 200){

@@ -114,7 +114,7 @@ export default defineComponent({
       //通过路由传参
       state.projectCode = proxy.$route.query.projectCode
       state.code = proxy.$route.query.code
-      proxy.$axios.post(`/dolphinscheduler/projects/process-definition/query-definition-page`,{
+      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/query-definition-page`,{
         searchVal: searchObj.name,
         projectName: searchObj.motif,
         releaseState: searchObj.runStatus,
@@ -152,7 +152,7 @@ export default defineComponent({
     // }
     //编辑
     const onEdit = (row) => {
-      proxy.$axios.put(`/dolphinscheduler/projects/process-definition/${row.code}`, {
+      proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/${row.code}`, {
         code: row.code,
         locations: null,
         name: row.name,
@@ -170,7 +170,7 @@ export default defineComponent({
         break;
         case 'onDelete' :
         DeleteConfirm().then(() => {
-          proxy.$axios.delete(`/dolphinscheduler/projects/process-definition/delete?code=${row.code}&projectCode=${row.projectCode}`,
+          proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/delete?code=${row.code}&projectCode=${row.projectCode}`,
           ).then((data) => {
             if(data.code = 200){
               ElMessage.success("删除成功")
@@ -189,7 +189,7 @@ export default defineComponent({
     }
     //上下线
     const onLine = (row) => {
-      proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/${row.code}`,{
+      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/release/${row.code}`,{
         code: row.code,
         projectCode: row.projectCode,
         releaseState: row.releaseState,
@@ -212,7 +212,7 @@ export default defineComponent({
     }
     //立即执行
     const onDoWork = () => {
-       proxy.$axios.post('/dolphinscheduler/projects/executors/start-process-instance', {
+       proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/executors/start-process-instance', {
         projectCode: state.projectCode,
       }).then(({data}) => {
         ElMessage[data.code === 0 ? 'success': 'error'](data.msg)
@@ -220,7 +220,7 @@ export default defineComponent({
     }
     //获取下拉列表主题名
     const getMotif = () => {
-      proxy.$axios.get("/dolphinscheduler/projects/view-tree").then((res) => {
+      proxy.$axios.get("/dolphinscheduler-api/dolphinscheduler/projects/view-tree").then((res) => {
           state.motifList = res.data.data
         })
     }

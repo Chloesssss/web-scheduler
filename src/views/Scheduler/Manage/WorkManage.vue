@@ -69,7 +69,8 @@ export default defineComponent({
       } else {
         releaseState = state.releaseState
       }
-      proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/${state.code}`,{
+      let releaseState = proxy.$route.queryreleaseState === '下线' ? 'OFFLINE' : 'ONLINE'
+      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/release/${state.code}`,{
         code: state.code,
         projectCode: state.projectCode,
         releaseState: releaseState,
@@ -102,7 +103,7 @@ export default defineComponent({
     }
     //立即执行
     const onCommitConfig = () => {
-      proxy.$axios.post('/dolphinscheduler/projects/executors/start-process-instance', {
+      proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/executors/start-process-instance', {
         projectCode: state.projectCode,
         processDefinitionCode: state.code,
       }).then(({data}) => {

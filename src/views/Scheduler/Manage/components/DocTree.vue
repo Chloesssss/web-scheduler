@@ -105,7 +105,7 @@ export default defineComponent({
     })
     //获取目录
     const getTreeData = () => {
-      proxy.$axios.get("/dolphinscheduler/projects/view-tree",{
+      proxy.$axios.get("/dolphinscheduler-api/dolphinscheduler/projects/view-tree",{
       })
       .then((res) => {
         let resq = res.data
@@ -155,7 +155,7 @@ export default defineComponent({
         case 'delete':
         DeleteConfirm().then(() => {
           if (data.children === null&&state.projectCode != 0) {
-            proxy.$axios.delete(`/dolphinscheduler/projects/process-definition/delete?code=${state.code}&projectCode=${state.projectCode}`,
+            proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/delete?code=${state.code}&projectCode=${state.projectCode}`,
             ).then((data) => {
               if(data.data.code == 200){
                 console.log();
@@ -169,7 +169,7 @@ export default defineComponent({
               getTreeData()
             })
           } else {
-            proxy.$axios.delete(`/dolphinscheduler/projects/${state.code}`,
+            proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/${state.code}`,
             ).then((data) => {
               if(data.data.code == 200){
                 ElMessage.success("删除项目成功")

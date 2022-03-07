@@ -104,7 +104,7 @@ export default defineComponent({
     //获取节点数据
     const getData = (page) => {
       page && (pageObj.current = page.current)
-      proxy.$axios.post('/dolphinscheduler/projects/task-instances/query-definition-page', { 
+      proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/task-instances/query-definition-page', {
         current: page ? page.current : pageObj.current,
         size: pageObj.size,
         projectCode: state.projectCode,
@@ -133,7 +133,7 @@ export default defineComponent({
     });
     const onDetail = (row) => {
       state.dialogVisible = true
-      proxy.$axios.get(`/dolphinscheduler/log/task-log?taskInstanceId=${row.id}`).then((res) =>{
+      proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/log/task-log?taskInstanceId=${row.id}`).then((res) =>{
         state.log = res.data.data
       })
     }
