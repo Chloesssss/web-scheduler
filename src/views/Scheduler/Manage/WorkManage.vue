@@ -69,7 +69,6 @@ export default defineComponent({
       } else {
         releaseState = state.releaseState
       }
-      let releaseState = proxy.$route.queryreleaseState === '下线' ? 'OFFLINE' : 'ONLINE'
       proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/release/${state.code}`,{
         code: state.code,
         projectCode: state.projectCode,
