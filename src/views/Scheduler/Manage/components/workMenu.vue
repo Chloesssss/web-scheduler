@@ -76,6 +76,7 @@ export default {
             proxy.$axios.put('/dolphinscheduler-api/dolphinscheduler/projects/process-definition/name', formObjTemp).then(({ data }) => {
               if (data.code == 200) { // 0成功 1失败
                 ElMessage.success(data.msg)
+                proxy.$refs.Form.resetFields()
                 emit('onOk')
               } else {
                 ElMessage.error(data.msg)

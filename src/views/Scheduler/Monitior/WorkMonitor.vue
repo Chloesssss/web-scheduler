@@ -184,8 +184,7 @@ export default defineComponent({
           }).catch(e => {
             ElMessage.error('请求失败！请重试！')
             fetchData()
-          })
-          
+          })       
         })
         break;
       }

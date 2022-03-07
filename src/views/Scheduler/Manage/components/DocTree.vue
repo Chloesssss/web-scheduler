@@ -191,6 +191,7 @@ export default defineComponent({
         case 'createWork':
         state.workParentId = data.code
         state.workMenuVisible = true
+        state.createWorkId = 0
         break;
         case 'renamework': // 重命名作业
         state.workMenuVisible = true

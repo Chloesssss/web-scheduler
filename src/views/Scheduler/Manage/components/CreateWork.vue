@@ -56,6 +56,7 @@ export default {
             proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects',formObjTemp).then(({ data }) => {
               if (data.code == 200) {
                 ElMessage.success(data.msg)
+                proxy.$refs.Form.resetFields()
                 emit('onOk')
               } else {
                 ElMessage.error(data.msg)
@@ -73,6 +74,7 @@ export default {
             proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/${formObjTemp.code}`,formObjTemp).then(({ data }) => {
               if (data.code == 200) {
                 ElMessage.success(data.msg)
+                proxy.$refs.Form.resetFields()
                 emit('onOk')
               } else {
                 ElMessage.error(data.msg)
