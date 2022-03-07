@@ -106,11 +106,14 @@ export default defineComponent({
       doMessage: {},
     })
     const getData = (row) => {
-      searchObj.name = proxy.$route.query.name
-      if(proxy.$route.query.name){
-
+      console.log(route.query.name);
+      if(route.query.name){
+        searchObj.name = proxy.$route.query.name
+        searchObj.motif = proxy.$route.query.motif
       }
-      searchObj.motif = proxy.$route.query.motif
+      if(route.query.motif){
+        searchObj.motif = proxy.$route.query.motif
+      }
       //通过路由传参
       state.projectCode = proxy.$route.query.projectCode
       state.code = proxy.$route.query.code
