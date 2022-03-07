@@ -43,12 +43,12 @@
         <template #default="{ row }">
           <el-space wrap :size="10">
             <el-link type="primary" @click="onEdit(row)">编辑</el-link>
-            <el-link :disabled="row.runStatus === 1" type="warning" @click="onDoWork()">立即执行</el-link>
+            <el-link :disabled="row.releaseStateCN === '上线'" type="warning" @click="onDoWork()">立即执行</el-link>
             <el-dropdown @command="handleMore($event, row)">
               <span>更多<i class="el-icon-arrow-down el-icon--right"></i></span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <template v-if="row.runStatus !== 1">
+                  <template v-if="row.releaseStateCN !== '上线'">
                     <el-dropdown-item command="onLine">上线</el-dropdown-item>
                   </template>
                   <el-dropdown-item v-else command="onDownLine">下线</el-dropdown-item>
