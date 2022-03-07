@@ -47,7 +47,7 @@
           <el-tag
             :type="row.state === 'SUCCESS' ? 'success' : (row.state === 'FAILURE' ? 'danger' : '' )"
             disable-transitions
-          >{{ row.state === 'SUCCESS' ? '成功' : (row.state === 'FAILURE' ? '失败' : '运行中' ) }}</el-tag>
+          >{{ row.stateCN }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column prop="startTime" label="开始时间" show-overflow-tooltip/>
@@ -98,16 +98,60 @@ export default defineComponent({
       loading: false,
       statusOptions: [
         {
-          key: '运行中',
+          key: '提交成功',
+          value: 0
+        },
+        {
+          key: '正在运行',
+          value: 1
+        },
+        {
+          key: '暂停',
+          value: 2
+        },
+        {
+          key: '准备暂停',
+          value: 3
+        },
+        {
+          key: '准备停止',
           value: 4
         },
         {
-          key: '完成',
+          key: '停止',
           value: 5
         },
         {
           key: '失败',
           value: 6
+        },
+        {
+          key: '成功',
+          value: 7
+        },
+        {
+          key: '需要容错',
+          value: 8
+        },
+        {
+          key: '死亡',
+          value: 9
+        },
+        {
+          key: '等待线程',
+          value: 10
+        },
+        {
+          key: '等待依赖完成',
+          value: 11
+        },
+        {
+          key: '延迟执行',
+          value: 12
+        },
+        {
+          key: '强迫成功',
+          value: 13
         },
       ],
       id: '',
@@ -161,37 +205,11 @@ export default defineComponent({
       switch (command) {
         //暂停
         case 'stopRun' :
-          proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
-            execType: "PAUSE",
-            processInstanceId: row.id,
-            projectCode: row.projectCode,
-          }).then(({data}) => {
-            if(data.code = 200){
-              ElMessage.success("实例已暂停")
-              getData()
-            }else {
-              ElMessage.error(data.data.msg)
-            }
-          }).catch(({ data }) => {
-            ElMessage.error('请求失败！请重试！')
-          })
+          reRun(row)
           break;
         //停止
         case 'onStop' :
-          proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
-            execType: "STOP",
-            processInstanceId: row.id,
-            projectCode: row.projectCode,
-          }).then(({data}) => {
-            if(data.code = 200){
-              ElMessage.success("实例已停止")
-              getData()
-            }else {
-              ElMessage.error(data.data.msg)
-            }
-          }).catch(({ data }) => {
-            ElMessage.error('请求失败！请重试！')
-          })
+          reRun(row)
         break;
       }
     }
@@ -209,32 +227,34 @@ export default defineComponent({
     }
     //重跑、停止、暂停、恢复
     const reRun = (row) => {
-      proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
-        execType: "REPEAT_RUNNING",
+      console.log(row.state);
+      console.log(row.projectCode);
+      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
+        execType: row.state,
         processInstanceId: row.id,
         projectCode: row.projectCode,
       }).then(({data}) => {
-        if(data.code = 200){
-          ElMessage.success("实例开始重跑")
+        if(data.code === 200){
+          ElMessage.success(data.msg)
           getData()
         }else {
-          ElMessage.error(data.data.msg)
+          ElMessage.error(data.msg)
         }
-      }).catch(({ data }) => {
+      }).catch(e => {
         ElMessage.error('请求失败！请重试！')
       })
     }
     //删除
     const onDelete = (row) => {
       proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-instances/${row.id}?id=${row.id}&projectCode=${row.projectCode}`).then(({data}) => {
-        if(data.code = 200){
+        if(data.code == 200){
           ElMessage.success("删除实例任务成功")
           getData()
         }else {
-          ElMessage.error(data.data.msg)
+          ElMessage.error(data.msg)
         }
-      }).catch(({ data }) => {
-        ElMessage.success(data.msg)
+      }).catch(e=> {
+        ElMessage.error('请求失败！请重试！')
       })
     }
     return {
