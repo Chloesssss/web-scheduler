@@ -54,7 +54,8 @@ export default {
             formObjTemp.parentId = props.parentId
             delete formObjTemp.id
             proxy.$axios.post('/dolphinscheduler/projects',formObjTemp).then(({ data }) => {
-              if (data.code == 200) {
+              console.log(data.code);
+              if (data.code === 200) {
                 ElMessage.success(data.msg)
                 emit('onOk')
               } else {
@@ -71,7 +72,7 @@ export default {
             delete formObjTemp.parentId
             delete formObjTemp.isLeaf
             proxy.$axios.put(`/dolphinscheduler/projects/${formObjTemp.code}`,formObjTemp).then(({ data }) => {
-              if (data.code == 200) {
+              if (data.code === 200) {
                 ElMessage.success(data.msg)
                 emit('onOk')
               } else {

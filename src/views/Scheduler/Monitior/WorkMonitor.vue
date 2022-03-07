@@ -158,7 +158,7 @@ export default defineComponent({
         name: row.name,
         projectCode: state.projectCode
       })
-      router.push({path: 'workManage', query: {projectCode: row.projectCode, code: row.code, releaseState: row.releaseStateCN, name: row.name }})
+      router.push({path: 'workManage', query: {projectCode: row.projectCode, code: row.code, releaseState: row.releaseState, name: row.name }})
     }
     const handleMore = (command, row) => {
       switch (command) {
@@ -189,11 +189,10 @@ export default defineComponent({
     }
     //上下线
     const onLine = (row) => {
-      let releaState = row.releaseStateCN === '下线' ? 'OFFLINE' : 'ONLINE'
       proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/${row.code}`,{
         code: row.code,
         projectCode: row.projectCode,
-        releaseState: releaState,
+        releaseState: row.releaseState,
       })
       .then((res) => {
         let resq = res.data

@@ -49,6 +49,7 @@ export default defineComponent({
       workCode: '',
       workProjectCode: '',
       workMonitorName: '',
+      releaseState: '',
     })
     const getCode = (e,i,j,k) => {
       state.code = e;
@@ -62,7 +63,12 @@ export default defineComponent({
     }
     //上下线
     const onLine = () => {
-      let releaseState = proxy.$route.queryreleaseState === '下线' ? 'OFFLINE' : 'ONLINE'
+      let releaseState = ''
+      if(route.query.releaseState){
+        releaseState = proxy.$route.query.releaseState
+      } else {
+        releaseState = state.releaseState
+      }
       proxy.$axios.post(`/dolphinscheduler/projects/process-definition/release/${state.code}`,{
         code: state.code,
         projectCode: state.projectCode,
@@ -98,6 +104,7 @@ export default defineComponent({
     const onCommitConfig = () => {
       proxy.$axios.post('/dolphinscheduler/projects/executors/start-process-instance', {
         projectCode: state.projectCode,
+        processDefinitionCode: state.code,
       }).then(({data}) => {
         ElMessage[data.code === 200 ? 'success': 'error'](data.msg)
       })
