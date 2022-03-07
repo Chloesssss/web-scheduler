@@ -27,6 +27,7 @@ export default defineComponent({
     projectCode: [String, Number],
     workName: '',
   },
+  emits: ['giveState'],
   setup(props, {emit}) {
     const { proxy } = getCurrentInstance();
     const { code, projectCode, workName } = toRefs(props)
@@ -50,7 +51,7 @@ export default defineComponent({
       postTaskCode: '',// edge指向的节点id（若节点无节点关系指向，则指向它自己的id，则该节点为末端节点）
       preTaskCode: '',//发出edge的节点id（若节点无输入桩的链接，则该id为0，即该节点为初始节点）
       postTaskVersion: 0,//指向的节点版本（有指向为后置节点版本号，无指向1（指向自己））
-      preTaskVersion: 0,//指向自己的节点版本（有前置节点1，无前置节点0）
+      workState: '',
     })
     let graph = null
     const init= () => {
@@ -563,8 +564,10 @@ export default defineComponent({
         proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
         .then(({data}) => {
           if(data.code == 200){
-            ElMessage.success(data.msg)
+            //ElMessage.success(data.msg)
             // state.locations = data.data.processPagingQueryVO.locations
+            state.workState = data.data.processPagingQueryVO.releaseState
+            emit("giveState", state.workState);
           }else{
             // ElMessage.error(data.msg)
           }

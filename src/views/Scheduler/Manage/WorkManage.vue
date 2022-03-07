@@ -14,7 +14,7 @@
         <i @click="onSetTime" class="el-icon-video-pause mr-10 cursor-pointer" style="width:100px;"> 定时管理</i>
       </div>
       <div style="width: 100%,hight: 100%">
-        <filiation-graph :code="state.code" :project-code="state.projectCode" :work-name="state.workName" ref="filiateGraph"/>
+        <filiation-graph :code="state.code" :project-code="state.projectCode" :work-name="state.workName" @give-state="getState" ref="filiateGraph"/>
       </div>
     </div>
   </div>
@@ -60,6 +60,11 @@ export default defineComponent({
     //保存
     const onSave = () => {
       proxy.$refs.filiateGraph.save()
+    }
+    //获取当前选中节点作业状态
+    const getState = (i) => {
+      state.releaseState = i
+      console.log(state.releaseState);
     }
     //上下线
     const onLine = () => {
@@ -126,6 +131,7 @@ export default defineComponent({
     }
     onMounted(() => {
       getWorkEdit()
+      getState()
     })
     return {
       state,
@@ -137,6 +143,7 @@ export default defineComponent({
       onSetTime,
       closeModal,
       getWorkEdit,
+      getState,
     }
   },
 });
