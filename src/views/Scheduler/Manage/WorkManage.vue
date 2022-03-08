@@ -74,16 +74,21 @@ export default defineComponent({
       } else {
         releaseState = state.releaseState
       }
+      let status = ''
+      if(releaseState == 'OFFLINE') {
+        status = 'ONLINE'
+      } else if(releaseState == 'ONLINE'){
+        status = 'OFFLINE'
+      }
       proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/release/${state.code}`,{
         code: state.code,
         projectCode: state.projectCode,
-        releaseState: releaseState,
+        releaseState: status,
       })
       .then((res) => {
         let resq = res.data
         if(resq.code == 200){
           ElMessage.success('修改状态成功')
-          getData()
         }else if(resq.code == 400){
           ElMessageBox.alert(resq.msg, '提示', {
             confirmButtonText: '确定',

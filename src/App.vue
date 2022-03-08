@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import { defineComponent, onMounted, reactive, watch } from "vue";
+import { defineComponent, onMounted, onBeforeMount, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 export default defineComponent({
   setup() {
@@ -67,6 +67,7 @@ export default defineComponent({
         {index:"WorkMonitor", name:"作业监控"},
         {index:"ExampleMonitor", name:"实例监控"},
       ],
+      hrefName: "",
     });
     const handleSelect = (key) => {
       if (key !== route.name) {
@@ -80,6 +81,12 @@ export default defineComponent({
     const handleClose = (key, keyPath) => {
       console.log(key, keyPath);
     };
+    onBeforeMount(() => {
+      console.log(window.location.href);
+      let hrefName = window.location.href
+      state.hrefName = hrefName.split('/')[3]
+      console.log(state.hrefName);
+    })
     onMounted(() => {
       const currentRouteTemp = localStorage.getItem(currentRoute);
       if(currentRouteTemp) {
@@ -88,6 +95,7 @@ export default defineComponent({
         state.activeIndex = state.menuList[0].index;
       }
       router.push({name: state.activeIndex})
+      console.log(currentRouteTemp);
     });
     return {
       state,

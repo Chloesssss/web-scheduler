@@ -191,10 +191,16 @@ export default defineComponent({
     }
     //上下线
     const onLine = (row) => {
+      let releaseState = ''
+      if(row.releaseState == 'OFFLINE') {
+        releaseState = 'ONLINE'
+      } else if(row.releaseState == 'ONLINE'){
+        releaseState = 'OFFLINE'
+      }
       proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/release/${row.code}`,{
         code: row.code,
         projectCode: row.projectCode,
-        releaseState: row.releaseState,
+        releaseState: releaseState,
       })
       .then((res) => {
         let resq = res.data

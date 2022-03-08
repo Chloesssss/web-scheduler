@@ -19,7 +19,7 @@
         :default-expanded-keys="state.defaultShowNodes"
         @node-click="onTreeClick"
         :expand-on-click-node="true" 
-        :filter-node-method="filterNode"       
+        :filter-node-method="filterNode"
       >
         <!-- accordion //手风琴  default-expand-all //打开全部 -->
         <template #default="{ data, node }">
@@ -66,7 +66,7 @@
 </template>
 
 <script>
-import { defineComponent, getCurrentInstance, ref, onMounted, reactive, toRefs } from "vue";
+import { defineComponent, getCurrentInstance, ref, onMounted, watch, reactive, toRefs } from "vue";
 import { ElMessage } from 'element-plus'
 import {useRouter ,useRoute} from "vue-router";
 import CreateWork from "./CreateWork.vue";
@@ -225,6 +225,10 @@ export default defineComponent({
     const filterNode = (searchInput, node) => {
       return node.label.indexOf(searchInput) !== -1
     }
+    watch(() => state.filterText, (val) => {
+        // proxy.$refs.dictTree.filter(val)
+        getTree(state.filterText)
+      })
     onMounted(() => {
       getTreeData()
       emit('onEdit')
