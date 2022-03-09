@@ -205,11 +205,37 @@ export default defineComponent({
       switch (command) {
         //暂停
         case 'stopRun' :
-          reRun(row)
+          proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
+            execType: "PAUSE",
+            processInstanceId: row.id,
+            projectCode: row.projectCode,
+          }).then(({data}) => {
+            if(data.code === 200){
+              ElMessage.success(data.msg)
+              getData()
+            }else {
+              ElMessage.error(data.msg)
+            }
+          }).catch(e => {
+            ElMessage.error('请求失败！请重试！')
+          })
           break;
         //停止
         case 'onStop' :
-          reRun(row)
+          proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
+            execType: "STOP",
+            processInstanceId: row.id,
+            projectCode: row.projectCode,
+          }).then(({data}) => {
+            if(data.code === 200){
+              ElMessage.success(data.msg)
+              getData()
+            }else {
+              ElMessage.error(data.msg)
+            }
+          }).catch(e => {
+            ElMessage.error('请求失败！请重试！')
+          })
         break;
       }
     }
@@ -225,12 +251,10 @@ export default defineComponent({
       state.id = row.id
       router.push({path: 'exampleTaskMonitor',query:{id:state.id, projectCode: state.projectCode, code: state.processDefineCode, processInstanceName:row.name, workName: row.definitionName, state: row.state }})
     }
-    //重跑、停止、暂停、恢复
+    //重跑
     const reRun = (row) => {
-      console.log(row.state);
-      console.log(row.projectCode);
       proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
-        execType: row.state,
+        execType: "REPEAT_RUNNING",
         processInstanceId: row.id,
         projectCode: row.projectCode,
       }).then(({data}) => {
