@@ -169,7 +169,7 @@ export default defineComponent({
       proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/process-instances/query-instances-page', {
         definitionName: searchObj.definitionName,
         searchVal: searchObj.name,
-        stateType: searchObj.stateType,
+        stateType: searchObj.stateType ? searchObj.stateType : null,
         current: page ? page.current : pageObj.current,
         size: pageObj.size,
         projectCode: state.projectCode,

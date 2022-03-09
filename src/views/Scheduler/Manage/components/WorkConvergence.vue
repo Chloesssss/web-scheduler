@@ -1,6 +1,6 @@
 <template>
   <!-- 汇聚作业选择列表 -->
-  <el-dialog title="汇聚作业选择列表" v-model="dialogTableVisible" @close="onCancel" width="1448px">
+  <el-dialog title="汇聚作业选择列表" v-model="tableVisible" @close="onCancel" width="1448px">
     <div>
       <el-form :inline="true" ref="searchform" :model="searchObj">
         <!-- <el-form-item label="作业状态">
@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { defineComponent, getCurrentInstance, ref, toRefs, onMounted, reactive, } from "vue";
+import { defineComponent, getCurrentInstance, ref, toRefs, onMounted, reactive, watch } from "vue";
 import { useRouter } from "vue-router";
 import { Pagination } from "@/../common/constants";
 import { cloneDeep } from "lodash";
@@ -53,14 +53,13 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
-    id: String
   },
-  emits:['close'],
-  emits:['giveCode'],
+  emits:['close', 'giveCode'],
   setup(props, {emit}) {
     const { proxy } = getCurrentInstance();
     const pageObj = reactive(cloneDeep(Pagination));
     const { dialogTableVisible } = toRefs(props)
+    const tableVisible = ref(false)
     const router = useRouter();
     const searchObj = reactive({
       // 声明查询信息
@@ -139,8 +138,11 @@ export default defineComponent({
     const onCommit = () => {
       emit('close')
     }
+    watch([dialogTableVisible],(newval,oldval) => {
+      tableVisible.value = newval[0]
+    })
     return {
-      dialogTableVisible,
+      tableVisible,
       pageObj,
       searchObj,
       state,

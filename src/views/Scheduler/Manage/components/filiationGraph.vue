@@ -172,6 +172,21 @@ export default defineComponent({
             return true
           },
         },
+        embedding: {
+          enabled: true,
+          findParent({node}) {
+            const bbox = node.getBBox()
+            return this.getNodes().filter((node) => {
+              // 只有 data.parent 为 true 的节点才是父节点
+              const data = node.getData()
+              if (data && data.parent) {
+                  const targetBBox = node.getBBox()
+                  return bbox.isIntersectWithRect(targetBBox)
+              }
+              return false
+            })
+          }
+        }
       });
       Shape.Rect.config({
         width: 120,
@@ -338,6 +353,7 @@ export default defineComponent({
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node }) => {
+        console.log(graph.getNodes());
         let index = state.arrList.indexOf(node.id)
         state.currentCode=state.taskCode[index]
         if(node.getAttrs().label.text === "数据采集"){
@@ -368,6 +384,7 @@ export default defineComponent({
           state.taskCode.splice(index,1);
           state.codeList.splice(index,1);
           state.taskDefinition.splice(index,1)
+          state.taskRelation.splice(index,1)
         }	
         state.length = graph.getNodes().length
       });

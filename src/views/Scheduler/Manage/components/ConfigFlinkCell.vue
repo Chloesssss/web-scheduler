@@ -128,7 +128,6 @@
         state.tableVisible = true
       }
       const closeModal = () => {
-        // proxy.$refs.form.resetFields()
         state.tableVisible = false
       }
       return {
