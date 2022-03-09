@@ -43,7 +43,7 @@
         <template #default="{ row }">
           <el-space wrap :size="10">
             <el-link type="primary" @click="onEdit(row)">编辑</el-link>
-            <el-link :disabled="row.releaseStateCN === '上线'" type="warning" @click="onDoWork()">立即执行</el-link>
+            <el-link :disabled="row.releaseStateCN === '上线'" type="warning" @click="onDoWork(row)">立即执行</el-link>
             <el-dropdown @command="handleMore($event, row)">
               <span>更多<i class="el-icon-arrow-down el-icon--right"></i></span>
               <template #dropdown>
@@ -219,11 +219,12 @@ export default defineComponent({
       });
     }
     //立即执行
-    const onDoWork = () => {
-       proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/executors/start-process-instance', {
-        projectCode: state.projectCode,
+    const onDoWork = (row) => {
+      proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/executors/start-process-instance', {
+        projectCode: row.projectCode,
+        processDefinitionCode: row.code,
       }).then(({data}) => {
-        ElMessage[data.code === 0 ? 'success': 'error'](data.msg)
+        ElMessage[data.code === 200 ? 'success': 'error'](data.msg)
       })
     }
     //获取下拉列表主题名

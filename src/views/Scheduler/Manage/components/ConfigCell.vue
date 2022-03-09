@@ -115,7 +115,7 @@
         taskDefinition.nodeId = taskCode.value
         state.name = workName
         dialogVisible.value = newval[0]
-        taskCode.value = newval[1];
+        // taskCode.value = newval[1];
         if(dialogVisible.value){
           if(taskCode.value){
             proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
