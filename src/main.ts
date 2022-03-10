@@ -32,7 +32,7 @@ function render(props = {}) {
     instance.config.globalProperties.$axios = Instance
     instance.component('pagination', Pagination) // 公共分页组件
     instance.component('table-delete-link', TableDeleteLink) // 公共表格内操作删除按钮组件
-    instance.use(router).use(ElementPlus, { size: 'small', zIndex: 3000, locale: zhCn, })
+    instance.use(router).use(ElementPlus, { size: 'default', zIndex: 3000, locale: zhCn, })
     instance.use(store);
     instance.mount(container ? container.querySelector('#app') : '#app');
 }
