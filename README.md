@@ -1,12 +1,4 @@
-# vue3.0-template-work
-## 配置前端的npm仓库
-```
-npm config set registry http://192.168.25.22:8081/repository/npm-group
-```
-## 下载公共文件
-```
-git submodule add http://172.16.70.100:7002/data-platform-frontend-dev/common.git
-```
+# 数据工程平台-调度模块
 
 ## Project setup
 ```
@@ -27,6 +19,9 @@ npm run build
 ```
 npm run lint
 ```
+## common 文件夹为公共模块，采用subtree引入，改动会影响其他模块，请谨慎改动common文件夹下的内容
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### 拉取最新的common文件(需要保证本地项目没有可以提交的改动， 不然会报错)
+```
+git subtree pull --prefix=common http://223.71.0.241:9000/frontend-dev/common.git master --squash
+```

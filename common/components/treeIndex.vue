@@ -17,13 +17,11 @@
         <template v-if="!data.isLeaf">
           <i v-if="!node.expanded" class="el-icon-folder mr-5" />
           <i v-else class="el-icon-folder-opened mr-5" />
-<!--          <span class="flex" style="max-width: 150px;white-space: normal;">{{ data.name }}</span>-->
-          <div style="max-width: 450px;white-space: normal;" v-html="data.name"></div>
+          <div style="max-width: 450px;" v-html="data.name"></div>
         </template>
         <template v-else>
           <i class="el-icon-document mr-5" />
-<!--          <span class="flex" style="max-width: 150px;white-space: normal;">{{ data.name }}</span>-->
-          <div style="max-width: 450px;white-space: normal;" v-html="data.name"></div>
+          <div style="max-width: 450px;" v-html="data.name"></div>
         </template>
       </span>
     </template>
@@ -94,5 +92,8 @@
  }
  :deep(.height-light) {
    color: #d8be5f;
+ }
+ :deep(.el-tree-node>.el-tree-node__children) {
+   overflow: inherit;
  }
 </style>
