@@ -106,11 +106,11 @@ export default defineComponent({
           value: 1
         },
         {
-          key: '暂停',
+          key: '准备暂停',
           value: 2
         },
         {
-          key: '准备暂停',
+          key: '暂停',
           value: 3
         },
         {
@@ -169,7 +169,7 @@ export default defineComponent({
       proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/process-instances/query-instances-page', {
         definitionName: searchObj.definitionName,
         searchVal: searchObj.name,
-        stateType: searchObj.stateType ? searchObj.stateType : null,
+        stateType: searchObj.stateType >= "0" ? searchObj.stateType : null,
         current: page ? page.current : pageObj.current,
         size: pageObj.size,
         projectCode: state.projectCode,
@@ -203,10 +203,10 @@ export default defineComponent({
     }
     const handleMore = (command, row) => {
       switch (command) {
-        //暂停
+        //停止
         case 'stopRun' :
           proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
-            execType: "PAUSE",
+            execType: "STOP",
             processInstanceId: row.id,
             projectCode: row.projectCode,
           }).then(({data}) => {
@@ -220,10 +220,10 @@ export default defineComponent({
             ElMessage.error('请求失败！请重试！')
           })
           break;
-        //停止
+        //暂停
         case 'onStop' :
           proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
-            execType: "STOP",
+            execType: "PAUSE",
             processInstanceId: row.id,
             projectCode: row.projectCode,
           }).then(({data}) => {

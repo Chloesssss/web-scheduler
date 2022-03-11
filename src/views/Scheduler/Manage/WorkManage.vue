@@ -51,6 +51,7 @@ export default defineComponent({
       workMonitorName: '',
       releaseState: '',
     })
+    //获取节点树节点编码，作业名、主题名
     const getCode = (e,i,j,k) => {
       state.code = e;
       state.projectCode = i;
