@@ -23,9 +23,9 @@
         <el-table-column prop="state" label="状态" show-overflow-tooltip>
           <template #default="{row}">
             <el-tag
-              :type="row.state === 'SUBMITTED_SUCCESS' ? 'success' : 'danger'"
+              :type="row.state === 'SUCCESS' && 'SUBMITTED_SUCCESS' ? 'success' : (row.state === 'FAILURE' && 'KILL' ? 'danger' : '' )"
               disable-transitions
-            >{{ row.state === 'SUBMITTED_SUCCESS' ? '执行成功' : (row.state === 'FAILURE' ? '失败' : '失败' ) }}</el-tag>
+            >{{ row.stateCN }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="startTime" label="开始时间" show-overflow-tooltip/>

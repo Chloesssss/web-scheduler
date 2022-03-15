@@ -45,7 +45,7 @@
       <el-table-column prop="state" label="状态" show-overflow-tooltip>
         <template #default="{row}">
           <el-tag
-            :type="row.state === 'SUCCESS' ? 'success' : (row.state === 'FAILURE' ? 'danger' : '' )"
+            :type="row.state === 'SUCCESS' && 'SUBMITTED_SUCCESS' ? 'success' : (row.state === 'FAILURE' && 'KILL' ? 'danger' : '' )"
             disable-transitions
           >{{ row.stateCN }}</el-tag>
         </template>
