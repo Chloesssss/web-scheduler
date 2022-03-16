@@ -31,7 +31,7 @@
         <el-table-column prop="startTime" label="开始时间" show-overflow-tooltip/>
         <el-table-column prop="endTime" label="结束时间" show-overflow-tooltip/>
         <el-table-column prop="host" label="host" show-overflow-tooltip/>
-        <el-table-column prop="submitTime" label="运行时长" show-overflow-tooltip/>
+        <el-table-column prop="retryInterval" label="运行时长" show-overflow-tooltip/>
         <el-table-column prop="maxRetryTimes" label="重试次数" show-overflow-tooltip/>
         <el-table-column label="操作" width="210">
           <template #default="{ row }">

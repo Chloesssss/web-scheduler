@@ -122,6 +122,7 @@
             .then(({data}) => {
               if(data.code == 200){
                 Object.assign(taskDefinition, data.data.taskDefinition)
+                console.log(data.data.taskDefinition);
               }else{
                 // ElMessage.error(data.msg)
               }

@@ -581,6 +581,12 @@ export default defineComponent({
         proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
         .then(({data}) => {
           if(data.code == 200){
+            // state.nodeDtos = data.datas.processPagingQueryVO.location.map(x => ({
+            //   x: Number(x.leftPos),
+            //   y: Number(x.topPos),
+            //   taskId: x.taskId,
+            //   name: state.menuObj.find(y => y.taskId === x.taskId).name,
+            // }))
             //ElMessage.success(data.msg)
             // state.locations = data.data.processPagingQueryVO.locations
             state.workState = data.data.processPagingQueryVO.releaseState

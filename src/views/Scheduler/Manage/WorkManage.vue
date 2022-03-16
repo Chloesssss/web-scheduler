@@ -65,7 +65,6 @@ export default defineComponent({
     //获取当前选中节点作业状态
     const getState = (i) => {
       state.releaseState = i
-      console.log(state.releaseState);
     }
     //上下线
     const onLine = () => {

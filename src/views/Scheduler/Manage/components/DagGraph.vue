@@ -21,16 +21,6 @@ export default defineComponent({
     const state = reactive({
       code: '',
       projectCode: '',
-      status: [
-        {
-          key: '下线',
-          value: 0
-        },
-        {
-          key: '上线',
-          value: 1
-        },
-      ],
       runStatus: '',
       nodeData: [],
       taskType: '',
@@ -43,8 +33,7 @@ export default defineComponent({
         width: 160,   // Number，可选，节点大小的 width 值
         height: 30,  // Number，可选，节点大小的 height 值
         label: newNodeObj.name, // String，节点标签
-        shape: 'vue-shape', // 使用 rect 渲染
-        
+        shape: 'vue-shape', // 使用 rect 渲染    
         ports: {
           groups: {
             in: {
@@ -146,9 +135,11 @@ export default defineComponent({
         },
       })
       // 回显实例节点和状态
-      if(state.taskType == "COLLECT"){
-        graph.addNode(collect)
-      }
+      // if(state.taskType == "COLLECT"){
+      //   graph.addNode(collect)
+      // } else if(state.taskType == "DLINK"){
+      //   graph.addNode(flink)
+      // }
       nodeData.nodes.push(state.nodeData)
       console.log(nodeData);
       const graph = new Graph({

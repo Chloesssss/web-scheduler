@@ -8,11 +8,13 @@
             v-model="formObj.startTime"
             value-format="YYYY-MM-DD HH:mm:ss"
             type="datetime"
+            :disabled-date="disabledTime"
           >
           </el-date-picker>
         </el-form-item>
         <el-form-item label="结束时间" class="flex-1"  prop="endTime">
           <el-date-picker
+            class="date_picker"
             v-model="formObj.endTime"
             value-format="YYYY-MM-DD HH:mm:ss"
             type="datetime"
@@ -145,6 +147,9 @@
       const disabledDate = (time) => {
         return formObj.startTime ? time.getTime() <= new Date(formObj.startTime).getTime() : false ;
       }
+      const disabledTime = (time) => {
+        return formObj.endTime ? time.getTime() >= new Date(formObj.endTime).getTime() : false ;
+      }
       //提交表单
       const onCommit = () => {
         onStatus()
@@ -239,6 +244,7 @@
         timeVisible,
         onCancel,
         onCommit,
+        disabledTime,
         disabledDate,
         togglePopover,
         changeCron,
@@ -255,5 +261,8 @@
   }
   .dispatch-left-tree-container .el-tree-node__content:hover {
     background: none;
+  }
+  .el-picker-panel__footer .el-button--text.el-picker-panel__link-btn {
+    display: none;
   }
 </style>
