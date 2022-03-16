@@ -219,6 +219,7 @@ export default defineComponent({
           }).catch(e => {
             ElMessage.error('请求失败！请重试！')
           })
+          getData()
           break;
         //暂停
         case 'onStop' :
@@ -236,6 +237,7 @@ export default defineComponent({
           }).catch(e => {
             ElMessage.error('请求失败！请重试！')
           })
+          getData()
         break;
       }
     }
@@ -267,6 +269,7 @@ export default defineComponent({
       }).catch(e => {
         ElMessage.error('请求失败！请重试！')
       })
+      getData()
     }
     //删除
     const onDelete = (row) => {
