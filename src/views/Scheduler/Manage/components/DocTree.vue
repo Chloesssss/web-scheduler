@@ -222,13 +222,18 @@ export default defineComponent({
       tree?.filter(searchInput)
     }
     //树形目录搜索
-    const filterNode = (searchInput, node) => {
-      return node.label.indexOf(searchInput) !== -1
+    const filterNode = (searchInput, data, node) => {
+      if (!searchInput) return true
+      let parentNode = node.parent
+      let labels = [node.label]
+      let level = 1
+      while(level < node.level) {
+        labels = [...labels, parentNode.label]
+        parentNode = parentNode.parent
+        level ++
+      }
+      return labels.some(label => label.indexOf(searchInput) !== -1)
     }
-    watch(() => state.filterText, (val) => {
-        // proxy.$refs.dictTree.filter(val)
-        getTree(state.filterText)
-      })
     onMounted(() => {
       getTreeData()
       emit('onEdit')

@@ -516,7 +516,7 @@ export default defineComponent({
       for (let i = 0, len = graph.getNodes().length; i < len; i++ ){
         let index = state.setDocId.indexOf(state.currentCode)
         state.setDocId[index]
-        state.taskRelation.push(taskRelation)
+        state.taskRelation.push({ value: JSON.parse(JSON.stringify(taskRelation)) })
       }
       console.log(state.taskRelation);
     }
