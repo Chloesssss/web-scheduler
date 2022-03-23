@@ -16,6 +16,7 @@ import ConfigCell from "./ConfigCell.vue";
 import ConfigFlinkCell from './ConfigFlinkCell.vue';
 import { ElMessageBox } from 'element-plus'
 import { ElMessage } from 'element-plus';
+import { BorderedImage } from '@antv/x6/lib/shape/standard';
 const { Stencil } = Addon;
 const { Rect, Polygon } = Shape;
 
@@ -48,9 +49,10 @@ export default defineComponent({
       taskDefinition: [],// 节点配置表单信息
       taskRelation: [],// 节点关系
       setDocId: [],// 配置后的对应节点id数组
-      postTaskCode: '',// edge指向的节点id（若节点无节点关系指向，则指向它自己的id，则该节点为末端节点）
-      preTaskCode: '',//发出edge的节点id（若节点无输入桩的链接，则该id为0，即该节点为初始节点）
-      postTaskVersion: 0,//指向的节点版本（有指向为后置节点版本号，无指向1（指向自己））
+      postTaskCode: '',// 总是指向自己的节点id，用于匹配次级节点的pretaskcode
+      preTaskCode: 0,//发出edge的节点id（若节点无输入桩的链接，则该id为0，即该节点为初始节点）
+      postTaskVersion: 1,//指向的节点版本（指向1（指向自己））
+      preTaskVersion: 1,//父节点为0，子节点为1
       workState: '',
     })
     let graph = null
@@ -113,24 +115,25 @@ export default defineComponent({
         },
         // 连线规则
         connecting: {
-          snap: true,
-          allowBlank: false,
-          allowLoop: false,
-          highlight: true,
-          sourceAnchor: {
+          snap: true,  // 当 snap 设置为 true 时连线的过程中距离节点或者连接桩 50px 时会触发自动吸附
+          allowBlank: false,  // 是否允许连接到画布空白位置的点，默认为 true
+          allowLoop: false, // 是否允许创建循环连线，即边的起始节点和终止节点为同一节点，默认为 true
+          allowMulti: false, // 当设置为 false 时，在起始和终止节点之间只允许创建一条边
+          highlight: true,  // 拖动边时，是否高亮显示所有可用的连接桩或节点，默认值为 false。
+          sourceAnchor: {  // 当连接到节点时，通过 sourceAnchor 来指定源节点的锚点。
             name: 'bottom',
             args: {
               dx: 0,
             },
           },
-          targetAnchor: {
-            name: 'center',
+          targetAnchor: {  // 当连接到节点时，通过 targetAnchor 来指定目标节点的锚点。
+            name: 'top',
             args: {
               dx: 0,
             },
           },
-          connectionPoint: 'anchor',
-          connector: 'algo-edge',
+          connectionPoint: 'anchor',  // 指定连接点，默认值为 boundary。
+          connector: 'algo-edge',  // 连接器将起点、路由返回的点、终点加工为 元素的 d 属性，决定了边渲染到画布后的样式，默认值为 normal。
           createEdge() {
             return graph.createEdge({
               attrs: {
@@ -151,42 +154,34 @@ export default defineComponent({
           validateMagnet({ magnet }) {
             return magnet.getAttribute('port-group') !== 'in'
           },
-          validateConnection({ sourceView, targetView, sourceMagnet, targetMagnet }) {
-            // 只能从输出链接桩创建连接
-            if (!sourceMagnet || sourceMagnet.getAttribute('port-group') === 'in') {
-              return false
+          validateConnection({
+            sourceView,
+            targetView,
+            sourceMagnet,
+            targetMagnet
+          }) {
+            if (sourceView === targetView) {
+              return false;
             }
-
+            if (!sourceMagnet) {
+              return false;
+            }
             // 只能连接到输入链接桩
-            if (!targetMagnet || targetMagnet.getAttribute('port-group') !== 'in') {
-              return false
+            if (
+              !targetMagnet ||
+              targetMagnet.getAttribute("port-group") !== "in"
+            ) {
+              return false;
             }
-
-            // 判断目标链接桩是否可连接
-            const portId = targetMagnet.getAttribute('port')
-            const node = targetView.cell
-            const port = node.getPort(portId)
-            if (port && port.connected) {
-              return false
-            }
-            return true
+            return true;
           },
-        },
-        embedding: {
-          enabled: true,
-          findParent({node}) {
-            const bbox = node.getBBox()
-            return this.getNodes().filter((node) => {
-              // 只有 data.parent 为 true 的节点才是父节点
-              const data = node.getData()
-              if (data && data.parent) {
-                  const targetBBox = node.getBBox()
-                  return bbox.isIntersectWithRect(targetBBox)
-              }
-              return false
-            })
+          // 当停止拖动边的时候根据 validateEdge 返回值来判断边是否生效，如果返回 false, 该边会被清除。
+          validateEdge({ edge }) {
+            const { source, target } = edge
+            
+            return true
           }
-        }
+        },
       });
       Shape.Rect.config({
         width: 120,
@@ -289,7 +284,6 @@ export default defineComponent({
       }
       //设计画布左侧节点样式
       const collect = new Rect({
-        id: state.currentCode,
         attrs: {
           body: {
             fill: "#EFF4FF",
@@ -316,7 +310,6 @@ export default defineComponent({
         ports: { ...ports },
       });
       const flink = new Rect({
-        id: state.currentCode,
         attrs: {
           body: {
             fill: "#efdbff",
@@ -341,19 +334,27 @@ export default defineComponent({
       //绑定事件
       // 拖拽
       graph.on('node:added', ({ node }) => {
-        console.log(graph.getEdges().length);
         state.length = graph.getNodes().length
         state.arrList.push(node.id)
-        getNodeCode(1)
         state.currentCode=node.id
+        getNodeCode(1)
       })
       //回显边
       graph.on('edge:added', ({ edge }) => {
-        
+        // console.log(graph.getEdges().map(x => x.getSource().cell));
+        // console.log(state.arrList);
+        // const linkDtostemp = graph.getEdges().map(y => ({
+        //   sourceId: state.taskCode[state.arrList.indexOf(y.getSource().cell)],
+        //   targetId: state.taskCode[state.arrList.indexOf(y.getTarget().cell)],
+        // }))
+        // const allCollectTaskId = []
+        // linkDtostemp.forEach(x => {
+        //   allCollectTaskId.push(x.sourceId)
+        //   allCollectTaskId.push(x.targetId)
+        // })
       })
       //双击节点打开节点配置
-      graph.on("cell:dblclick", ({ node }) => {
-        console.log(graph.getNodes());
+      graph.on("cell:dblclick", ({ node, cell }) => {
         let index = state.arrList.indexOf(node.id)
         state.currentCode=state.taskCode[index]
         if(node.getAttrs().label.text === "数据采集"){
@@ -361,6 +362,7 @@ export default defineComponent({
         } else if(node.getAttrs().label.text === "数据开发"){
           showflink()
         }
+        console.log(state.currentCode);
       });
       // 节点删除操作
       graph.on("node:mouseenter", ({ node }) => {
@@ -486,38 +488,48 @@ export default defineComponent({
     }
     //节点关系配置
     const setRelation = () => {
-      if ( graph.getNodes().length == 1 ) {
-        state.preTaskCode = 0
-        state.postTaskCode = state.currentCode
-        state.postTaskVersion = 1
-        state.preTaskVersion = 0
-      } else if ( graph.getNodes().length > 1 && graph.getEdges().length == 0 ) {
-        state.preTaskCode = 0
-        state.postTaskCode = state.currentCode
-        state.postTaskVersion = 1
-        state.preTaskVersion = 0
-      } else {
-        let index = state.taskCode.indexOf(state.currentCode)
-        state.preTaskCode = state.taskCode[index-1]
-        state.postTaskCode = state.taskCode[index]
-        state.postTaskVersion = 1
-        state.preTaskVersion = 1
-      }
-      const taskRelation = ({// 节点关系
+      const taskRelation = graph.getEdges().map(y => ({
         id: 0,
         name: '',
-        preTaskCode: state.preTaskCode,
-        postTaskCode: state.postTaskCode,
+        preTaskCode: state.taskCode[state.arrList.indexOf(y.getSource().cell)],
+        postTaskCode: state.taskCode[state.arrList.indexOf(y.getTarget().cell)],
         processDefinitionCode: state.code,
         projectCode: state.projectCode,
         postTaskVersion: state.postTaskVersion,
         preTaskVersion: state.preTaskVersion,
+      }))
+      console.log(taskRelation);
+      const allCollectTaskId = []
+      taskRelation.forEach(x => {
+        allCollectTaskId.push(x.id)
+        allCollectTaskId.push(x.name)
+        allCollectTaskId.push(x.preTaskCode)
+        allCollectTaskId.push(x.postTaskCode)
+        allCollectTaskId.push(x.processDefinitionCode)
+        allCollectTaskId.push(x.projectCode)
+        allCollectTaskId.push(x.postTaskVersion)
+        allCollectTaskId.push(x.preTaskVersion)
       })
-      for (let i = 0, len = graph.getNodes().length; i < len; i++ ){
-        let index = state.setDocId.indexOf(state.currentCode)
-        state.setDocId[index]
-        state.taskRelation.push({ value: JSON.parse(JSON.stringify(taskRelation)) })
+      let childNodes = taskRelation.map(y => y.postTaskCode)
+      let taskCodes = state.taskCode
+      let parentShip = [];
+      for (var i = 0; i < taskCodes.length; i++) {
+        if (childNodes.indexOf(taskCodes[i]) === -1) {
+          parentShip.push(taskCodes[i])
+        }
       }
+      const sourceNodeship = parentShip.map(x =>({
+        id:0,
+        name: '',
+        preTaskCode: '0',
+        postTaskCode: x,
+        processDefinitionCode: state.code,
+        projectCode: state.projectCode,
+        preTaskVersion: '0',
+        postTaskVersion: state.postTaskVersion,
+      }))
+      console.log(sourceNodeship);
+      state.taskRelation = sourceNodeship.concat(taskRelation)
       console.log(state.taskRelation);
     }
     //生成节点标识

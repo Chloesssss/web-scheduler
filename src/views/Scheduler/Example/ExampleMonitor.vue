@@ -63,6 +63,7 @@
                 <el-dropdown-menu>
                   <el-dropdown-item command="stopRun">停止</el-dropdown-item>
                   <el-dropdown-item command="onStop">暂停</el-dropdown-item>
+                  <el-dropdown-item command="recover">恢复暂停</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -219,7 +220,6 @@ export default defineComponent({
           }).catch(e => {
             ElMessage.error('请求失败！请重试！')
           })
-          getData()
           break;
         //暂停
         case 'onStop' :
@@ -237,7 +237,23 @@ export default defineComponent({
           }).catch(e => {
             ElMessage.error('请求失败！请重试！')
           })
-          getData()
+        break;
+        //暂停
+        case 'recover' :
+          proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
+            execType: "RECOVER_SUSPENDED_PROCESS",
+            processInstanceId: row.id,
+            projectCode: row.projectCode,
+          }).then(({data}) => {
+            if(data.code === 200){
+              ElMessage.success(data.msg)
+              getData()
+            }else {
+              ElMessage.error(data.msg)
+            }
+          }).catch(e => {
+            ElMessage.error('请求失败！请重试！')
+          })
         break;
       }
     }
@@ -269,7 +285,6 @@ export default defineComponent({
       }).catch(e => {
         ElMessage.error('请求失败！请重试！')
       })
-      getData()
     }
     //删除
     const onDelete = (row) => {

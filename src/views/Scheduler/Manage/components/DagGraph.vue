@@ -79,6 +79,7 @@ export default defineComponent({
       const nodeData = {
         // 节点
         nodes: [
+          
         ],
         // 边
         edges: [
@@ -140,7 +141,6 @@ export default defineComponent({
       // } else if(state.taskType == "DLINK"){
       //   graph.addNode(flink)
       // }
-      nodeData.nodes.push(state.nodeData)
       console.log(nodeData);
       const graph = new Graph({
         container: document.getElementById('containered'),
@@ -169,12 +169,9 @@ export default defineComponent({
         .then(({data}) => {
           if(data.code == 200){
             state.taskType = data.data.taskDefinition[0].taskType
-            state.nodeData = data.data.processPagingQueryVO.locations
-            console.log(state.nodeData);
-            console.log(state.taskType);
             state.nodeData = data.data.processPagingQueryVO.locations.map(x => ({
-              x: Number(x.leftPos),
-              y: Number(x.topPos),
+              x: Number(x.x),
+              y: Number(x.y),
               taskId: x.taskId,
               name: state.menuObj.find(y => y.taskId === x.taskId).name,
             }))
