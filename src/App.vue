@@ -66,7 +66,6 @@ export default defineComponent({
         {index:"WorkManage", name: "作业管理" },
         {index:"WorkMonitor", name:"作业监控"},
         {index:"ExampleMonitor", name:"实例监控"},
-        //{index:"example", name:"ANTV样例展示"},
       ],
       hrefName: "",
     });

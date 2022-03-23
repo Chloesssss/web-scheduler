@@ -24,11 +24,6 @@ const routes = [
         name: "ExampleTaskMonitor", 
         component: () => import("@/views/Scheduler/Example/ExampleTaskMonitor.vue"),
       },
-      {
-        path: "example", //例子
-        name: "example", 
-        component: () => import("@/views/Scheduler/Monitior/example.vue"),
-      },
     ]}
 ];
 
