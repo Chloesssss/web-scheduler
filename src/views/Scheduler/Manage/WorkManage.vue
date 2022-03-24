@@ -7,11 +7,11 @@
     </div>
     <div style="width: 100%">
       <div style="width: 100%,hight: 100%">
-        <i @click="onSave" class="mr-10 cursor-pointer" style="width:120px;"><el-icon><collection /></el-icon>保存  </i>
-        <i @click="onLine" class="mr-10 cursor-pointer" style="width:100px;"><el-icon><upload /></el-icon>上线  </i>
-        <i @click="onMonitior" class="mr-10 cursor-pointer" style="width:100px;"><el-icon><data-line /></el-icon>前往监控  </i>
-        <i @click="onCommitConfig" class="mr-10 cursor-pointer" style="width:100px;"><el-icon><folder-checked /></el-icon>立即执行  </i>
-        <i @click="onSetTime" class="mr-10 cursor-pointer" style="width:100px;"><el-icon><video-pause /></el-icon>定时管理 </i>
+        <i @click="onSave" class="mr-10 cursor-pointer" style="width:120px; font-style:normal"><el-icon class="mr-5"><collection /></el-icon>保存  </i>
+        <i @click="onLine" class="mr-10 cursor-pointer" style="width:100px; font-style:normal"><el-icon class="mr-5"><upload-filled /></el-icon>上线  </i>
+        <i @click="onMonitior" class="mr-10 cursor-pointer" style="width:100px; font-style:normal"><el-icon class="mr-5"><data-line /></el-icon>前往监控  </i>
+        <i @click="onCommitConfig" class="mr-10 cursor-pointer" style="width:100px; font-style:normal"><el-icon class="mr-5"><folder-checked /></el-icon>立即执行  </i>
+        <i @click="onSetTime" class="mr-10 cursor-pointer" style="width:100px; font-style:normal"><el-icon class="mr-5"><video-pause /></el-icon>定时管理 </i>
       </div>
       <div style="width: 100%,hight: 100%">
         <filiation-graph :code="state.code" :project-code="state.projectCode" :work-name="state.workName" @give-state="getState" ref="filiateGraph"/>
@@ -29,10 +29,10 @@ import DocTree from "../Manage/components/DocTree.vue";
 import { ElMessage } from 'element-plus'
 import FiliationGraph from "./components/filiationGraph.vue";
 import Index from "./components/index.vue";
-import { Collection, Upload, DataLine, FolderChecked, VideoPause } from '@element-plus/icons-vue'
+import { Collection, UploadFilled, DataLine, FolderChecked, VideoPause } from '@element-plus/icons-vue'
 
 export default defineComponent({
-  components: { DocTree, FiliationGraph, Index, Upload, Collection, DataLine, FolderChecked, VideoPause },
+  components: { DocTree, FiliationGraph, Index, UploadFilled, Collection, DataLine, FolderChecked, VideoPause },
   name: "WorkManage",
   setup() { 
     const { proxy } = getCurrentInstance()

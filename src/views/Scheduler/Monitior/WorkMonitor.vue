@@ -38,14 +38,14 @@
       </el-table-column>
       <el-table-column prop="createTime" label="创建时间" show-overflow-tooltip/>
       <el-table-column prop="updateTime" label="更新时间" show-overflow-tooltip/>
-      <el-table-column prop="description" label="描述" show-overflow-tooltip/>
+      <!-- <el-table-column prop="description" label="描述" show-overflow-tooltip/> -->
       <el-table-column label="操作" width="210">
         <template #default="{ row }">
           <el-space wrap :size="10">
             <el-link type="primary" @click="onEdit(row)">编辑</el-link>
             <el-link :disabled="row.releaseStateCN === '上线'" type="warning" @click="onDoWork(row)">立即执行</el-link>
             <el-dropdown @command="handleMore($event, row)">
-              <span>更多<i class="el-icon-arrow-down el-icon--right"></i></span>
+              <span>更多<i class="el-icon--right"><el-icon><arrow-down /></el-icon></i></span>
               <template #dropdown>
                 <el-dropdown-menu>
                   <template v-if="row.releaseStateCN !== '上线'">
@@ -73,8 +73,10 @@ import { cloneDeep } from 'lodash'
 import { ElMessage } from 'element-plus'
 import { Message } from '@/../common/utils/message'
 import { DeleteConfirm } from '@/../common/utils/index.js';
+import { ArrowDown } from '@element-plus/icons-vue'
 
 export default defineComponent({
+  components:{ ArrowDown },
   name: "workMonitor",
   setup() {
     const { proxy } = getCurrentInstance();

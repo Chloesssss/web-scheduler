@@ -16,12 +16,12 @@
           <el-input v-model="taskDefinition.description" type="textarea"></el-input>
         </el-form-item>
         <el-form-item label="超时失败" prop="timeoutFlag">
-          <el-switch v-model="taskDefinition.timeoutFlag" inline-prompt active-text="启用" @change="onStatus" inactive-text="禁用" active-value="OPEN" inactive-value="CLOSE">
+          <el-switch v-model="taskDefinition.timeoutFlag" active-text="启用" @change="onStatus" inactive-text="禁用" active-value="OPEN" inactive-value="CLOSE">
           </el-switch>
         </el-form-item>
         <el-form-item label="汇聚作业" prop="taskWork">
           <el-input class="flex-1" v-model="taskDefinition.taskWork" disabled></el-input>
-          <el-button class="flex-1" @click="chooseWork">选择</el-button>
+          <el-button type="primary" class="flex ml-20" @click="chooseWork">选择</el-button>
         </el-form-item>
       </el-form>
       <div class="demo-drawer__footer">

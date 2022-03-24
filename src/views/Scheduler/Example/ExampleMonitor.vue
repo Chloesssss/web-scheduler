@@ -58,7 +58,7 @@
             <el-link type="primary" @click.stop.prevent="reRun(row)">重跑</el-link>
             <table-delete-link @onDelete="onDelete(row)"></table-delete-link>
             <el-dropdown @command="handleMore($event, row)">
-              <span>更多<i class="el-icon-arrow-down el-icon--right"></i></span>
+              <span>更多<i class="el-icon--right"><el-icon><arrow-down /></el-icon></i></span>
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item command="stopRun">停止</el-dropdown-item>
@@ -83,7 +83,10 @@ import { Pagination } from '@/../common/constants'
 import { cloneDeep } from 'lodash'
 import { ElMessage } from 'element-plus'
 import { Message } from '@/../common/utils/message';
+import { ArrowDown } from '@element-plus/icons-vue'
+
 export default defineComponent({
+  components:{ ArrowDown },
   name: "ExampleManage",
   setup() {
     const { proxy } = getCurrentInstance();
