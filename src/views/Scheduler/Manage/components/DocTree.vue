@@ -2,12 +2,12 @@
   <div class="pr-10" style="border-right: 1px solid rgb(220, 223, 230);">
     <div style="width:230px;" v-if="showFlag">
       <div style="float:right">
-        <i class="el-icon-circle-plus-outline mr-10 cursor-pointer" @click="appendNode"></i>
-        <i class="el-icon-s-fold cursor-pointer" @click="changeDom"></i>
+        <i class="mr-10 cursor-pointer" @click="appendNode"><el-icon><circle-plus /></el-icon></i>
+        <i class="cursor-pointer" @click="changeDom"><el-icon><fold /></el-icon></i>
       </div>
       <el-input v-model="state.searchInput" clearable placeholder="请输入" @input="searchAll" class="mt-5 mb-5">
         <template #suffix>
-          <el-icon class="el-icon-search"></el-icon>
+          <el-icon class="mt-10"><search /></el-icon>
         </template>
       </el-input>
       <el-tree
@@ -25,7 +25,7 @@
         <template #default="{ data, node }">
           <span class="custom-tree-node flex width-a-hundred-percent">
             <template v-if="data.children===null">
-              <i class="el-icon-document mr-5"></i>
+              <i class="mr-5"><el-icon><document /></el-icon></i>
               <el-dropdown class="width-a-hundred-percent" @command="handleCommand($event, data, node)" trigger="contextmenu">
                 <span class="flex" style="max-width: 150px;white-space: normal;">{{ data.label }}</span>
                 <template #dropdown>
@@ -37,8 +37,8 @@
               </el-dropdown>
             </template>
             <template v-else>
-              <i v-if="!node.expanded" class="el-icon-folder mr-5"></i>
-              <i v-else class="el-icon-folder-opened mr-5"></i>
+              <i v-if="!node.expanded" class="mr-5"><el-icon><folder /></el-icon></i>
+              <i v-else class="mr-5"><el-icon><folder-opened /></el-icon></i>
               <el-dropdown class="width-a-hundred-percent" @command="handleCommand($event, data, node)" trigger="contextmenu">
                 <span class="flex" style="max-width: 150px;white-space: normal;">{{ data.label }}</span>
                 <template #dropdown>
@@ -56,7 +56,7 @@
       </el-tree>
     </div>
     <div style="min-height:300px" v-else>
-      <i class="el-icon-s-unfold cursor-pointer" @click="changeDom"></i>
+      <i class="cursor-pointer" @click="changeDom"><el-icon><expand /></el-icon></i>
     </div>
   </div>
   <div>
@@ -72,10 +72,11 @@ import {useRouter ,useRoute} from "vue-router";
 import CreateWork from "./CreateWork.vue";
 import WorkMenu from "./workMenu.vue";
 import { DeleteConfirm } from '@/../common/utils/index.js'
+import { Document, Search, Folder, FolderOpened, Fold, Expand, CirclePlus } from '@element-plus/icons-vue'
 
 export default defineComponent({
   name: "DocTree",
-  components: { CreateWork, WorkMenu },
+  components: { CreateWork, WorkMenu, Document, Search, Folder, FolderOpened, Fold, Expand, CirclePlus },
   emits:['giveCode','onEdit'],
   setup(props,{emit}) {
     const { proxy } = getCurrentInstance()

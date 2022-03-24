@@ -7,11 +7,11 @@
     </div>
     <div style="width: 100%">
       <div style="width: 100%,hight: 100%">
-        <i @click="onSave" class="el-icon-collection mt-1 cursor-pointer" style="width:80px;"> 保存</i>
-        <i @click="onLine" class="el-icon-upload mr-10 cursor-pointer" style="width:80px;"> 上线</i>
-        <i @click="onMonitior" class="el-icon-data-line mr-10 cursor-pointer" style="width:100px;"> 前往监控</i>
-        <i @click="onCommitConfig" class="el-icon-folder-checked mr-10 cursor-pointer" style="width:100px;"> 立即执行</i>
-        <i @click="onSetTime" class="el-icon-video-pause mr-10 cursor-pointer" style="width:100px;"> 定时管理</i>
+        <i @click="onSave" class="mr-10 cursor-pointer" style="width:120px;"><el-icon><collection /></el-icon>保存  </i>
+        <i @click="onLine" class="mr-10 cursor-pointer" style="width:100px;"><el-icon><upload /></el-icon>上线  </i>
+        <i @click="onMonitior" class="mr-10 cursor-pointer" style="width:100px;"><el-icon><data-line /></el-icon>前往监控  </i>
+        <i @click="onCommitConfig" class="mr-10 cursor-pointer" style="width:100px;"><el-icon><folder-checked /></el-icon>立即执行  </i>
+        <i @click="onSetTime" class="mr-10 cursor-pointer" style="width:100px;"><el-icon><video-pause /></el-icon>定时管理 </i>
       </div>
       <div style="width: 100%,hight: 100%">
         <filiation-graph :code="state.code" :project-code="state.projectCode" :work-name="state.workName" @give-state="getState" ref="filiateGraph"/>
@@ -29,9 +29,10 @@ import DocTree from "../Manage/components/DocTree.vue";
 import { ElMessage } from 'element-plus'
 import FiliationGraph from "./components/filiationGraph.vue";
 import Index from "./components/index.vue";
+import { Collection, Upload, DataLine, FolderChecked, VideoPause } from '@element-plus/icons-vue'
 
 export default defineComponent({
-  components: { DocTree, FiliationGraph, Index },
+  components: { DocTree, FiliationGraph, Index, Upload, Collection, DataLine, FolderChecked, VideoPause },
   name: "WorkManage",
   setup() { 
     const { proxy } = getCurrentInstance()
