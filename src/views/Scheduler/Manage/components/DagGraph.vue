@@ -13,135 +13,229 @@ export default defineComponent({
   props: {
     code: [String, Number],
     projectCode: [String, Number],
-    runStatus: '',
+    status: '',
+    docName: '',
   },
   setup(props) {
     const { proxy } = getCurrentInstance();
-    const { code, projectCode, runStatus } = toRefs(props)
+    const { code, projectCode, status, docName } = toRefs(props)
     const state = reactive({
       code: '',
       projectCode: '',
       runStatus: '',
       nodeData: [],
       taskType: '',
+      label: '',
+      status: '',
     })
-    const generateNewNodeObj = (newNodeObj) => {
-      const node = {
-        id: newNodeObj.taskId, // String，可选，节点的唯一标识
-        x: newNodeObj.leftPos - state.currentDragObj.offsetX,       // Number，必选，节点位置的 x 值
-        y: newNodeObj.topPos - state.currentDragObj.offsetY,       // Number，必选，节点位置的 y 值
-        width: 160,   // Number，可选，节点大小的 width 值
-        height: 30,  // Number，可选，节点大小的 height 值
-        label: newNodeObj.name, // String，节点标签
-        shape: 'vue-shape', // 使用 rect 渲染    
-        ports: {
-          groups: {
-            in: {
-              position: 'top',
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: '#108ee9',
-                  strokeWidth: 2,
-                  fill: '#fff'
-                }
-              }
+    const generateImag = () => {
+      Graph.registerNode( //成功时回显的节点
+        'custom-success',
+        {
+          width: 200,
+          height: 60,
+          attrs: {
+            body: {
+              stroke: '#237804',
+              strokeWidth: 2,
+              fill: 'rgba(95,149,255,0.05)',
             },
-            out: {
-              position: 'bottom',
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: '#31d0c6',
-                  strokeWidth: 2,
-                  fill: '#fff'
-                }
-              }
-            }
+            image: {
+              'xlink:href':
+                'https://gw.alipayobjects.com/mdn/rms_43231b/afts/img/A*6l60T6h8TTQAAAAAAAAAAAAAARQnAQ',
+              width: 16,
+              height: 16,
+              x: 12,
+              y: 12,
+            },
+            logo: {
+              'xlink:href':
+                'https://gw.alipayobjects.com/mdn/rms_43231b/afts/img/A*evDjT5vjkX0AAAAAAAAAAAAAARQnAQ',
+              width: 30,
+              height: 30,
+              x: 120,
+              y: 20,
+            },
+            title: {
+              text:state.label,
+              refX: 40,
+              refY: 14,
+              fill: 'rgba(0,0,0,0.85)',
+              fontSize: 12,
+              'text-anchor': 'start',
+            },
+            text: {
+              text: '状态：'+ props.status,
+              refX: 40,
+              refY: 38,
+              fontSize: 12,
+              fill: 'green',
+              'text-anchor': 'start',
+            },
           },
-          items: [
+          markup: [
             {
-              id: newNodeObj.taskId + '_in',
-              group: 'in',
+              tagName: 'rect',
+              selector: 'body',
             },
             {
-              id: newNodeObj.taskId + '_out',
-              group: 'out',
+              tagName: 'image',
+              selector: 'image',
+            },
+            {
+              tagName: 'image',
+              selector: 'logo',
+            },
+            {
+              tagName: 'text',
+              selector: 'title',
+            },
+            {
+              tagName: 'text',
+              selector: 'text',
             },
           ],
-        }
-      }
-      return node
-    }
-    const generateImag = () => {
-      const nodeData = {
-        // 节点
-        nodes: [
-          
-        ],
-        // 边
-        edges: [
-        ],
-      };
-      const collect = new Shape.Rect({
-        attrs: {
-          body: {
-            fill: "#EFF4FF",
-            stroke: "#5F95FF",
-            color: "#333",
-            rx: 50,
-            ry: 20,
-          },
-          label: {
-            fontSize: 16,
-            fill: "#333",
-            fontWeight: 800,
-            text: "数据采集",
-          },
         },
-        text: {
-          fontSize: 12,
-          fill: "rgba(0,0,0,0.85)",
-          textWrap: {
-            text: "",
-            width: -10,
+        true,
+      )
+      Graph.registerNode( //失败时回显的节点
+        'custom-fail',
+        {
+          width: 200,
+          height: 60,
+          attrs: {
+            body: {
+              stroke: 'red',
+              strokeWidth: 2,
+              fill: 'rgba(95,149,255,0.05)',
+            },
+            image: {
+              'xlink:href':
+                'https://gw.alipayobjects.com/mdn/rms_43231b/afts/img/A*SEISQ6My-HoAAAAAAAAAAAAAARQnAQ',
+              width: 16,
+              height: 16,
+              x: 12,
+              y: 12,
+            },
+            logo: {
+              'xlink:href':
+                'https://gw.alipayobjects.com/mdn/rms_43231b/afts/img/A*evDjT5vjkX0AAAAAAAAAAAAAARQnAQ',
+              width: 30,
+              height: 30,
+              x: 120,
+              y: 20,
+            },
+             title: {
+              text: state.label,
+              refX: 40,
+              refY: 14,
+              fill: 'rgba(0,0,0,0.85)',
+              fontSize: 12,
+              'text-anchor': 'start',
+            },
+            text: {
+              text: '状态：'+ props.status,
+              refX: 40,
+              refY: 38,
+              fontSize: 12,
+              fill: 'red',
+              'text-anchor': 'start',
+            },
           },
+          markup: [
+            {
+              tagName: 'rect',
+              selector: 'body',
+            },
+            {
+              tagName: 'image',
+              selector: 'image',
+            },
+            {
+              tagName: 'image',
+              selector: 'logo',
+            },
+            {
+              tagName: 'text',
+              selector: 'title',
+            },
+            {
+              tagName: 'text',
+              selector: 'text',
+            },
+          ],
         },
-      })
-      const flink = new Shape.Rect({
-        attrs: {
-          body: {
-            fill: "#EFF4FF",
-            stroke: "#5F95FF",
-            color: "#333",
-            rx: 50,
-            ry: 20,
+        true,
+      )
+      Graph.registerNode( //运行中回显的节点
+        'custom-normal',
+        {
+          width: 200,
+          height: 60,
+          attrs: {
+            body: {
+              stroke: 'blue',
+              strokeWidth: 2,
+              fill: 'rgba(95,149,255,0.05)',
+            },
+            image: {
+              'xlink:href':
+                'https://gw.alipayobjects.com/mdn/rms_43231b/afts/img/A*t8fURKfgSOgAAAAAAAAAAAAAARQnAQ',
+              width: 16,
+              height: 16,
+              x: 12,
+              y: 12,
+            },
+            logo: {
+              'xlink:href':
+                'https://gw.alipayobjects.com/mdn/rms_43231b/afts/img/A*evDjT5vjkX0AAAAAAAAAAAAAARQnAQ',
+              width: 30,
+              height: 30,
+              x: 120,
+              y: 20,
+            },
+             title: {
+              text:state.label,
+              refX: 40,
+              refY: 14,
+              fill: 'rgba(0,0,0,0.85)',
+              fontSize: 12,
+              'text-anchor': 'start',
+            },
+            text: {
+              text: '状态：'+ props.status,
+              refX: 40,
+              refY: 38,
+              fontSize: 12,
+              fill: 'blue',
+              'text-anchor': 'start',
+            },
           },
-          label: {
-            fontSize: 16,
-            fill: "#333",
-            fontWeight: 800,
-            text: "数据开发",
-          },
+          markup: [
+            {
+              tagName: 'rect',
+              selector: 'body',
+            },
+            {
+              tagName: 'image',
+              selector: 'image',
+            },
+            {
+              tagName: 'image',
+              selector: 'logo',
+            },
+            {
+              tagName: 'text',
+              selector: 'title',
+            },
+            {
+              tagName: 'text',
+              selector: 'text',
+            },
+          ],
         },
-        text: {
-          fontSize: 12,
-          fill: "rgba(0,0,0,0.85)",
-          textWrap: {
-            text: "",
-            width: -10,
-          },
-        },
-      })
-      // 回显实例节点和状态
-      // if(state.taskType == "COLLECT"){
-      //   graph.addNode(collect)
-      // } else if(state.taskType == "DLINK"){
-      //   graph.addNode(flink)
-      // }
-      console.log(nodeData);
+        true,
+      )
       const graph = new Graph({
         container: document.getElementById('containered'),
         height: 300,
@@ -155,26 +249,40 @@ export default defineComponent({
         // autoResize: true,
       });
       graph.centerContent()
-      graph.fromJSON(nodeData)
+      if (props.status == "成功") {
+        graph.addNode({
+          x: -10,
+          y: -20,
+          shape: 'custom-success',
+        })
+      } else if (props.status == "失败") {
+        graph.addNode({
+          x: -10,
+          y: -20,
+          shape: 'custom-fail',
+        })
+      } else {
+        graph.addNode({
+          x: -10,
+          y: -20,
+          shape: 'custom-normal',
+        })
+      }
+
     }
-    const onCancel = () => {
-      emit('close', '')
-    }
-    watch([code, projectCode, runStatus],(newval,oldval) => {//获取
-      state.code = code
-      state.projectCode = projectCode
-      state.runStatus = runStatus
+    watch([code, projectCode, status,docName],(newval,oldval) => {//获取
+    console.log(newval);
+      state.code = newval[0]
+      state.projectCode = newval[1]
+      state.runStatus = newval[2]
+      state.label=newval[3]
+      console.log(state.label);
+      generateImag()
       if(state.projectCode){
         proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
         .then(({data}) => {
           if(data.code == 200){
-            state.taskType = data.data.taskDefinition[0].taskType
-            state.nodeData = data.data.processPagingQueryVO.locations.map(x => ({
-              x: Number(x.x),
-              y: Number(x.y),
-              taskId: x.taskId,
-              name: state.menuObj.find(y => y.taskId === x.taskId).name,
-            }))
+
           }else{
             // ElMessage.error(data.msg)
           }
@@ -188,7 +296,7 @@ export default defineComponent({
     })
     return {
       state,
-      onCancel,
+      generateImag,
     }
   }
 })

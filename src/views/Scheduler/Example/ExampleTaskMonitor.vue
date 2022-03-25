@@ -13,7 +13,7 @@
         </el-descriptions>
       </div>
       <div style="width:100% ">
-        <dag-graph :code="state.deCode" :projectCode="state.projectCode" :runStatus="state.runState"/>
+        <dag-graph :code="state.deCode" :projectCode="state.projectCode" :status="state.docState" :doc-name="state.docName"/>
       </div>
     <div>
       <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" stripe >
@@ -55,7 +55,7 @@
 </template>
 
 <script>
-import { defineComponent, getCurrentInstance, ref, onMounted, reactive } from "vue";
+import { defineComponent, getCurrentInstance, ref, onMounted, reactive, watch } from "vue";
 import { useRoute } from 'vue-router'
 import { Pagination } from '@/../common/constants'
 import { cloneDeep } from 'lodash'
@@ -75,6 +75,8 @@ export default defineComponent({
       motif: null,
     })
     const state = reactive({
+      docState: '',
+      docName: '',
       loading: false,
       statusOptions: [
         {
@@ -112,6 +114,9 @@ export default defineComponent({
       }).then(({data}) => {
         state.tableData = data.data.totalList
         pageObj.total = data.data.total
+        state.docName = state.tableData[0].name
+        state.docState = state.tableData[0].stateCN
+        console.log(state.docName);
       })
     }
     //分页
