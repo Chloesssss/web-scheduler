@@ -119,6 +119,7 @@
       const onCommit = () => {
         emit("getFlink", taskDefinition);
         emit('close')
+        console.log(taskDefinition);
       }
       const handleClose = () => {
         proxy.$refs.form.resetFields()

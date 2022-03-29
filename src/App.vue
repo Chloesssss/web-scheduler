@@ -82,10 +82,8 @@ export default defineComponent({
       console.log(key, keyPath);
     };
     onBeforeMount(() => {
-      console.log(window.location.href);
       let hrefName = window.location.href
       state.hrefName = hrefName.split('/')[3]
-      console.log(state.hrefName);
     })
     onMounted(() => {
       const currentRouteTemp = localStorage.getItem(currentRoute);
@@ -95,7 +93,6 @@ export default defineComponent({
         state.activeIndex = state.menuList[0].index;
       }
       router.push({name: state.activeIndex})
-      console.log(currentRouteTemp);
     });
     return {
       state,

@@ -36,9 +36,10 @@ export default defineComponent({
           height: 60,
           attrs: {
             body: {
-              stroke: '#237804',
+              stroke: '#5DA165',
               strokeWidth: 2,
               fill: 'rgba(95,149,255,0.05)',
+              fillOpacity: 0.2,
             },
             image: {
               'xlink:href':
@@ -108,6 +109,7 @@ export default defineComponent({
               stroke: 'red',
               strokeWidth: 2,
               fill: 'rgba(95,149,255,0.05)',
+              fillOpacity: 0.2,
             },
             image: {
               'xlink:href':
@@ -177,6 +179,7 @@ export default defineComponent({
               stroke: 'blue',
               strokeWidth: 2,
               fill: 'rgba(95,149,255,0.05)',
+              fillOpacity: 0.2,
             },
             image: {
               'xlink:href':

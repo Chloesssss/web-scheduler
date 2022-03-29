@@ -1,4 +1,4 @@
-<template>
+<template style="width:700">
   <el-dialog :title="state.flagCode?'更新定时管理':'定时管理配置'" v-model="timeVisible" @close="onCancel" width="700px" :append-to-body='true'>
     <div class="flex justify-content-center">
       <el-form ref="Form" :rules="state.rules" :model="formObj" label-width="100px">
@@ -24,7 +24,7 @@
         </el-form-item>
         </div>
         <el-form-item label="失败重试" prop="failureStrategy">
-          <el-radio-group v-model="formObj.status" size="mini">
+          <el-radio-group v-model="formObj.status" size="small">
             <el-radio-button label="0">启用</el-radio-button>
             <el-radio-button label="1">禁用</el-radio-button>
           </el-radio-group>
@@ -265,4 +265,12 @@
   .el-picker-panel__footer .el-button--text.el-picker-panel__link-btn {
     display: none;
   }
+  .el-dialog__header { 
+    padding: 10px;
+    background-color: #1D77DE;
+    align-items: center;
+    justify-content: space-around;
+    width: 97.6%;
+  }
+
 </style>

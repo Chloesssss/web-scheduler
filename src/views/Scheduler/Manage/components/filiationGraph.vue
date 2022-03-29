@@ -43,7 +43,8 @@ export default defineComponent({
       length: '',// 画布上的节点个数
       codeList: [],// 后端接口返回节点id数组
       taskCode: '',// 后端接口返回节点id字符串
-      nodeDtos: [],
+      nodeDtos: [], //回显的节点数据
+      linkDtos: [], //回显的边数据
       currentCode: '',// 当前节点id
       arrList:[],// 节点id数组（原）
       taskDefinition: [],// 节点配置表单信息
@@ -54,23 +55,20 @@ export default defineComponent({
       postTaskVersion: 1,//指向的节点版本（指向1（指向自己））
       preTaskVersion: 1,//父节点为0，子节点为1
       workState: '',
+      collectLabel: '数据采集',
+      flinkLabel: '数据开发',
     })
     let graph = null
+    const nodeData = {
+      // 节点
+      nodes: [
+      ],
+      // 边
+      edges: [
+      ],
+    };
     const init= () => {
-      const nodeData = {
-        // 节点
-        nodes: [
-        ],
-        // 边
-        edges: [
-        ],
-      };
-      // 修改的时候回显数据
-      if(state.nodeDtos.length) { // 回显节点
-        state.nodeDtos.forEach(x => {
-          nodeData.nodes.push(generateNewNodeObj(x))
-        })
-      }
+      console.log(state.nodeDtos);
       // 定义边
       Graph.registerConnector(
         'algo-edge',
@@ -213,7 +211,8 @@ export default defineComponent({
       });
       // graph.isPannable() // 画布是否可以平移
       // graph.enablePanning() // 启用画布平移
-
+      console.log(nodeData);
+      graph.fromJSON(nodeData)
       graph.centerContent();
 
       /******************************** 左侧模型栏 ****************************/
@@ -296,7 +295,7 @@ export default defineComponent({
             fontSize: 16,
             fill: "#333",
             fontWeight: 800,
-            text: "数据采集",
+            text: state.collectLabel,
           },
         },
         text: {
@@ -321,7 +320,7 @@ export default defineComponent({
             fontSize: 16,
             fill: "#333",
             fontWeight: 800,
-            text: "数据开发",
+            text: state.flinkLabel,
           },
         },
         ports: { ...ports },
@@ -467,7 +466,9 @@ export default defineComponent({
     }
     //获取开发节点配置信息
     const getFlink = (j) => {
+      console.log(j.name);
       state.setDocId.push(j.nodeId)
+      state.flinkLabel = j.name
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(j)) })
     }
     const showModal = () => {// 节点配置抽屉弹出
@@ -592,19 +593,122 @@ export default defineComponent({
       if(state.projectCode){
         proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
         .then(({data}) => {
-          if(data.code == 200){
-            // state.nodeDtos = data.datas.processPagingQueryVO.location.map(x => ({
-            //   x: Number(x.leftPos),
-            //   y: Number(x.topPos),
-            //   taskId: x.taskId,
-            //   name: state.menuObj.find(y => y.taskId === x.taskId).name,
-            // }))
-            //ElMessage.success(data.msg)
-            // state.locations = data.data.processPagingQueryVO.locations
+          if(data.code == 200 && data.data.taskDefinition != null){
+            let locations = JSON.parse(data.data.processPagingQueryVO.locations)
+            let definition = data.data.taskDefinition
+            let label = definition.map(x => x.name)
+            let taskType = definition.map(x => x.taskType)
+            let code = definition.map(x => x.code)
+            state.nodeDtos = locations.map(x => ({
+              x: Number(x.x),
+              y: Number(x.y),
+              id: x.taskCode,
+              width: 130,
+              height: 70,
+              attrs: {
+                body: {
+                  fill: "#EFF4FF",
+                  stroke: "#5F95FF",
+                  color: "#333",
+                  rx: 50,
+                  ry: 20,
+                },
+                label: {
+                  fontSize: 16,
+                  fill: "#333",
+                  fontWeight: 800,
+                  text: taskType[x] === "COLLECT" ? state.collectLabel: state.flinkLabel,
+                },
+              },
+              text: {
+                fontSize: 12,
+                fill: "rgba(0,0,0,0.85)",
+                textWrap: {
+                  text: "",
+                  width: -10,
+                },
+              },
+              shape: 'rect',
+              ports: {
+                groups: {
+                  in: {
+                    position: 'top',
+                    attrs: {
+                      circle: {
+                        r: 4,
+                        magnet: true,
+                        stroke: '#108ee9',
+                        strokeWidth: 2,
+                        fill: '#fff'
+                      }
+                    }
+                  },
+                  out: {
+                    position: 'bottom',
+                    attrs: {
+                      circle: {
+                        r: 4,
+                        magnet: true,
+                        stroke: '#31d0c6',
+                        strokeWidth: 2,
+                        fill: '#fff'
+                      }
+                    }
+                  }
+                },
+                items: [
+                  {
+                    id: x.taskCode + '_in',
+                    group: 'in',
+                  },
+                  {
+                    id: x.taskCode + '_out',
+                    group: 'out',
+                  },
+                ],
+              }
+            }))
+            let edges = data.data.taskRelation
+            for (let index = 0; index < edges.length; index++) {
+              const element = edges[index];
+              if (edges[index].preTaskCode === 0) {
+                edges.splice(element,1)
+              }
+            }
+            console.log(edges);
+            state.linkDtos = edges.map(x => ({
+              source: {cell: x.preTaskCode, port: x.preTaskCode + '_out'},
+              target: {cell: x.postTaskCode, port: x.postTaskCode + '_in'},
+              attrs: {
+                line: {
+                  strokeDasharray: '5 5',
+                  stroke: '#808080',
+                  strokeWidth: 1,
+                  targetMarker: {
+                    name: 'block',
+                    args: {
+                      size: '6',
+                    },
+                  },
+                },
+              },
+              shape: 'edge',
+            }))
+            console.log(state.linkDtos);
+            // if(state.nodeDtos.length) { // 回显节点
+            //   state.nodeDtos.forEach(x => {
+            //     nodeData.nodes.push(state.nodeDtos(x))
+            //     nodeData.edges.push(state.linkDtos(x))
+            //   })
+            // }
+            nodeData.nodes = state.nodeDtos;
+            nodeData.edges = state.linkDtos
+            console.log(nodeData);
+            graph.fromJSON(nodeData)
             state.workState = data.data.processPagingQueryVO.releaseState
             emit("giveState", state.workState);
           }else{
-            // ElMessage.error(data.msg)
+            graph.fromJSON([])
           }
         })
       } else {
