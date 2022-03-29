@@ -211,8 +211,6 @@ export default defineComponent({
       });
       // graph.isPannable() // 画布是否可以平移
       // graph.enablePanning() // 启用画布平移
-      console.log(nodeData);
-      graph.fromJSON(nodeData)
       graph.centerContent();
 
       /******************************** 左侧模型栏 ****************************/
@@ -607,8 +605,8 @@ export default defineComponent({
               height: 70,
               attrs: {
                 body: {
-                  fill: "#EFF4FF",
-                  stroke: "#5F95FF",
+                  fill: taskType[locations.indexOf(x)] === "COLLECT" ? "#EFF4FF": "#efdbff",
+                  stroke: taskType[locations.indexOf(x)] === "COLLECT" ? "#5F95FF" : "#9254de",
                   color: "#333",
                   rx: 50,
                   ry: 20,
@@ -617,7 +615,7 @@ export default defineComponent({
                   fontSize: 16,
                   fill: "#333",
                   fontWeight: 800,
-                  text: taskType[x] === "COLLECT" ? state.collectLabel: state.flinkLabel,
+                  text: taskType[locations.indexOf(x)] === "COLLECT" ? state.collectLabel: state.flinkLabel,
                 },
               },
               text: {
@@ -668,14 +666,14 @@ export default defineComponent({
                 ],
               }
             }))
+            console.log(state.nodeDtos);
             let edges = data.data.taskRelation
-            for (let index = 0; index < edges.length; index++) {
+            for (let index = edges.length-1; index >= 0; index--) {
               const element = edges[index];
               if (edges[index].preTaskCode === 0) {
                 edges.splice(element,1)
               }
             }
-            console.log(edges);
             state.linkDtos = edges.map(x => ({
               source: {cell: x.preTaskCode, port: x.preTaskCode + '_out'},
               target: {cell: x.postTaskCode, port: x.postTaskCode + '_in'},
@@ -707,6 +705,21 @@ export default defineComponent({
             graph.fromJSON(nodeData)
             state.workState = data.data.processPagingQueryVO.releaseState
             emit("giveState", state.workState);
+            let flinkForm = [];
+            let collectForm = [];
+            console.log(definition);
+            for (let p = 0; p < definition.length; p++) {
+              const formObj = definition[p];
+              
+              if (definition[p].taskType === "COLLECT") {
+                definition.splice(formObj,1)
+                flinkForm = definition
+              } else if (definition[p].taskType === "DLINK") {
+                definition.splice(formObj,1)
+                collectForm = definition
+              }
+            }
+            console.log(collectForm,flinkForm);
           }else{
             graph.fromJSON([])
           }
