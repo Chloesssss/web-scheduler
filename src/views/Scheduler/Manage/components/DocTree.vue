@@ -14,6 +14,7 @@
         :data="state.dataSource"
         ref="treeRef"
         node-key="id"
+        :currrent-node-key="state.currentNodekey"
         highlight-current
         default-expand-allid
         :default-expanded-keys="state.defaultShowNodes"
@@ -77,9 +78,13 @@ import { Document, Search, Folder, FolderOpened, Fold, Expand, CirclePlus } from
 export default defineComponent({
   name: "DocTree",
   components: { CreateWork, WorkMenu, Document, Search, Folder, FolderOpened, Fold, Expand, CirclePlus },
+  props: {
+    editName: '',
+  },
   emits:['giveCode','onEdit'],
   setup(props,{emit}) {
     const { proxy } = getCurrentInstance()
+    const { editName } = toRefs(props)
     const router = useRouter()
     const route = useRoute()
     const treeRef = ref(null);
@@ -103,6 +108,7 @@ export default defineComponent({
       currentNodeName: '', //当前选中的节点名
       motif: '',//作业主题名（根节点名）
       defaultShowNodes: [],
+      currentNodekey: "", //作业监控跳转选中的节点
     })
     //获取目录
     const getTreeData = () => {
@@ -119,6 +125,7 @@ export default defineComponent({
     }
     //点击目录
     const onTreeClick = (data,node) => {
+      console.log(data.id);
       state.defaultShowNodes.push(data.id)
       state.code = data.code
       if (data.children===null) {
@@ -137,10 +144,6 @@ export default defineComponent({
       if(state.dataId != -1){
         state.tmpCurrent = data // 缓存当前分类数据，主要用于新增时防止再次点击输入框当前值变化
       }
-    }
-    //作业监控编辑跳转选中相应作业节点
-    const setCheckedNodes = () => {
-      proxy.$refs.treeRef.setCheckedNodes()
     }
     const createWorkOk =() => {// 创建根目录
       state.createWorkVisible = false
@@ -220,7 +223,12 @@ export default defineComponent({
     //获取树形目录搜索值
     const searchAll = (searchInput) => {
       const tree = treeRef.value
-      tree?.filter(searchInput)
+      if (!state.searchInput) {
+        tree?.filter(searchInput)
+      }else{
+        tree?.filter(state.searchInput)
+      }
+      
     }
     //树形目录搜索
     const filterNode = (searchInput, data, node) => {
@@ -235,9 +243,13 @@ export default defineComponent({
       }
       return labels.some(label => label.indexOf(searchInput) !== -1)
     }
+    //监听作业监控编辑跳转选中相应作业节点
+    watch([editName],(newval,oldval) => {
+      emit("onEdit")
+      state.searchInput = newval[0]
+    })
     onMounted(() => {
       getTreeData()
-      emit('onEdit')
     })
     return {
       ...toRefs(state),
@@ -253,7 +265,6 @@ export default defineComponent({
       changeDom,
       searchAll,
       filterNode,
-      setCheckedNodes,
     }
   },
 });

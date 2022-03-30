@@ -57,6 +57,7 @@ export default defineComponent({
       workState: '',
       collectLabel: '数据采集',
       flinkLabel: '数据开发',
+      params: {},
     })
     let graph = null
     const nodeData = {
@@ -68,7 +69,6 @@ export default defineComponent({
       ],
     };
     const init= () => {
-      console.log(state.nodeDtos);
       // 定义边
       Graph.registerConnector(
         'algo-edge',
@@ -338,20 +338,11 @@ export default defineComponent({
       })
       //回显边
       graph.on('edge:added', ({ edge }) => {
-        // console.log(graph.getEdges().map(x => x.getSource().cell));
-        // console.log(state.arrList);
-        // const linkDtostemp = graph.getEdges().map(y => ({
-        //   sourceId: state.taskCode[state.arrList.indexOf(y.getSource().cell)],
-        //   targetId: state.taskCode[state.arrList.indexOf(y.getTarget().cell)],
-        // }))
-        // const allCollectTaskId = []
-        // linkDtostemp.forEach(x => {
-        //   allCollectTaskId.push(x.sourceId)
-        //   allCollectTaskId.push(x.targetId)
-        // })
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node, cell }) => {
+        console.log(graph.getNodes());
+        console.log(state.params);
         let index = state.arrList.indexOf(node.id)
         state.currentCode=state.taskCode[index]
         if(node.getAttrs().label.text === "数据采集"){
@@ -359,7 +350,6 @@ export default defineComponent({
         } else if(node.getAttrs().label.text === "数据开发"){
           showflink()
         }
-        console.log(state.currentCode);
       });
       // 节点删除操作
       graph.on("node:mouseenter", ({ node }) => {
@@ -413,6 +403,19 @@ export default defineComponent({
         // 鼠标移开时删除删除按钮
         edge.removeTools();
       });
+      graph.on('node:change:data', ({node}) => {
+        const edges = graph.getIncomingEdges(node)
+        const {status} = node.getData()
+        edges?.forEach((edge) => {
+          if (status === 'running') {
+            edge.attr('line/strokeDasharray', 5)
+            edge.attr('line/style/animation', 'running-line 30s infinite linear')
+          } else {
+            edge.attr('line/strokeDasharray', '')
+            edge.attr('line/style/animation', '')
+          }
+        })
+      })
       graph.on("node:contextmenu", ({ cell, view }) => {
         const oldText = cell.attr("text/textWrap/text");
         const elem = view.container.querySelector(".x6-edit-text");
@@ -464,7 +467,6 @@ export default defineComponent({
     }
     //获取开发节点配置信息
     const getFlink = (j) => {
-      console.log(j.name);
       state.setDocId.push(j.nodeId)
       state.flinkLabel = j.name
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(j)) })
@@ -497,7 +499,6 @@ export default defineComponent({
         postTaskVersion: state.postTaskVersion,
         preTaskVersion: state.preTaskVersion,
       }))
-      console.log(taskRelation);
       const allCollectTaskId = []
       taskRelation.forEach(x => {
         allCollectTaskId.push(x.id)
@@ -527,9 +528,7 @@ export default defineComponent({
         preTaskVersion: '0',
         postTaskVersion: state.postTaskVersion,
       }))
-      console.log(sourceNodeship);
       state.taskRelation = sourceNodeship.concat(taskRelation)
-      console.log(state.taskRelation);
     }
     //生成节点标识
     const getNodeCode = (flag) => {
@@ -553,9 +552,7 @@ export default defineComponent({
     //保存画布配置
     const save = () => {
       setRelation()
-      console.log(state.taskRelation)
       let taskDefinition = state.taskDefinition.map(x => x.value);
-      console.log(taskDefinition);
       let index = state.arrList.indexOf(graph.getNodes().map(x => x.id))//根据下标获取节点id
       state.currentCode=state.taskCode[index]
       const locations = graph.getNodes().map(x => ({// 节点位置
@@ -592,6 +589,7 @@ export default defineComponent({
         proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
         .then(({data}) => {
           if(data.code == 200 && data.data.taskDefinition != null){
+            state.params = data.data
             let locations = JSON.parse(data.data.processPagingQueryVO.locations)
             let definition = data.data.taskDefinition
             let label = definition.map(x => x.name)
@@ -666,7 +664,6 @@ export default defineComponent({
                 ],
               }
             }))
-            console.log(state.nodeDtos);
             let edges = data.data.taskRelation
             for (let index = edges.length-1; index >= 0; index--) {
               const element = edges[index];
@@ -692,13 +689,6 @@ export default defineComponent({
               },
               shape: 'edge',
             }))
-            console.log(state.linkDtos);
-            // if(state.nodeDtos.length) { // 回显节点
-            //   state.nodeDtos.forEach(x => {
-            //     nodeData.nodes.push(state.nodeDtos(x))
-            //     nodeData.edges.push(state.linkDtos(x))
-            //   })
-            // }
             nodeData.nodes = state.nodeDtos;
             nodeData.edges = state.linkDtos
             console.log(nodeData);
@@ -707,10 +697,8 @@ export default defineComponent({
             emit("giveState", state.workState);
             let flinkForm = [];
             let collectForm = [];
-            console.log(definition);
-            for (let p = 0; p < definition.length; p++) {
+            for (let p = definition.length-1; p >= 0; p --) {
               const formObj = definition[p];
-              
               if (definition[p].taskType === "COLLECT") {
                 definition.splice(formObj,1)
                 flinkForm = definition
@@ -719,13 +707,12 @@ export default defineComponent({
                 collectForm = definition
               }
             }
-            console.log(collectForm,flinkForm);
           }else{
             graph.fromJSON([])
+            ElMessage.warning('当前画布为空')
           }
         })
       } else {
-        //ElMessage.warning('请选择作业树子节点')
       }
     })
     onMounted(() => {

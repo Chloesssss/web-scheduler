@@ -115,20 +115,6 @@
         taskDefinition.nodeId = taskCode.value
         state.name = workName
         dialogVisible.value = newval[0]
-        // taskCode.value = newval[1];
-        if(dialogVisible.value){
-          if(taskCode.value){
-            proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
-            .then(({data}) => {
-              if(data.code == 200){
-                Object.assign(taskDefinition, data.data.taskDefinition)
-                console.log(data.data.taskDefinition);
-              }else{
-                // ElMessage.error(data.msg)
-              }
-            })
-          }
-        }
       })
       //提交
       const onCommit = () => {

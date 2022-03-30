@@ -2,7 +2,7 @@
   <div class=" flex" style="overflow: hidden;">
     <div class="overflow-auto mr-20" style="width: 100%;min-width: 250px ">
       <main class="flex">
-        <doc-tree ref="mychild" @give-code="getCode" @onEdit="getWorkEdit"/>
+        <doc-tree ref="mychild" @give-code="getCode" @on-edit="getWorkEdit" :edit-name="state.workMonitorName"/>
       </main>  
     </div>
     <div style="width: 100%">
@@ -134,9 +134,9 @@ export default defineComponent({
       state.workCode = proxy.$route.query.code
       state.workProjectCode = proxy.$route.query.projectCode
       state.workMonitorName = proxy.$route.query.name
+      console.log(state.workMonitorName);
     }
     onMounted(() => {
-      getWorkEdit()
       getState()
     })
     return {

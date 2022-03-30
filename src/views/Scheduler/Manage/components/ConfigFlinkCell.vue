@@ -104,16 +104,6 @@
         taskDefinition.nodeId = taskCode.value
         state.name = workName
         flinkVisible.value = newval[0]
-        if(flinkVisible.value == true && state.projectCode){
-          proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
-          .then(({data}) => {
-            if(data.code == 200){
-              Object.assign(taskDefinition, data.data.taskDefinition)
-            }else{
-              //ElMessage.error(data.msg)
-            }
-          })
-        }
       })
       //提交
       const onCommit = () => {

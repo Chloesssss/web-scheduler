@@ -157,12 +157,6 @@ export default defineComponent({
     // }
     //编辑
     const onEdit = (row) => {
-      proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/${row.code}`, {
-        code: row.code,
-        locations: null,
-        name: row.name,
-        projectCode: state.projectCode
-      })
       router.push({path: 'workManage', query: {projectCode: row.projectCode, code: row.code, releaseState: row.releaseState, name: row.name }})
     }
     const handleMore = (command, row) => {

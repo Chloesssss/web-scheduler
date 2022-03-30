@@ -274,7 +274,6 @@ export default defineComponent({
 
     }
     watch([code, projectCode, status,docName],(newval,oldval) => {//获取
-    console.log(newval);
       state.code = newval[0]
       state.projectCode = newval[1]
       state.runStatus = newval[2]
