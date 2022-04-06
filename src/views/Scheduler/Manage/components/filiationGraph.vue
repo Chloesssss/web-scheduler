@@ -58,6 +58,8 @@ export default defineComponent({
       collectLabel: '数据采集',
       flinkLabel: '数据开发',
       params: {},
+      nodeDefinition: [], // 节点存储的data表单数据
+      watchCode: '',
     })
     let graph = null
     const nodeData = {
@@ -304,6 +306,7 @@ export default defineComponent({
             width: -10,
           },
         },
+        data: state.nodeDefinition,
         ports: { ...ports },
       });
       const flink = new Rect({
@@ -321,6 +324,7 @@ export default defineComponent({
             text: state.flinkLabel,
           },
         },
+        data: state.nodeDefinition,
         ports: { ...ports },
       });
       stencil.load(
@@ -341,8 +345,9 @@ export default defineComponent({
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node, cell }) => {
-        console.log(graph.getNodes());
-        console.log(state.params);
+        console.log(node.id);
+        console.log(state.taskDefinition);
+        console.log(state.taskRelation);
         let index = state.arrList.indexOf(node.id)
         state.currentCode=state.taskCode[index]
         if(node.getAttrs().label.text === "数据采集"){
@@ -350,6 +355,7 @@ export default defineComponent({
         } else if(node.getAttrs().label.text === "数据开发"){
           showflink()
         }
+
       });
       // 节点删除操作
       graph.on("node:mouseenter", ({ node }) => {
@@ -367,13 +373,16 @@ export default defineComponent({
         if (!options.ui) {
           return;
         }
+        let m = state.setDocId.indexOf(state.currentCode)
+        if (m > -1) {
+          state.taskDefinition.splice(m,1)
+          state.taskRelation.splice(m,1)
+        }
         let index = state.arrList.indexOf(node.id)
         if(index > -1){
           state.arrList.splice(index, 1);
           state.taskCode.splice(index,1);
           state.codeList.splice(index,1);
-          state.taskDefinition.splice(index,1)
-          state.taskRelation.splice(index,1)
         }	
         state.length = graph.getNodes().length
       });
@@ -404,17 +413,7 @@ export default defineComponent({
         edge.removeTools();
       });
       graph.on('node:change:data', ({node}) => {
-        const edges = graph.getIncomingEdges(node)
-        const {status} = node.getData()
-        edges?.forEach((edge) => {
-          if (status === 'running') {
-            edge.attr('line/strokeDasharray', 5)
-            edge.attr('line/style/animation', 'running-line 30s infinite linear')
-          } else {
-            edge.attr('line/strokeDasharray', '')
-            edge.attr('line/style/animation', '')
-          }
-        })
+        state.taskDefinition = node.data
       })
       graph.on("node:contextmenu", ({ cell, view }) => {
         const oldText = cell.attr("text/textWrap/text");
@@ -464,17 +463,21 @@ export default defineComponent({
     const getCollect = (i) => {
       state.setDocId.push(i.nodeId)
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(i)) })
+      state.nodeDefinition = i 
+      console.log(state.setDocId);
     }
     //获取开发节点配置信息
     const getFlink = (j) => {
       state.setDocId.push(j.nodeId)
       state.flinkLabel = j.name
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(j)) })
+      state.nodeDefinition = j
     }
     const showModal = () => {// 节点配置抽屉弹出
       state.dialogVisible = true;
+      console.log(graph.getNodes());
     }
-    const showflink = () => {
+    const showflink = (node) => {
       state.flinkVisible = true;
     }
     const closeModal = () => {//节点配置抽屉关闭
@@ -538,7 +541,7 @@ export default defineComponent({
           state.taskCode = state.codeList.toString().split(",")
           if(flag===1){
             let index = state.arrList.indexOf(state.currentCode)
-            state.currentCode=state.taskCode[index]
+            state.currentCode = state.taskCode[index]
           }else{
             state.currentCode=""
           }
@@ -554,7 +557,7 @@ export default defineComponent({
       setRelation()
       let taskDefinition = state.taskDefinition.map(x => x.value);
       let index = state.arrList.indexOf(graph.getNodes().map(x => x.id))//根据下标获取节点id
-      state.currentCode=state.taskCode[index]
+      state.currentCode = state.taskCode[index]
       const locations = graph.getNodes().map(x => ({// 节点位置
         x: x.position().x,
         y: x.position().y,
@@ -595,6 +598,7 @@ export default defineComponent({
             let label = definition.map(x => x.name)
             let taskType = definition.map(x => x.taskType)
             let code = definition.map(x => x.code)
+            let taskCode = locations.map(x => x.taskCode)
             state.nodeDtos = locations.map(x => ({
               x: Number(x.x),
               y: Number(x.y),
@@ -691,8 +695,9 @@ export default defineComponent({
             }))
             nodeData.nodes = state.nodeDtos;
             nodeData.edges = state.linkDtos
-            console.log(nodeData);
+            console.log(state.nodeDtos);
             graph.fromJSON(nodeData)
+            state.watchCode=taskCode
             state.workState = data.data.processPagingQueryVO.releaseState
             emit("giveState", state.workState);
             let flinkForm = [];
