@@ -51,11 +51,12 @@
       projectCode: [Number, String],
       workName: '',
       taskCode: [Number, String],
+      definition: [Object, String, null, []],
     },
     emits:['close', 'getFlink'],
     setup(props, {emit}) {
       const { proxy } = getCurrentInstance();
-      const { visible, code, projectCode, workName, taskCode } = toRefs(props)
+      const { visible, code, projectCode, workName, taskCode, definition } = toRefs(props)
       const flinkVisible = ref(false)
       const  taskDefinition = reactive({ // 声明表单信息
         name: '',
@@ -67,7 +68,7 @@
         projectCode: '',
         code: '',
         callTaskId: '',
-        nodeId: '',
+        nodeId: [],
       })
       const state = reactive({
         drawer : false,
@@ -76,6 +77,7 @@
         location: '',
         tableVisible: false,
         name: '',
+        definition: [],
       })
       //获取作业名、选中的整条数据、id
       const getCode = (e, k, x) => {
@@ -96,14 +98,19 @@
       onMounted(() => {
         watch
       });
-      watch([visible, code, projectCode, workName, taskCode],(newval,oldval) => {
-        state.code = code
-        state.projectCode = projectCode
-        taskDefinition.code = taskCode.value
-        taskDefinition.projectCode = projectCode
-        taskDefinition.nodeId = taskCode.value
-        state.name = workName
+      watch([visible, code, projectCode, workName, taskCode, definition],(newval,oldval) => {
         flinkVisible.value = newval[0]
+        if (newval[5]) {
+          state.definition = newval[5]
+          Object.assign(taskDefinition, newval[5])
+        } else {
+          state.code = code
+          state.projectCode = projectCode
+          taskDefinition.code = taskCode.value
+          taskDefinition.projectCode = projectCode
+          taskDefinition.nodeId = taskCode.value
+          state.name = workName
+        }
       })
       //提交
       const onCommit = () => {

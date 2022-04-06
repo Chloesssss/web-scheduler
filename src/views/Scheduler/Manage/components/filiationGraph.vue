@@ -4,9 +4,9 @@
     <div class="app-content" id="flowContainer" ref="container"></div>
   </div>
   <!-- 执行策略配置 -->
-  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.currentCode" :work-name="state.name" @get-collect="getCollect"/>
+  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.currentCode" :work-name="state.name" @get-collect="getCollect" :definition="state.currentDefinition"/>
   <!-- 开发执行策略配置 -->
-  <config-flink-cell :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.currentCode" :work-name="state.name" @get-flink="getFlink"/>
+  <config-flink-cell :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.currentCode" :work-name="state.name" @get-flink="getFlink" :definition="state.currentDefinition"/>
 </template>
 
 <script>
@@ -40,7 +40,6 @@ export default defineComponent({
       dialogVisible: false,
       flinkVisible: false,
       name: '',// 工作流作业名
-      length: '',// 画布上的节点个数
       codeList: [],// 后端接口返回节点id数组
       taskCode: '',// 后端接口返回节点id字符串
       nodeDtos: [], //回显的节点数据
@@ -59,7 +58,10 @@ export default defineComponent({
       flinkLabel: '数据开发',
       params: {},
       nodeDefinition: [], // 节点存储的data表单数据
+      //监听获取的数据存储
       watchCode: '',
+      watchDefinition: [],
+      currentDefinition: [],//当前节点的配置表单数据
     })
     let graph = null
     const nodeData = {
@@ -335,9 +337,8 @@ export default defineComponent({
       //绑定事件
       // 拖拽
       graph.on('node:added', ({ node }) => {
-        state.length = graph.getNodes().length
         state.arrList.push(node.id)
-        state.currentCode=node.id
+        state.currentCode = node.id
         getNodeCode(1)
       })
       //回显边
@@ -345,11 +346,11 @@ export default defineComponent({
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node, cell }) => {
-        console.log(node.id);
-        console.log(state.taskDefinition);
-        console.log(state.taskRelation);
+        console.log(node.data);
+        state.currentDefinition = node.data
+        console.log(state.watchCode);
         let index = state.arrList.indexOf(node.id)
-        state.currentCode=state.taskCode[index]
+        state.currentCode = state.taskCode[index]
         if(node.getAttrs().label.text === "数据采集"){
           showModal()
         } else if(node.getAttrs().label.text === "数据开发"){
@@ -373,6 +374,9 @@ export default defineComponent({
         if (!options.ui) {
           return;
         }
+        if (nodeData.nodes != null) {
+          state.watchDefinition.splice(node.data,1)
+        }
         let m = state.setDocId.indexOf(state.currentCode)
         if (m > -1) {
           state.taskDefinition.splice(m,1)
@@ -384,7 +388,8 @@ export default defineComponent({
           state.taskCode.splice(index,1);
           state.codeList.splice(index,1);
         }	
-        state.length = graph.getNodes().length
+        console.log(state.watchDefinition);
+        console.log(state.taskRelation);
       });
       graph.on("node:mouseleave", ({ node }) => {
         // 鼠标移开时删除删除按钮
@@ -543,7 +548,7 @@ export default defineComponent({
             let index = state.arrList.indexOf(state.currentCode)
             state.currentCode = state.taskCode[index]
           }else{
-            state.currentCode=""
+            state.currentCode = ""
           }
         } else {
         }
@@ -562,6 +567,9 @@ export default defineComponent({
         x: x.position().x,
         y: x.position().y,
       }))
+      if (nodeData.nodes != null) {
+         state.taskCode.concat(state.watchCode)
+      }
       proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/${state.code}`, {
         code: state.code,
         name: state.name,
@@ -605,6 +613,7 @@ export default defineComponent({
               id: x.taskCode,
               width: 130,
               height: 70,
+              data: definition[locations.indexOf(x)],
               attrs: {
                 body: {
                   fill: taskType[locations.indexOf(x)] === "COLLECT" ? "#EFF4FF": "#efdbff",
@@ -695,9 +704,9 @@ export default defineComponent({
             }))
             nodeData.nodes = state.nodeDtos;
             nodeData.edges = state.linkDtos
-            console.log(state.nodeDtos);
             graph.fromJSON(nodeData)
-            state.watchCode=taskCode
+            state.watchCode = taskCode
+            state.watchDefinition = definition
             state.workState = data.data.processPagingQueryVO.releaseState
             emit("giveState", state.workState);
             let flinkForm = [];
@@ -713,6 +722,7 @@ export default defineComponent({
               }
             }
           }else{
+            nodeData.nodes = null
             graph.fromJSON([])
             ElMessage.warning('当前画布为空')
           }
