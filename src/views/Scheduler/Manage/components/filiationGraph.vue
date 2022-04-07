@@ -4,9 +4,9 @@
     <div class="app-content" id="flowContainer" ref="container"></div>
   </div>
   <!-- 执行策略配置 -->
-  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.currentCode" :work-name="state.name" @get-collect="getCollect" :definition="state.currentDefinition"/>
+  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-collect="getCollect" :definition="state.currentDefinition"/>
   <!-- 开发执行策略配置 -->
-  <config-flink-cell :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.currentCode" :work-name="state.name" @get-flink="getFlink" :definition="state.currentDefinition"/>
+  <config-flink-cell :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-flink="getFlink" :definition="state.currentDefinition"/>
 </template>
 
 <script>
@@ -45,6 +45,7 @@ export default defineComponent({
       nodeDtos: [], //回显的节点数据
       linkDtos: [], //回显的边数据
       currentCode: '',// 当前节点id
+      nodeId: '',// 当前节点id(传入表单)
       arrList:[],// 节点id数组（原）
       taskDefinition: [],// 节点配置表单信息
       taskRelation: [],// 节点关系
@@ -346,8 +347,11 @@ export default defineComponent({
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node, cell }) => {
-        console.log(node.data);
-        state.currentDefinition = node.data
+        if (node.data != undefined) {
+          state.currentDefinition = node.data
+        } else{
+          state.currentDefinition = null
+        }console.log(state.currentDefinition);
         console.log(state.watchCode);
         let index = state.arrList.indexOf(node.id)
         state.currentCode = state.taskCode[index]
@@ -466,23 +470,27 @@ export default defineComponent({
     }
     //获取采集节点配置信息
     const getCollect = (i) => {
+      console.log(i);
       state.setDocId.push(i.nodeId)
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(i)) })
       state.nodeDefinition = i 
-      console.log(state.setDocId);
     }
     //获取开发节点配置信息
     const getFlink = (j) => {
+      console.log(j);
       state.setDocId.push(j.nodeId)
       state.flinkLabel = j.name
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(j)) })
       state.nodeDefinition = j
     }
     const showModal = () => {// 节点配置抽屉弹出
+      console.log(state.currentCode);
+      state.nodeId = state.currentCode
       state.dialogVisible = true;
-      console.log(graph.getNodes());
     }
     const showflink = (node) => {
+      console.log(state.currentCode);
+      state.nodeId = state.currentCode
       state.flinkVisible = true;
     }
     const closeModal = () => {//节点配置抽屉关闭
@@ -553,7 +561,7 @@ export default defineComponent({
         } else {
         }
       }).catch(e => {
-        ElMessage.error('保存失败请重试！')
+        ElMessage.error('节点标识生成失败，请重试！')
       })
     }
     //将流程相关内容转化为JSON
@@ -561,8 +569,6 @@ export default defineComponent({
     const save = () => {
       setRelation()
       let taskDefinition = state.taskDefinition.map(x => x.value);
-      let index = state.arrList.indexOf(graph.getNodes().map(x => x.id))//根据下标获取节点id
-      state.currentCode = state.taskCode[index]
       const locations = graph.getNodes().map(x => ({// 节点位置
         x: x.position().x,
         y: x.position().y,
@@ -593,9 +599,9 @@ export default defineComponent({
     }
     //监听树节点code获取画布节点位置信息
     watch([code, projectCode, workName],(newval,oldval) => {
-      state.code = code
-      state.projectCode = projectCode
-      state.name = workName
+      state.code = newval[0]
+      state.projectCode = newval[1]
+      state.name = newval[2]
       if(state.projectCode){
         proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
         .then(({data}) => {

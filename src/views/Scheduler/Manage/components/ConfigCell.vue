@@ -107,20 +107,20 @@
         console.log(taskDefinition.timeoutNotifyStrategy);
       }
       onMounted(() => {
+        console.log(props.taskCode);
         watch
       });
       watch([visible, code, projectCode, workName, taskCode, definition],(newval,oldval) => {
+        state.code = newval[1]
+        state.projectCode = newval[2]
+        taskDefinition.code = newval[4]
+        taskDefinition.projectCode = newval[2]
+        taskDefinition.nodeId = newval[4]
+        state.name = newval[3]
         dialogVisible.value = newval[0]
-        if (newval[5]) {
+        if (newval[5] != null) {
           state.definition = newval[5]
           Object.assign(taskDefinition, newval[5])
-        } else{
-          state.code = code
-          state.projectCode = projectCode
-          taskDefinition.code = taskCode.value
-          taskDefinition.projectCode = projectCode
-          taskDefinition.nodeId = taskCode.value
-          state.name = workName
         }
       })
       //提交
