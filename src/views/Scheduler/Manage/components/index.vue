@@ -270,7 +270,7 @@
     background-color: #1D77DE;
     align-items: center;
     justify-content: space-around;
-    width: 97.6%;
+    width: 96%;
   }
 
 </style>

@@ -66,12 +66,13 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
+    tableName: String,
   },
   emits:['close', 'giveCode'],
   setup(props, {emit}) {
     const { proxy } = getCurrentInstance();
     const pageObj = reactive(cloneDeep(Pagination));
-    const { dialogTableVisible } = toRefs(props)
+    const { dialogTableVisible, tableName } = toRefs(props)
     const tableVisible = ref(false)
     const router = useRouter();
     const searchObj = reactive({
@@ -101,6 +102,7 @@ export default defineComponent({
       doMessage: {},
       selectVal: '',
       selectData: '',
+      tableName: ''
     });
     const getData = (row) => {
       proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dlink/queryGroupPage`, {
@@ -142,14 +144,28 @@ export default defineComponent({
         proxy.$refs.multipleTable.toggleRowSelection(val.pop());
       }
     }
+    const toggleSelection = (rows) => {
+      rows.forEach(row => {
+        if (row.name === state.tableName) {     
+        // toggleRowSelection  这个方法是用来选中某一行（打勾）
+        // row 是要选中的那一行
+        // true 是为选中
+        proxy.$refs.multipleTable.toggleRowSelection(row, true) 
+        }
+      })
+    }
     const onCancel = () => {
       emit('close')
     }
     const onCommit = () => {
       emit('close')
     }
-    watch([dialogTableVisible],(newval,oldval) => {
+    watch([dialogTableVisible, tableName],(newval,oldval) => {
       tableVisible.value = newval[0]
+      state.tableName = newval[1]
+      proxy.$nextTick(()=>{
+        toggleSelection(state.tableData)
+      })
     })
     return {
       tableVisible,
@@ -160,6 +176,7 @@ export default defineComponent({
       onPageChange,
       fetchData,
       selectChoose,
+      toggleSelection,
       onCancel,
       onCommit,
     };

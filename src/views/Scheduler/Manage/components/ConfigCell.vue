@@ -36,7 +36,7 @@
       </div>
     </div>
   </el-drawer>
-  <work-convergence :dialog-table-visible="state.tableVisible" @close="closeModal" @give-code="getCode"/>
+  <work-convergence :dialog-table-visible="state.tableVisible" @close="closeModal" @give-code="getCode" :table-name="taskDefinition.taskWork"/>
 </template>
 
 <script>
@@ -57,7 +57,7 @@
       projectCode: [Number, String],
       workName: '',
       taskCode: [Number, String],
-      definition: [],
+      definition: [Object, String, null, Array, []],
     },
     emits:['close', 'getCollect'],
     setup(props, {emit}) {
@@ -85,7 +85,7 @@
         location: '',
         tableVisible: false,
         name: '',
-        definition: []
+        definition: [],
       })
       //获取作业名、源表名、目标表名，选中的整条数据，id
       const getCode = (e,i,j,k,x) => {
@@ -107,8 +107,6 @@
         console.log(taskDefinition.timeoutNotifyStrategy);
       }
       onMounted(() => {
-        console.log(props.taskCode);
-        watch
       });
       watch([visible, code, projectCode, workName, taskCode, definition],(newval,oldval) => {
         state.code = newval[1]
@@ -118,10 +116,15 @@
         taskDefinition.nodeId = newval[4]
         state.name = newval[3]
         dialogVisible.value = newval[0]
-        if (newval[5] != null) {
-          state.definition = newval[5]
-          Object.assign(taskDefinition, newval[5])
+        state.definition = newval[5].taskParams
+        
+        const arr = []
+        for (let i in state.definition) {
+          let o = '';
+          o = state.definition[i];
+          arr.push(o)
         }
+        Object.assign(taskDefinition, newval[5],{taskWork: arr[1], originTable: arr[5], targetTable: arr[9], })
       })
       //提交
       const onCommit = () => {

@@ -4,9 +4,9 @@
     <div class="app-content" id="flowContainer" ref="container"></div>
   </div>
   <!-- 执行策略配置 -->
-  <config-cell :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-collect="getCollect" :definition="state.currentDefinition"/>
+  <config-cell ref="dialogCollect" :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-collect="getCollect" :definition="state.currentDefinition"/>
   <!-- 开发执行策略配置 -->
-  <config-flink-cell :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-flink="getFlink" :definition="state.currentDefinition"/>
+  <config-flink-cell ref="dialogFlink" :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-flink="getFlink" :definition="state.currentDefinition"/>
 </template>
 
 <script>
@@ -58,13 +58,13 @@ export default defineComponent({
       collectLabel: '数据采集',
       flinkLabel: '数据开发',
       params: {},
-      nodeDefinition: [], // 节点存储的data表单数据
       //监听获取的数据存储
-      watchCode: '',
+      watchCode: null,
       watchDefinition: [],
       currentDefinition: [],//当前节点的配置表单数据
     })
     let graph = null
+    const eachNodeData = {}
     const nodeData = {
       // 节点
       nodes: [
@@ -309,7 +309,8 @@ export default defineComponent({
             width: -10,
           },
         },
-        data: state.nodeDefinition,
+        data: {},
+        relation: {},
         ports: { ...ports },
       });
       const flink = new Rect({
@@ -327,7 +328,8 @@ export default defineComponent({
             text: state.flinkLabel,
           },
         },
-        data: state.nodeDefinition,
+        data: {},
+        relation: {},
         ports: { ...ports },
       });
       stencil.load(
@@ -347,20 +349,18 @@ export default defineComponent({
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node, cell }) => {
-        if (node.data != undefined) {
-          state.currentDefinition = node.data
-        } else{
-          state.currentDefinition = null
-        }console.log(state.currentDefinition);
-        console.log(state.watchCode);
+        console.log(graph.getEdges());
+        state.currentDefinition = node.data
+        console.log(state.currentDefinition);
         let index = state.arrList.indexOf(node.id)
         state.currentCode = state.taskCode[index]
         if(node.getAttrs().label.text === "数据采集"){
-          showModal()
+          state.nodeId = state.currentCode
+          state.dialogVisible = true;
         } else if(node.getAttrs().label.text === "数据开发"){
-          showflink()
+          state.nodeId = state.currentCode
+          state.flinkVisible = true;
         }
-
       });
       // 节点删除操作
       graph.on("node:mouseenter", ({ node }) => {
@@ -422,7 +422,7 @@ export default defineComponent({
         edge.removeTools();
       });
       graph.on('node:change:data', ({node}) => {
-        state.taskDefinition = node.data
+        node.data = eachNodeData
       })
       graph.on("node:contextmenu", ({ cell, view }) => {
         const oldText = cell.attr("text/textWrap/text");
@@ -470,28 +470,14 @@ export default defineComponent({
     }
     //获取采集节点配置信息
     const getCollect = (i) => {
-      console.log(i);
       state.setDocId.push(i.nodeId)
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(i)) })
-      state.nodeDefinition = i 
     }
     //获取开发节点配置信息
     const getFlink = (j) => {
-      console.log(j);
       state.setDocId.push(j.nodeId)
-      state.flinkLabel = j.name
+      // state.flinkLabel = j.name
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(j)) })
-      state.nodeDefinition = j
-    }
-    const showModal = () => {// 节点配置抽屉弹出
-      console.log(state.currentCode);
-      state.nodeId = state.currentCode
-      state.dialogVisible = true;
-    }
-    const showflink = (node) => {
-      console.log(state.currentCode);
-      state.nodeId = state.currentCode
-      state.flinkVisible = true;
     }
     const closeModal = () => {//节点配置抽屉关闭
       state.dialogVisible = false;
@@ -505,11 +491,12 @@ export default defineComponent({
     }
     //节点关系配置
     const setRelation = () => {
+      console.log(graph.getNodes());
       const taskRelation = graph.getEdges().map(y => ({
         id: 0,
         name: '',
-        preTaskCode: state.taskCode[state.arrList.indexOf(y.getSource().cell)],
-        postTaskCode: state.taskCode[state.arrList.indexOf(y.getTarget().cell)],
+        preTaskCode: state.watchCode != null ? y.getSource().cell : state.taskCode[state.arrList.indexOf(y.getSource().cell)],
+        postTaskCode: state.watchCode != null ? y.getTarget().cell : state.taskCode[state.arrList.indexOf(y.getTarget().cell)],
         processDefinitionCode: state.code,
         projectCode: state.projectCode,
         postTaskVersion: state.postTaskVersion,
@@ -573,29 +560,45 @@ export default defineComponent({
         x: x.position().x,
         y: x.position().y,
       }))
-      if (nodeData.nodes != null) {
-         state.taskCode.concat(state.watchCode)
+      console.log(state.watchCode);
+      let codeList = null
+      let taskDefinitionList = null
+      if (nodeData.nodes) {
+        codeList = state.taskCode.concat(state.watchCode)
+        taskDefinitionList = taskDefinition.concat(nodeData.nodes.map(x => x.data))
+      }else{
+        codeList = state.taskCode
+        taskDefinitionList = taskDefinition
       }
-      proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/${state.code}`, {
-        code: state.code,
-        name: state.name,
-        projectCode: state.projectCode,
-        coordinatesList: locations,
-        taskCodes: state.taskCode.toString(),
-        taskRelation: state.taskRelation,
-        taskDefinition: taskDefinition,
-        description: '',
-        timeout: 0,
-        globalParams: '',
-      }).then(({data}) => {
-        if(data.code === 200) {
-          ElMessage.success('保存成功')
-        } else {
-          ElMessage.error(data.msg)
-        }
-      }).catch(e => {
-        ElMessage.error('保存失败请重试！')
-      })
+      console.log(codeList, taskDefinitionList);
+      console.log('taskRelation',state.taskRelation);
+      if(!graph.getNodes().length) {
+        ElMessage.warning('请输入依赖项')
+      }else if (!taskDefinitionList.length) {
+        ElMessage.warning('请配置节点信息')
+      }else{
+        console.log(locations,state.taskCode.toString(),state.taskRelation,taskDefinition);
+        proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/${state.code}`, {
+          code: state.code,
+          name: state.name,
+          projectCode: state.projectCode,
+          coordinatesList: locations,
+          taskCodes: codeList.toString(),
+          taskRelation: state.taskRelation,
+          taskDefinition: taskDefinitionList,
+          description: '',
+          timeout: 0,
+          globalParams: '',
+        }).then(({data}) => {
+          if(data.code === 200) {
+            ElMessage.success('保存成功')
+          } else {
+            ElMessage.error(data.msg)
+          }
+        }).catch(e => {
+          ElMessage.error('保存失败请重试！')
+        })
+      }
     }
     //监听树节点code获取画布节点位置信息
     watch([code, projectCode, workName],(newval,oldval) => {
@@ -609,6 +612,7 @@ export default defineComponent({
             state.params = data.data
             let locations = JSON.parse(data.data.processPagingQueryVO.locations)
             let definition = data.data.taskDefinition
+            let relation = data.data.taskRelation
             let label = definition.map(x => x.name)
             let taskType = definition.map(x => x.taskType)
             let code = definition.map(x => x.code)
@@ -620,6 +624,7 @@ export default defineComponent({
               width: 130,
               height: 70,
               data: definition[locations.indexOf(x)],
+              relation: relation[locations.indexOf(x)],
               attrs: {
                 body: {
                   fill: taskType[locations.indexOf(x)] === "COLLECT" ? "#EFF4FF": "#efdbff",
@@ -743,8 +748,6 @@ export default defineComponent({
       state,
       init,
       setRelation,
-      showModal,
-      showflink,
       closeModal,
       showPorts,
       save,

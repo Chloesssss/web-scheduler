@@ -30,7 +30,7 @@
       </div>
     </div>
   </el-drawer>
-  <flink-convergence :dialog-table-visible="state.tableVisible" @close="closeModal" @give-code="getCode" />
+  <flink-convergence :dialog-table-visible="state.tableVisible" @close="closeModal" @give-code="getCode" :table-name="taskDefinition.taskWork"/>
 </template>
 
 <script>
@@ -51,7 +51,7 @@
       projectCode: [Number, String],
       workName: '',
       taskCode: [Number, String],
-      definition: [Object, String, null, []],
+      definition: [Object, String, null, Array, []],
     },
     emits:['close', 'getFlink'],
     setup(props, {emit}) {
@@ -106,10 +106,15 @@
         taskDefinition.nodeId = newval[4]
         state.name = newval[3]
         flinkVisible.value = newval[0]
-        if (newval[5] != null) {
-          state.definition = newval[5]
-          Object.assign(taskDefinition, newval[5])
+        state.definition = newval[5].taskParams
+        console.log(state.definition);
+        const arr = []
+        for (let i in state.definition) {
+          let o = '';
+          o = state.definition[i];
+          arr.push(o)
         }
+        Object.assign(taskDefinition, newval[5],{taskWork: arr[13], taskParams: state.definition})
       })
       //提交
       const onCommit = () => {
