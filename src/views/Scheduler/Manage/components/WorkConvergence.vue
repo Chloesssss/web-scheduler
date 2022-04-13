@@ -144,6 +144,7 @@ export default defineComponent({
       })
     }
     const onCancel = () => {
+      proxy.$refs.multipleTable.clearSelection()
       emit('close')
     }
     const onCommit = () => {

@@ -349,16 +349,14 @@ export default defineComponent({
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node, cell }) => {
-        console.log(graph.getEdges());
         state.currentDefinition = node.data
-        console.log(state.currentDefinition);
         let index = state.arrList.indexOf(node.id)
         state.currentCode = state.taskCode[index]
         if(node.getAttrs().label.text === "数据采集"){
-          state.nodeId = state.currentCode
+          state.nodeId = state.currentCode ? state.currentCode : node.id
           state.dialogVisible = true;
         } else if(node.getAttrs().label.text === "数据开发"){
-          state.nodeId = state.currentCode
+          state.nodeId = state.currentCode ? state.currentCode : node.id
           state.flinkVisible = true;
         }
       });
@@ -392,8 +390,6 @@ export default defineComponent({
           state.taskCode.splice(index,1);
           state.codeList.splice(index,1);
         }	
-        console.log(state.watchDefinition);
-        console.log(state.taskRelation);
       });
       graph.on("node:mouseleave", ({ node }) => {
         // 鼠标移开时删除删除按钮
@@ -416,6 +412,9 @@ export default defineComponent({
         if (!options.ui) {
           return;
         }
+        const cellId = edge.getTargetCellId()
+        const target = graph.getCellById(cellId)
+        target && target.setPortProp(target.id+ '_in', 'connected', false)
       });
       graph.on("edge:mouseleave", ({ edge }) => {
         // 鼠标移开时删除删除按钮
@@ -491,12 +490,11 @@ export default defineComponent({
     }
     //节点关系配置
     const setRelation = () => {
-      console.log(graph.getNodes());
       const taskRelation = graph.getEdges().map(y => ({
         id: 0,
         name: '',
-        preTaskCode: state.watchCode != null ? y.getSource().cell : state.taskCode[state.arrList.indexOf(y.getSource().cell)],
-        postTaskCode: state.watchCode != null ? y.getTarget().cell : state.taskCode[state.arrList.indexOf(y.getTarget().cell)],
+        preTaskCode: state.taskCode[state.arrList.indexOf(y.getSource().cell)] ? state.taskCode[state.arrList.indexOf(y.getSource().cell)] : state.watchCode.find(x => x=y.getSource().cell).x,
+        postTaskCode: state.taskCode[state.arrList.indexOf(y.getTarget().cell)] ? state.taskCode[state.arrList.indexOf(y.getTarget().cell)] : state.watchCode.find(x => x=y.getTarget().cell).x,
         processDefinitionCode: state.code,
         projectCode: state.projectCode,
         postTaskVersion: state.postTaskVersion,
@@ -560,7 +558,6 @@ export default defineComponent({
         x: x.position().x,
         y: x.position().y,
       }))
-      console.log(state.watchCode);
       let codeList = null
       let taskDefinitionList = null
       if (nodeData.nodes) {
@@ -570,14 +567,11 @@ export default defineComponent({
         codeList = state.taskCode
         taskDefinitionList = taskDefinition
       }
-      console.log(codeList, taskDefinitionList);
-      console.log('taskRelation',state.taskRelation);
       if(!graph.getNodes().length) {
         ElMessage.warning('请输入依赖项')
-      }else if (!taskDefinitionList.length) {
+      }else if (!taskDefinitionList.length || state.taskRelation.length === 0) {
         ElMessage.warning('请配置节点信息')
       }else{
-        console.log(locations,state.taskCode.toString(),state.taskRelation,taskDefinition);
         proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/${state.code}`, {
           code: state.code,
           name: state.name,

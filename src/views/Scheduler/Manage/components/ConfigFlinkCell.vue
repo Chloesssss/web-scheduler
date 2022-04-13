@@ -3,13 +3,15 @@
     ref="drawer"
     v-model="flinkVisible"
     title="数据开发调度节点"
-    :before-close="handleClose"
+    :before-close="onCancel"
     direction="rtl"
     custom-class="demo-drawer"
   >
     <div class="demo-drawer__content">
       <el-form :model="taskDefinition" label-width="100px" ref="form">
-        <el-form-item label="节点名称" prop="name" >
+        <el-form-item label="节点名称" prop="name" :rules="[
+          { required: true, message: '请输入节点名称', trigger: 'blur' },
+        ]">
           <el-input v-model="taskDefinition.name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="描述" prop="description">
@@ -19,7 +21,9 @@
           <el-switch v-model="taskDefinition.timeoutFlag" active-text="启用" @change="onStatus" inactive-text="禁用" active-value="OPEN" inactive-value="CLOSE">
           </el-switch>
         </el-form-item>
-        <el-form-item label="汇聚作业" prop="taskWork">
+        <el-form-item label="汇聚作业" prop="taskWork" :rules="[
+          { required: true, message: '请点击选择按钮配置作业', trigger: 'blur' },
+        ]">
           <el-input class="flex-1" v-model="taskDefinition.taskWork" disabled></el-input>
           <el-button type="primary" class="flex ml-20" @click="chooseWork">选择</el-button>
         </el-form-item>
@@ -85,7 +89,6 @@
         taskDefinition.taskWork = e;
         taskDefinition.taskParams = m;
         taskDefinition.callTaskId = x;
-        console.log(taskDefinition.taskWork);
       }
       //超时失败
       const onStatus = () => {
@@ -107,24 +110,38 @@
         state.name = newval[3]
         flinkVisible.value = newval[0]
         state.definition = newval[5].taskParams
-        console.log(state.definition);
         const arr = []
         for (let i in state.definition) {
           let o = '';
           o = state.definition[i];
           arr.push(o)
         }
-        Object.assign(taskDefinition, newval[5],{taskWork: arr[13], taskParams: state.definition})
+        let name = newval[5].name ? newval[5].name : null
+        if (name) {
+          Object.assign(taskDefinition, newval[5],{taskWork: arr[13], taskParams: state.definition})
+        }
+        return null
+        
       })
       //提交
       const onCommit = () => {
-        emit("getFlink", taskDefinition);
-        emit('close')
-        console.log(taskDefinition);
+        proxy.$refs['form'].validate((valid) => {
+          if(valid) {
+            emit("getFlink", taskDefinition);
+            emit('close')
+          }
+          proxy.$refs['form'].resetFields()
+        })
       }
       const handleClose = () => {
         proxy.$refs.form.resetFields()
         emit('close')
+      }
+      const onCancel = (done) => {
+        ElMessageBox.confirm('是否需要提交配置内容？')
+        .then(() => {
+          onCommit()
+        })
       }
       const chooseWork = () => {
         state.tableVisible = true
@@ -137,6 +154,7 @@
         state,
         flinkVisible,
         ...toRefs(state),
+        onCancel,
         handleClose,
         getCode,
         onCommit,
