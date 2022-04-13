@@ -349,6 +349,7 @@ export default defineComponent({
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node, cell }) => {
+        setRelation()
         state.currentDefinition = node.data
         let index = state.arrList.indexOf(node.id)
         state.currentCode = state.taskCode[index]
@@ -376,9 +377,14 @@ export default defineComponent({
         if (!options.ui) {
           return;
         }
-        if (nodeData.nodes != null) {
-          state.watchDefinition.splice(node.data,1)
+        console.log(state.watchCode,state.watchDefinition);
+        console.log(state.watchCode.indexOf(node.id));
+        let i = state.watchCode.indexOf(node.id)
+        if ( i > 1) {
+          state.watchCode.splice(i,1)
+          state.watchDefinition.splice(i,1 )
         }
+        console.log(state.watchCode,state.watchDefinition);
         let m = state.setDocId.indexOf(state.currentCode)
         if (m > -1) {
           state.taskDefinition.splice(m,1)
@@ -490,11 +496,13 @@ export default defineComponent({
     }
     //节点关系配置
     const setRelation = () => {
+      console.log(state.taskCode);
+      console.log(state.watchCode);
       const taskRelation = graph.getEdges().map(y => ({
         id: 0,
         name: '',
-        preTaskCode: state.taskCode[state.arrList.indexOf(y.getSource().cell)] ? state.taskCode[state.arrList.indexOf(y.getSource().cell)] : state.watchCode.find(x => x=y.getSource().cell).x,
-        postTaskCode: state.taskCode[state.arrList.indexOf(y.getTarget().cell)] ? state.taskCode[state.arrList.indexOf(y.getTarget().cell)] : state.watchCode.find(x => x=y.getTarget().cell).x,
+        preTaskCode: state.taskCode[state.arrList.indexOf(y.getSource().cell)] ? state.taskCode[state.arrList.indexOf(y.getSource().cell)] : y.getSource().cell,
+        postTaskCode: state.taskCode[state.arrList.indexOf(y.getTarget().cell)] ? state.taskCode[state.arrList.indexOf(y.getTarget().cell)] : y.getTarget().cell,
         processDefinitionCode: state.code,
         projectCode: state.projectCode,
         postTaskVersion: state.postTaskVersion,
@@ -512,13 +520,14 @@ export default defineComponent({
         allCollectTaskId.push(x.preTaskVersion)
       })
       let childNodes = taskRelation.map(y => y.postTaskCode)
-      let taskCodes = state.taskCode
+      let taskCodes = state.taskCode ? state.taskCode : state.watchCode
       let parentShip = [];
       for (var i = 0; i < taskCodes.length; i++) {
         if (childNodes.indexOf(taskCodes[i]) === -1) {
           parentShip.push(taskCodes[i])
         }
       }
+      console.log(parentShip);
       const sourceNodeship = parentShip.map(x =>({
         id:0,
         name: '',
@@ -530,6 +539,7 @@ export default defineComponent({
         postTaskVersion: state.postTaskVersion,
       }))
       state.taskRelation = sourceNodeship.concat(taskRelation)
+      console.log(state.taskRelation);
     }
     //生成节点标识
     const getNodeCode = (flag) => {
@@ -560,9 +570,10 @@ export default defineComponent({
       }))
       let codeList = null
       let taskDefinitionList = null
+      console.log(nodeData.nodes);
       if (nodeData.nodes) {
         codeList = state.taskCode.concat(state.watchCode)
-        taskDefinitionList = taskDefinition.concat(nodeData.nodes.map(x => x.data))
+        taskDefinitionList = taskDefinition.concat(state.watchDefinition)
       }else{
         codeList = state.taskCode
         taskDefinitionList = taskDefinition
@@ -572,6 +583,7 @@ export default defineComponent({
       }else if (!taskDefinitionList.length || state.taskRelation.length === 0) {
         ElMessage.warning('请配置节点信息')
       }else{
+        console.log(locations,codeList.toString(),state.taskRelation,taskDefinitionList);
         proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/${state.code}`, {
           code: state.code,
           name: state.name,
@@ -711,7 +723,7 @@ export default defineComponent({
             nodeData.edges = state.linkDtos
             graph.fromJSON(nodeData)
             state.watchCode = taskCode
-            state.watchDefinition = definition
+            state.watchDefinition = nodeData.nodes.map(x =>x.data)
             state.workState = data.data.processPagingQueryVO.releaseState
             emit("giveState", state.workState);
             let flinkForm = [];
