@@ -134,7 +134,6 @@ export default defineComponent({
       state.workCode = proxy.$route.query.code
       state.workProjectCode = proxy.$route.query.projectCode
       state.workMonitorName = proxy.$route.query.name
-      console.log(state.workMonitorName);
     }
     onMounted(() => {
       getState()

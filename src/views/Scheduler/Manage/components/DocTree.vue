@@ -125,7 +125,6 @@ export default defineComponent({
     }
     //点击目录
     const onTreeClick = (data,node) => {
-      console.log(data.id);
       state.defaultShowNodes.push(data.id)
       state.code = data.code
       if (data.children===null) {
@@ -162,7 +161,6 @@ export default defineComponent({
             proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/delete?code=${state.code}&projectCode=${state.projectCode}`,
             ).then((data) => {
               if(data.data.code == 200){
-                console.log();
                 ElMessage.success("删除工作流作业成功")
                 getTreeData()
               }else {

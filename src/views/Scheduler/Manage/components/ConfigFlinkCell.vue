@@ -8,10 +8,8 @@
     custom-class="demo-drawer"
   >
     <div class="demo-drawer__content">
-      <el-form :model="taskDefinition" label-width="100px" ref="form">
-        <el-form-item label="节点名称" prop="name" :rules="[
-          { required: true, message: '请输入节点名称', trigger: 'blur' },
-        ]">
+      <el-form :model="taskDefinition" label-width="100px" ref="Form" :rules="state.rules">
+        <el-form-item label="节点名称" prop="name">
           <el-input v-model="taskDefinition.name" autocomplete="off"></el-input>
         </el-form-item>
         <el-form-item label="描述" prop="description">
@@ -21,9 +19,7 @@
           <el-switch v-model="taskDefinition.timeoutFlag" active-text="启用" @change="onStatus" inactive-text="禁用" active-value="OPEN" inactive-value="CLOSE">
           </el-switch>
         </el-form-item>
-        <el-form-item label="汇聚作业" prop="taskWork" :rules="[
-          { required: true, message: '请点击选择按钮配置作业', trigger: 'blur' },
-        ]">
+        <el-form-item label="汇聚作业" prop="taskWork">
           <el-input class="flex-1" v-model="taskDefinition.taskWork" disabled></el-input>
           <el-button type="primary" class="flex ml-20" @click="chooseWork">选择</el-button>
         </el-form-item>
@@ -56,11 +52,12 @@
       workName: '',
       taskCode: [Number, String],
       definition: [Object, String, null, Array, []],
+      id: [Number, String],
     },
     emits:['close', 'getFlink'],
     setup(props, {emit}) {
       const { proxy } = getCurrentInstance();
-      const { visible, code, projectCode, workName, taskCode, definition } = toRefs(props)
+      const { visible, code, projectCode, workName, taskCode, definition, id } = toRefs(props)
       const flinkVisible = ref(false)
       const  taskDefinition = reactive({ // 声明表单信息
         name: '',
@@ -72,7 +69,7 @@
         projectCode: '',
         code: '',
         callTaskId: '',
-        nodeId: [],
+        nodeId: '',
       })
       const state = reactive({
         drawer : false,
@@ -82,6 +79,11 @@
         tableVisible: false,
         name: '',
         definition: [],
+        rules: {
+          name: [{required: true, message: '请输入节点名称', trigger: 'change'}],
+          taskWork: [{required: true, message: '请点击选择按钮配置作业', trigger: 'change'}],
+        },
+        count: 0,
       })
       //获取作业名、选中的整条数据、id
       const getCode = (e, k, x) => {
@@ -99,42 +101,44 @@
         }
       }
       onMounted(() => {
-        watch
       });
-      watch([visible, code, projectCode, workName, taskCode, definition],(newval,oldval) => {
+      watch([visible, code, projectCode, workName, taskCode, definition, id],(newval,oldval) => {
+        flinkVisible.value = newval[0]
         state.code = newval[1]
         state.projectCode = newval[2]
+        state.name = newval[3]
         taskDefinition.code = newval[4]
         taskDefinition.projectCode = newval[2]
         taskDefinition.nodeId = newval[4]
-        state.name = newval[3]
-        flinkVisible.value = newval[0]
-        state.definition = newval[5].taskParams
-        const arr = []
-        for (let i in state.definition) {
-          let o = '';
-          o = state.definition[i];
-          arr.push(o)
+        if (newval[0]) {
+          if (!props.id) {
+            Object.assign(taskDefinition,newval[5])
+          }else{
+            state.definition = newval[5].taskParams
+            const arr = []
+            for (let i in state.definition) {
+              let o = '';
+              o = state.definition[i];
+              arr.push(o)
+            }
+            Object.assign(taskDefinition, newval[5],{taskWork: arr[13], taskParams: state.definition})
+          }
         }
-        let name = newval[5].name ? newval[5].name : null
-        if (name) {
-          Object.assign(taskDefinition, newval[5],{taskWork: arr[13], taskParams: state.definition})
-        }
-        return null
-        
       })
       //提交
       const onCommit = () => {
-        proxy.$refs['form'].validate((valid) => {
+        proxy.$refs.Form.validate(valid => {
           if(valid) {
+            state.count ++
+            console.log(state.count);
             emit("getFlink", taskDefinition);
+            proxy.$refs['Form'].resetFields()
             emit('close')
           }
-          proxy.$refs['form'].resetFields()
         })
       }
       const handleClose = () => {
-        proxy.$refs.form.resetFields()
+        proxy.$refs['Form'].resetFields()
         emit('close')
       }
       const onCancel = (done) => {

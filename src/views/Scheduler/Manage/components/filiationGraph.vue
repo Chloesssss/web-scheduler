@@ -4,9 +4,9 @@
     <div class="app-content" id="flowContainer" ref="container"></div>
   </div>
   <!-- 执行策略配置 -->
-  <config-cell ref="dialogCollect" :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-collect="getCollect" :definition="state.currentDefinition"/>
+  <config-cell ref="dialogCollect" :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-collect="getCollect" :definition="state.currentDefinition" :id="state.dataId"/>
   <!-- 开发执行策略配置 -->
-  <config-flink-cell ref="dialogFlink" :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-flink="getFlink" :definition="state.currentDefinition"/>
+  <config-flink-cell ref="dialogFlink" :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-flink="getFlink" :definition="state.currentDefinition" :id="state.dataId"/>
 </template>
 
 <script>
@@ -33,6 +33,7 @@ export default defineComponent({
     const { proxy } = getCurrentInstance();
     const { code, projectCode, workName } = toRefs(props)
     const state = reactive({
+      dataId: '', // 判断节点配置是否为编辑状态
       cell: '',
       view: false,
       code: '',
@@ -344,15 +345,48 @@ export default defineComponent({
         state.currentCode = node.id
         getNodeCode(1)
       })
-      //回显边
-      graph.on('edge:added', ({ edge }) => {
-      })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node, cell }) => {
-        setRelation()
-        state.currentDefinition = node.data
+        console.log(state.taskDefinition);
         let index = state.arrList.indexOf(node.id)
         state.currentCode = state.taskCode[index]
+        //console.log(state.taskDefinition.map(x => x.value.code).toString());
+        console.log(node.data.id);
+        if (node.data.id) {
+          console.log("00000000");
+          state.currentCode = node.id
+          state.dataId = node.data.id
+          state.currentDefinition = node.data
+        } else {
+          state.dataId = null
+          // for (var i = 0; i < state.taskDefinition.length; i++){
+          //   if (state.taskDefinition[i].value.code == state.currentCode){
+          //     console.log(state.taskDefinition[i].value.code+"--------------------------------"+state.currentCode);
+          //     // state.currentDefinition = state.taskDefinition[i].value;
+          //     console.log("111111111");
+          //   }else{
+          //     console.log("222222");
+          //     // state.currentDefinition={}
+          //     // console.log(state.currentDefinition)
+          //   }
+          // }
+          console.log(("111111111"));
+          
+          console.log(state.currentCode);
+          console.log(state.taskDefinition);
+          let obj =null
+          obj =  state.taskDefinition.find((item)=>{
+            return item.value.code== state.currentCode            
+          })
+          console.log(obj);
+          state.currentDefinition=obj?obj.value:null;
+          console.log(state.currentDefinition);
+        
+        }
+        
+        // console.log(state.taskDefinition);
+        // console.log(state.currentCode);
+        // console.log(state.currentDefinition);
         if(node.getAttrs().label.text === "数据采集"){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.dialogVisible = true;
@@ -377,14 +411,11 @@ export default defineComponent({
         if (!options.ui) {
           return;
         }
-        console.log(state.watchCode,state.watchDefinition);
-        console.log(state.watchCode.indexOf(node.id));
         let i = state.watchCode.indexOf(node.id)
         if ( i > 1) {
           state.watchCode.splice(i,1)
           state.watchDefinition.splice(i,1 )
         }
-        console.log(state.watchCode,state.watchDefinition);
         let m = state.setDocId.indexOf(state.currentCode)
         if (m > -1) {
           state.taskDefinition.splice(m,1)
@@ -477,11 +508,11 @@ export default defineComponent({
     const getCollect = (i) => {
       state.setDocId.push(i.nodeId)
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(i)) })
+      console.log(state.taskDefinition);
     }
     //获取开发节点配置信息
     const getFlink = (j) => {
       state.setDocId.push(j.nodeId)
-      // state.flinkLabel = j.name
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(j)) })
     }
     const closeModal = () => {//节点配置抽屉关闭
@@ -496,8 +527,6 @@ export default defineComponent({
     }
     //节点关系配置
     const setRelation = () => {
-      console.log(state.taskCode);
-      console.log(state.watchCode);
       const taskRelation = graph.getEdges().map(y => ({
         id: 0,
         name: '',
@@ -527,7 +556,6 @@ export default defineComponent({
           parentShip.push(taskCodes[i])
         }
       }
-      console.log(parentShip);
       const sourceNodeship = parentShip.map(x =>({
         id:0,
         name: '',
@@ -539,7 +567,6 @@ export default defineComponent({
         postTaskVersion: state.postTaskVersion,
       }))
       state.taskRelation = sourceNodeship.concat(taskRelation)
-      console.log(state.taskRelation);
     }
     //生成节点标识
     const getNodeCode = (flag) => {
@@ -570,7 +597,6 @@ export default defineComponent({
       }))
       let codeList = null
       let taskDefinitionList = null
-      console.log(nodeData.nodes);
       if (nodeData.nodes) {
         codeList = state.taskCode.concat(state.watchCode)
         taskDefinitionList = taskDefinition.concat(state.watchDefinition)
@@ -611,6 +637,9 @@ export default defineComponent({
       state.code = newval[0]
       state.projectCode = newval[1]
       state.name = newval[2]
+      if (newval[0]!=oldval[0]) {
+        state.taskDefinition = []
+      }
       if(state.projectCode){
         proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
         .then(({data}) => {
@@ -627,8 +656,8 @@ export default defineComponent({
               x: Number(x.x),
               y: Number(x.y),
               id: x.taskCode,
-              width: 130,
-              height: 70,
+              width: 120,
+              height: 60,
               data: definition[locations.indexOf(x)],
               relation: relation[locations.indexOf(x)],
               attrs: {

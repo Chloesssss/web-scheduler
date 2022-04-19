@@ -150,11 +150,12 @@ export default defineComponent({
         // toggleRowSelection  这个方法是用来选中某一行（打勾）
         // row 是要选中的那一行
         // true 是为选中
-        proxy.$refs.multipleTable.toggleRowSelection(row, true) 
+          proxy.$refs.multipleTable.toggleRowSelection(row, true) 
         }
       })
     }
     const onCancel = () => {
+      proxy.$refs.multipleTable.clearSelection()
       emit('close')
     }
     const onCommit = () => {

@@ -278,7 +278,6 @@ export default defineComponent({
       state.projectCode = newval[1]
       state.runStatus = newval[2]
       state.label=newval[3]
-      console.log(state.label);
       generateImag()
       if(state.projectCode){
         proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)

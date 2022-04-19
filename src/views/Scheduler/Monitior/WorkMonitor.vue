@@ -108,7 +108,6 @@ export default defineComponent({
       doMessage: {},
     })
     const getData = (row) => {
-      console.log(route.query.name);
       if(route.query.name){
         searchObj.name = proxy.$route.query.name
         searchObj.motif = proxy.$route.query.motif

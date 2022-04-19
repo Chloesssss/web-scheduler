@@ -76,10 +76,8 @@ export default defineComponent({
       }
     };
     const handleOpen = (key, keyPath) => {
-      console.log(key, keyPath);
     };
     const handleClose = (key, keyPath) => {
-      console.log(key, keyPath);
     };
     onBeforeMount(() => {
       let hrefName = window.location.href
