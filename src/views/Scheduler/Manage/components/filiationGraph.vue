@@ -357,6 +357,7 @@ export default defineComponent({
           state.currentCode = node.id
           state.dataId = node.data.id
           state.currentDefinition = node.data
+          console.log(state.currentCode);
         } else {
           state.dataId = null
           // for (var i = 0; i < state.taskDefinition.length; i++){

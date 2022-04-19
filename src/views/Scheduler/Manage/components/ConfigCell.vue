@@ -127,12 +127,23 @@
         taskDefinition.code = newval[4]
         taskDefinition.projectCode = newval[2]
         taskDefinition.nodeId = newval[4]
+        let ong = {
+          name: '',
+          description: '',
+          timeoutFlag: "CLOSE",
+          taskWork: '',
+          originTable: '',
+          targetTable: '',
+          taskParams: '',
+          taskType: "COLLECT",
+          callTaskId: '',
+        }
         let obj = newval[5]?1:0
         if (newval[0]) {
           if (!props.id) {           
             console.log(obj);
             if (!obj) {
-              Object.assign(taskDefinition,obj)
+              Object.assign(taskDefinition,ong)
             }else{
               Object.assign(taskDefinition, newval[5])
             }             
@@ -155,7 +166,6 @@
             state.count ++
             console.log(state.count);
             emit("getCollect", taskDefinition);
-            console.log(taskDefinition);
             proxy.$refs['Form'].resetFields()
             emit('close')
           }

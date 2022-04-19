@@ -110,9 +110,24 @@
         taskDefinition.code = newval[4]
         taskDefinition.projectCode = newval[2]
         taskDefinition.nodeId = newval[4]
+        let ong = {
+          name: '',
+          description: '',
+          timeoutFlag: "CLOSE",
+          taskWork: '',
+          taskParams: '',
+          taskType: "COLLECT",
+          callTaskId: '',
+        }
+         let obj = newval[5]?1:0
         if (newval[0]) {
           if (!props.id) {
-            Object.assign(taskDefinition,newval[5])
+            console.log(obj);
+            if (!obj) {
+              Object.assign(taskDefinition,ong)
+            }else{
+              Object.assign(taskDefinition, newval[5])
+            }             
           }else{
             state.definition = newval[5].taskParams
             const arr = []
