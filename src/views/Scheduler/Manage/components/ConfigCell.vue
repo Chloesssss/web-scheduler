@@ -162,9 +162,15 @@
       const onCommit = () => {
          proxy.$refs.Form.validate(valid => {
           if(valid) {
-            emit("getCollect", taskDefinition);
-            proxy.$refs['Form'].resetFields()
-            emit('close')
+            if (!taskDefinition.code.length <=15) {
+              emit("getCollect", taskDefinition);
+              proxy.$refs['Form'].resetFields()
+              emit('close')
+            }else {
+              ElMessage.warning('提交的配置信息异常，请重新配置！')
+              emit('close')
+            }
+            
           }
         })
       }

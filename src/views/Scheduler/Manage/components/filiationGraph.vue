@@ -349,11 +349,17 @@ export default defineComponent({
       graph.on("cell:dblclick", ({ node, cell }) => {
         let index = state.arrList.indexOf(node.id)
         state.currentCode = state.taskCode[index]
+        console.log(state.currentCode);
+        console.log(node.data.id);
         if (node.data.id) {
           state.currentCode = node.id
           state.dataId = node.data.id
           state.currentDefinition = node.data
+          console.log(state.currentCode);
+          console.log(node.data.code);
         } else {
+          let index = state.arrList.indexOf(node.id)
+          state.currentCode = state.taskCode[index]
           state.dataId = null
           let obj =null
           obj =  state.taskDefinition.find((item)=>{
@@ -382,19 +388,24 @@ export default defineComponent({
         });
       });
       graph.on("node:removed", ({ node, options }) => {
+        let x = state.arrList.indexOf(node.id)
+        state.currentCode = state.taskCode[x]
         if (!options.ui) {
           return;
         }
-        if (state.watchCode) {
-          let i = state.watchCode.indexOf(node.id)
-          if ( i > 1) {
-            state.watchCode.splice(i,1)
-            state.watchDefinition.splice(i,1)
-          }
+        let i = state.watchCode.indexOf(node.id)
+        if (i > -1) {
+          state.watchCode.splice(i,1)
+          state.watchDefinition.splice(i,1)
         }
         let m = state.setDocId.indexOf(state.currentCode)
+        let arr = state.taskDefinition.map(x => x.value.nodeId)
+        console.log(arr);
+        let a = arr.indexOf(state.currentCode)
         if (m > -1) {
           state.taskDefinition.splice(m,1)
+        } else if(a >-1 ){
+          state.taskDefinition.splice(a,1)
         }
         let index = state.arrList.indexOf(node.id)
         if(index > -1){
