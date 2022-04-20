@@ -347,47 +347,20 @@ export default defineComponent({
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node, cell }) => {
-        console.log(state.taskDefinition);
         let index = state.arrList.indexOf(node.id)
         state.currentCode = state.taskCode[index]
-        //console.log(state.taskDefinition.map(x => x.value.code).toString());
-        console.log(node.data.id);
         if (node.data.id) {
-          console.log("00000000");
           state.currentCode = node.id
           state.dataId = node.data.id
           state.currentDefinition = node.data
-          console.log(state.currentCode);
         } else {
           state.dataId = null
-          // for (var i = 0; i < state.taskDefinition.length; i++){
-          //   if (state.taskDefinition[i].value.code == state.currentCode){
-          //     console.log(state.taskDefinition[i].value.code+"--------------------------------"+state.currentCode);
-          //     // state.currentDefinition = state.taskDefinition[i].value;
-          //     console.log("111111111");
-          //   }else{
-          //     console.log("222222");
-          //     // state.currentDefinition={}
-          //     // console.log(state.currentDefinition)
-          //   }
-          // }
-          console.log(("111111111"));
-          
-          console.log(state.currentCode);
-          console.log(state.taskDefinition);
           let obj =null
           obj =  state.taskDefinition.find((item)=>{
             return item.value.code== state.currentCode            
           })
-          console.log(obj);
           state.currentDefinition=obj?obj.value:null;
-          console.log(state.currentDefinition);
-        
         }
-        
-        // console.log(state.taskDefinition);
-        // console.log(state.currentCode);
-        // console.log(state.currentDefinition);
         if(node.getAttrs().label.text === "数据采集"){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.dialogVisible = true;
@@ -412,21 +385,22 @@ export default defineComponent({
         if (!options.ui) {
           return;
         }
-        let i = state.watchCode.indexOf(node.id)
-        if ( i > 1) {
-          state.watchCode.splice(i,1)
-          state.watchDefinition.splice(i,1 )
+        if (state.watchCode) {
+          let i = state.watchCode.indexOf(node.id)
+          if ( i > 1) {
+            state.watchCode.splice(i,1)
+            state.watchDefinition.splice(i,1)
+          }
         }
         let m = state.setDocId.indexOf(state.currentCode)
         if (m > -1) {
           state.taskDefinition.splice(m,1)
-          state.taskRelation.splice(m,1)
         }
         let index = state.arrList.indexOf(node.id)
         if(index > -1){
           state.arrList.splice(index, 1);
-          state.taskCode.splice(index,1);
           state.codeList.splice(index,1);
+          state.taskCode.splice(index,1);
         }	
       });
       graph.on("node:mouseleave", ({ node }) => {
@@ -508,12 +482,40 @@ export default defineComponent({
     //获取采集节点配置信息
     const getCollect = (i) => {
       state.setDocId.push(i.nodeId)
+      let arr = state.taskDefinition.map(x => x.value.nodeId)
+      let index = arr.indexOf(i.nodeId)
+      if (index > -1) {
+        state.taskDefinition.splice(index,1)
+      }
+      let brr = state.watchDefinition.map(x => x.code.toString())
+      let x = brr.indexOf(i.nodeId)
+      if (x > -1) {
+        state.watchDefinition.splice(x,1)
+      }
+      // let obj = []
+      // console.log(state.taskDefinition.map(x => x.value.nodeId));
+      // obj = state.taskDefinition.find((item)=>{
+      //   console.log(item.value.nodeId);
+      //   console.log(i.nodeId.toString());
+      //   return item.value.nodeId == i.nodeId.toString()           
+      // })
+      // console.log(obj);
+      // state.currentDefinition = obj
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(i)) })
-      console.log(state.taskDefinition);
     }
     //获取开发节点配置信息
     const getFlink = (j) => {
       state.setDocId.push(j.nodeId)
+      let arr = state.taskDefinition.map(x => x.value.nodeId)
+      let index = arr.indexOf(j.nodeId)
+      if (index > -1) {
+        state.taskDefinition.splice(index,1)
+      }
+      let brr = state.watchDefinition.map(x => x.code.toString())
+      let x = brr.indexOf(j.nodeId)
+      if (x > -1) {
+        state.watchDefinition.splice(x,1)
+      }
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(j)) })
     }
     const closeModal = () => {//节点配置抽屉关闭
@@ -549,8 +551,10 @@ export default defineComponent({
         allCollectTaskId.push(x.postTaskVersion)
         allCollectTaskId.push(x.preTaskVersion)
       })
-      let childNodes = taskRelation.map(y => y.postTaskCode)
-      let taskCodes = state.taskCode ? state.taskCode : state.watchCode
+      let childNodes =[]
+      childNodes = taskRelation.map(y => y.postTaskCode.toString())
+      let taskCodes = ''
+      taskCodes = !state.taskCode ? state.watchCode : (!state.watchCode ? state.taskCode : state.watchCode.concat(state.taskCode))
       let parentShip = [];
       for (var i = 0; i < taskCodes.length; i++) {
         if (childNodes.indexOf(taskCodes[i]) === -1) {
@@ -596,18 +600,18 @@ export default defineComponent({
         x: x.position().x,
         y: x.position().y,
       }))
-      let codeList = null
-      let taskDefinitionList = null
+      let codeList = ''
+      codeList = !state.taskCode ? state.watchCode : (!state.watchCode ? state.taskCode : state.watchCode.concat(state.taskCode))
+      let taskDefinitionList = []
       if (nodeData.nodes) {
-        codeList = state.taskCode.concat(state.watchCode)
         taskDefinitionList = taskDefinition.concat(state.watchDefinition)
       }else{
-        codeList = state.taskCode
         taskDefinitionList = taskDefinition
       }
+      console.log(locations,codeList.toString(),state.taskRelation,taskDefinitionList);
       if(!graph.getNodes().length) {
         ElMessage.warning('请输入依赖项')
-      }else if (!taskDefinitionList.length || state.taskRelation.length === 0) {
+      }else if (taskDefinitionList.length != codeList.length) {
         ElMessage.warning('请配置节点信息')
       }else{
         console.log(locations,codeList.toString(),state.taskRelation,taskDefinitionList);
@@ -638,8 +642,13 @@ export default defineComponent({
       state.code = newval[0]
       state.projectCode = newval[1]
       state.name = newval[2]
+      let mm = ''
       if (newval[0]!=oldval[0]) {
         state.taskDefinition = []
+        state.watchDefinition = []
+        state.codeList = []
+        state.taskCode = mm
+        state.watchCode = null
       }
       if(state.projectCode){
         proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)

@@ -91,7 +91,6 @@
           name: [{required: true, message: '请输入节点名称', trigger: 'change'}],
           taskWork: [{required: true, message: '请点击选择按钮配置作业', trigger: 'change'}],
         },
-        count: 0,
       })
       //获取作业名、源表名、目标表名，选中的整条数据，id
       const getCode = (e,i,j,k,x) => {
@@ -163,8 +162,6 @@
       const onCommit = () => {
          proxy.$refs.Form.validate(valid => {
           if(valid) {
-            state.count ++
-            console.log(state.count);
             emit("getCollect", taskDefinition);
             proxy.$refs['Form'].resetFields()
             emit('close')

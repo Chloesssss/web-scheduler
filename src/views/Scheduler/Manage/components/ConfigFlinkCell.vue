@@ -83,7 +83,6 @@
           name: [{required: true, message: '请输入节点名称', trigger: 'change'}],
           taskWork: [{required: true, message: '请点击选择按钮配置作业', trigger: 'change'}],
         },
-        count: 0,
       })
       //获取作业名、选中的整条数据、id
       const getCode = (e, k, x) => {
@@ -116,7 +115,7 @@
           timeoutFlag: "CLOSE",
           taskWork: '',
           taskParams: '',
-          taskType: "COLLECT",
+          taskType: "DLINK",
           callTaskId: '',
         }
          let obj = newval[5]?1:0
@@ -144,8 +143,6 @@
       const onCommit = () => {
         proxy.$refs.Form.validate(valid => {
           if(valid) {
-            state.count ++
-            console.log(state.count);
             emit("getFlink", taskDefinition);
             proxy.$refs['Form'].resetFields()
             emit('close')
