@@ -62,7 +62,20 @@ export default defineComponent({
       //监听获取的数据存储
       watchCode: null,
       watchDefinition: [],
-      currentDefinition: [],//当前节点的配置表单数据
+      currentDefinition: {
+        name: '',
+        description: '',
+        timeoutFlag: "",
+        taskWork: '',
+        originTable: '',
+        targetTable: '',
+        taskParams: '',
+        taskType: "",
+        projectCode: '',
+        code: '',
+        callTaskId: '',
+        nodeId: '',
+      },//当前节点的配置表单数据
     })
     let graph = null
     const eachNodeData = {}
@@ -349,17 +362,18 @@ export default defineComponent({
       graph.on("cell:dblclick", ({ node, cell }) => {
         let index = state.arrList.indexOf(node.id)
         state.currentCode = state.taskCode[index]
-        console.log(state.currentCode);
-        console.log(node.data.id);
+        console.log(state.taskCode);
+        console.log(node.id);
+        console.log(state.arrList);
         if (node.data.id) {
           state.currentCode = node.id
           state.dataId = node.data.id
           state.currentDefinition = node.data
-          console.log(state.currentCode);
-          console.log(node.data.code);
+          console.log(5555);
         } else {
           let index = state.arrList.indexOf(node.id)
           state.currentCode = state.taskCode[index]
+          console.log(state.currentCode);
           state.dataId = null
           let obj =null
           obj =  state.taskDefinition.find((item)=>{
@@ -367,6 +381,7 @@ export default defineComponent({
           })
           state.currentDefinition=obj?obj.value:null;
         }
+        console.log(state.currentCode);
         if(node.getAttrs().label.text === "数据采集"){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.dialogVisible = true;
@@ -586,20 +601,15 @@ export default defineComponent({
     }
     //生成节点标识
     const getNodeCode = (flag) => {
-      proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/gen-task-codes?genNum=1`).then(({data}) => {
-        if(data.code === 200) {
-          state.codeList.push(data.data)
-          state.taskCode = state.codeList.toString().split(",")
-          if(flag===1){
-            let index = state.arrList.indexOf(state.currentCode)
-            state.currentCode = state.taskCode[index]
-          }else{
-            state.currentCode = ""
-          }
-        } else {
+      proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/gen-task-codes`).then(({data}) => {
+        state.codeList.push(data.data)
+        state.taskCode = state.codeList.toString().split(",")
+        if(flag===1){
+          let index = state.arrList.indexOf(state.currentCode)
+          state.currentCode = state.taskCode[index]
+        }else{
+          state.currentCode = ""
         }
-      }).catch(e => {
-        ElMessage.error('节点标识生成失败，请重试！')
       })
     }
     //将流程相关内容转化为JSON
@@ -657,6 +667,7 @@ export default defineComponent({
       if (newval[0]!=oldval[0]) {
         state.taskDefinition = []
         state.watchDefinition = []
+        state.arrList = []
         state.codeList = []
         state.taskCode = mm
         state.watchCode = null
