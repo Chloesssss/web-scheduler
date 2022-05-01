@@ -1,0 +1,448 @@
+// 公共样式
+.green-color {
+  color: #5cb6ff !important;
+}
+.yellow-color {
+  color: #fecd2e !important;
+}
+.grey-color {
+  color: #909399;
+}
+.grey-background {
+  background-color: #f0f2f5;
+}
+.blue-color {
+  color: #0085FF !important;
+}
+.white-color {
+  color: white !important;
+}
+
+.text-align-right {
+  text-align: right;
+}
+.text-align-left {
+  text-align: left;
+}
+.text-align-center {
+  text-align: center;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+.cursor-pointer {
+  cursor: pointer;
+};
+
+@for $i from 12 through 30 { // 例如 fs-12 相当于 font-size: 12px;
+  .fs-#{$i} {
+    font-size: $i+px !important;
+  }
+}
+
+@for $i from 0 through 20 { // 例如 width-300 相当于 width: 300px;
+  .width-#{$i*50} {
+    width: $i*50+px !important;
+  }
+}
+
+.ml-auto {
+  margin-left: auto !important;
+}
+
+.width-a-hundred-percent {
+  width: 100%;
+}
+
+.height-a-hundred-percent {
+  height: 100%;
+}
+
+@for $i from 0 through 10 {
+  $x: $i*5;
+
+  .mt-#{$x} {
+    margin-top: $x+px !important;
+  }
+
+  .mb-#{$x} {
+    margin-bottom: $x+px !important;
+  }
+
+  .ml-#{$x} {
+    margin-left: $x+px !important;
+  }
+
+  .mr-#{$x} {
+    margin-right: $x+px !important;
+  }
+
+  .pt-#{$x} {
+    padding-top: $x+px !important;
+  }
+
+  .pb-#{$x} {
+    padding-bottom: $x+px !important;
+  }
+
+  .pl-#{$x} {
+    padding-left: $x+px !important;
+  }
+
+  .pr-#{$x} {
+    padding-right: $x+px !important;
+  }
+}
+// flex
+.flex {
+  display: flex;
+}
+.flex-auto {
+  flex: auto;
+}
+
+@for $i from 1 through 5 { // flex-1 相当于 flex: 1;
+  .flex-#{$i} {
+    flex: $i
+  }
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+.flex-wrap{
+  flex-wrap: wrap;
+}
+
+.justify-content-between {
+  justify-content: space-between;
+}
+
+.justify-content-end {
+  justify-content: flex-end;
+}
+
+.flex-directive-column {
+  flex-direction: column;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.border {
+  border: 1px solid #dcdfe6;
+}
+
+.border-l {
+  border-left: 1px solid #dcdfe6;
+}
+
+.border-r {
+  border-right: 1px solid #dcdfe6;
+}
+//自定义规则添加星号标志
+.task-depend{
+  .el-form-item__label:before{
+    content: '*';
+    color: #F56C6C;
+    margin-right: 4px;
+  }
+}
+.el-dialog__header { // 全局弹框样式
+  padding: 10px;
+  background-color: #1D77DE;
+  display: flex;
+  align-items: center;
+  margin-right: 0;
+  justify-content: space-around;
+  .el-dialog__title {
+    color: white;
+  }
+  .el-dialog__headerbtn {
+    top: auto;
+    color: white;
+    .el-dialog__close {
+      color: white;
+    }
+  }
+}
+.el-dialog__headerbtn {
+  width: 38px;
+  height: 38px;
+  .el-dialog__close {
+    color: white;
+  }
+}
+//.data-analysis-main-container {
+//  .el-container {
+//    .el-aside {
+//      .el-menu-item, .el-sub-menu__title {
+//        box-shadow: rgb(29 119 222 / 40%) 0px 0px 2px 0px;
+//      }
+//    }
+//  }
+//}
+// 全局card 的.el-card.is-always-shadow
+.el-card.is-always-shadow {
+  box-shadow: 0 0 6px 1px #f2f2f2;
+}
+// 全局表格样式
+.el-table__header-wrapper {
+  .el-table__header {
+    .el-table__cell {
+      background-color: #f4f4f5;
+    }
+  }
+}
+// 全局的界面样式修改
+html {
+  height: 100%;
+  body {
+    height: 100%;
+    #app {
+      height: 100%;
+      background-color: #f0f2f5;
+      .sub-main-container { // 子模块的主class
+        height: 100%;
+      }
+    }
+  }
+}
+.sub-right-container { // 子模块右侧区域容器的样式
+  padding: 10px;
+  margin: 10px;
+  border: 1px solid #dcdfe6;
+  background-color: white;
+  border-radius: 5px;
+}
+.side-menu-container { // 左侧菜单公共样式
+  width: auto !important;
+  .el-menu-vertical-demo {
+    background: #19274B;
+  }
+  .el-menu-item {
+    height: 45px !important;
+  }
+  ul.el-menu.el-menu--inline {
+    background: #19274B !important;
+  }
+  .el-sub-menu__title {
+    background: #19274B !important;
+  }
+  li.el-menu-item.is-active.flex.align-items-center:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 4px;
+    height: 45px;
+    background: #4779F2;
+    border-radius: 2px;
+  }
+  .el-menu-item.is-active, .el-menu-item:hover {
+    color: white !important;
+    //background: #1890ff !important;
+    background: linear-gradient(270deg, #19274B 0%, #283D71 100%);
+    i {
+      color: white !important;
+    }
+  }
+}
+// 子模块main border 样式
+.sub-main-container-no-side-menu {
+  padding: 10px;
+  .sub-main-container-border {
+    padding: 10px;
+    margin: 0;
+    border: 1px solid rgb(220, 223, 230);
+    background-color: white;
+    border-radius: 5px;
+  }
+}
+
+// vue3-cron 样式
+.vue3-cron-div {
+  .tabBody {
+    .el-row {
+      margin-bottom: 10px;
+    }
+  }
+  .bottom {
+    .buttonDiv, .value {
+      margin-top: 10px;
+    }
+  }
+  .el-radio.el-radio--small {
+    height: 40px;
+  }
+}
+
+// v2.0 新增样式
+
+// 带有渐变色的数字样式， 实例参考数据采集-指标监控
+.number-color {
+  background: linear-gradient(0deg, #3bc170, #64aacc);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+}
+
+// 带有彩色样式的加载样式
+/**
+使用案例
+ElLoading.service({
+        lock: true,
+        text: '加载中...',
+        spinner: 'dots-loader',
+        background: 'hsla(0,0%,100%,.8)',
+      })
+**/
+.dots-loader:not(:required) {
+  position: relative;
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-bottom: 30px;
+  overflow: hidden;
+  text-indent: -9999px;
+  background: transparent;
+  border-radius: 100%;
+  box-shadow: #f86 -14px -14px 0 7px,
+  #fc6 14px -14px 0 7px,
+  #6d7 14px 14px 0 7px,
+  #4ae -14px 14px 0 7px;
+  transform-origin: 50% 50%;
+  animation: dots-loader 5s infinite ease-in-out;
+}
+
+@keyframes dots-loader {
+  0% {
+    box-shadow: #f86 -14px -14px 0 7px,
+    #fc6 14px -14px 0 7px,
+    #6d7 14px 14px 0 7px,
+    #4ae -14px 14px 0 7px;
+  }
+
+  8.33% {
+    box-shadow: #f86 14px -14px 0 7px,
+    #fc6 14px -14px 0 7px,
+    #6d7 14px 14px 0 7px,
+    #4ae -14px 14px 0 7px;
+  }
+
+  16.67% {
+    box-shadow: #f86 14px 14px 0 7px,
+    #fc6 14px 14px 0 7px,
+    #6d7 14px 14px 0 7px,
+    #4ae -14px 14px 0 7px;
+  }
+
+  25% {
+    box-shadow: #f86 -14px 14px 0 7px,
+    #fc6 -14px 14px 0 7px,
+    #6d7 -14px 14px 0 7px,
+    #4ae -14px 14px 0 7px;
+  }
+
+  33.33% {
+    box-shadow: #f86 -14px -14px 0 7px,
+    #fc6 -14px 14px 0 7px,
+    #6d7 -14px -14px 0 7px,
+    #4ae -14px -14px 0 7px;
+  }
+
+  41.67% {
+    box-shadow: #f86 14px -14px 0 7px,
+    #fc6 -14px 14px 0 7px,
+    #6d7 -14px -14px 0 7px,
+    #4ae 14px -14px 0 7px;
+  }
+
+  50% {
+    box-shadow: #f86 14px 14px 0 7px,
+    #fc6 -14px 14px 0 7px,
+    #6d7 -14px -14px 0 7px,
+    #4ae 14px -14px 0 7px;
+  }
+
+  58.33% {
+    box-shadow: #f86 -14px 14px 0 7px,
+    #fc6 -14px 14px 0 7px,
+    #6d7 -14px -14px 0 7px,
+    #4ae 14px -14px 0 7px;
+  }
+
+  66.67% {
+    box-shadow: #f86 -14px -14px 0 7px,
+    #fc6 -14px -14px 0 7px,
+    #6d7 -14px -14px 0 7px,
+    #4ae 14px -14px 0 7px;
+  }
+
+  75% {
+    box-shadow: #f86 14px -14px 0 7px,
+    #fc6 14px -14px 0 7px,
+    #6d7 14px -14px 0 7px,
+    #4ae 14px -14px 0 7px;
+  }
+
+  83.33% {
+    box-shadow: #f86 14px 14px 0 7px,
+    #fc6 14px -14px 0 7px,
+    #6d7 14px 14px 0 7px,
+    #4ae 14px 14px 0 7px;
+  }
+
+  91.67% {
+    box-shadow: #f86 -14px 14px 0 7px,
+    #fc6 14px -14px 0 7px,
+    #6d7 14px 14px 0 7px,
+    #4ae -14px 14px 0 7px;
+  }
+
+  100% {
+    box-shadow: #f86 -14px -14px 0 7px,
+    #fc6 14px -14px 0 7px,
+    #6d7 14px 14px 0 7px,
+    #4ae -14px 14px 0 7px;
+  }
+}
+
+// 名称前面的带有动画的点点 （需要添加class） 红色点点添加： vab-dot-error  绿色点点添加： vab-dot-success
+.vab-dot-error, .vab-dot-error span {
+  background: #ff4d4f;
+}
+.vab-dot-success, .vab-dot-success span {
+  background: #67c23a;
+}
+.vab-dot {
+  position: relative;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 3px;
+  vertical-align: middle;
+  border-radius: 50%;
+}
+.vab-dot span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  -webkit-animation: vabDot 1.2s ease-in-out infinite;
+  animation: vabDot 1.2s ease-in-out infinite;
+}
+@keyframes vabDot{0%{opacity:.6;transform:scale(.8)}to{opacity:0;transform:scale(2.4)}}
+
+
