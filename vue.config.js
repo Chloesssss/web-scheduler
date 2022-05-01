@@ -6,7 +6,7 @@ function resolve (dir) {
 }
 module.exports = {
   filenameHashing: true,
-  lintOnSave: process.env.NODE_ENV !== 'production',
+  lintOnSave: false,
   runtimeCompiler: true,
   productionSourceMap: false,
   devServer: {
