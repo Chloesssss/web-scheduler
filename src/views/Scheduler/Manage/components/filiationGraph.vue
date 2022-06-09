@@ -62,6 +62,7 @@ export default defineComponent({
       //监听获取的数据存储
       watchCode: null,
       watchDefinition: [],
+      label: '', // 节点名
       currentDefinition: {
         name: '',
         description: '',
@@ -381,13 +382,25 @@ export default defineComponent({
           })
           state.currentDefinition=obj?obj.value:null;
         }
-        console.log(state.currentCode);
-        if(node.getAttrs().label.text === "数据采集"){
-          state.nodeId = state.currentCode ? state.currentCode : node.id
-          state.dialogVisible = true;
-        } else if(node.getAttrs().label.text === "数据开发"){
-          state.nodeId = state.currentCode ? state.currentCode : node.id
-          state.flinkVisible = true;
+        console.log(node.data);
+        if (!state.projectCode) {
+          if(node.getAttrs().label.text === "数据采集"){
+            console.log("open");
+            state.nodeId = state.currentCode ? state.currentCode : node.id
+            state.dialogVisible = true;
+          } else if(node.getAttrs().label.text === "数据开发"){
+            state.nodeId = state.currentCode ? state.currentCode : node.id
+            state.flinkVisible = true;
+          }
+        }else{
+          if(node.data.taskType === "COLLECT"){
+            console.log("open");
+            state.nodeId = state.currentCode ? state.currentCode : node.id
+            state.dialogVisible = true;
+          } else if(node.data.taskType === "DLINK"){
+            state.nodeId = state.currentCode ? state.currentCode : node.id
+            state.flinkVisible = true;
+          }
         }
       });
       // 节点删除操作
@@ -507,6 +520,7 @@ export default defineComponent({
     }
     //获取采集节点配置信息
     const getCollect = (i) => {
+      state.collectLabel = i.name
       state.setDocId.push(i.nodeId)
       let arr = state.taskDefinition.map(x => x.value.nodeId)
       let index = arr.indexOf(i.nodeId)
@@ -531,6 +545,7 @@ export default defineComponent({
     }
     //获取开发节点配置信息
     const getFlink = (j) => {
+      state.flinkLabel = j.name
       state.setDocId.push(j.nodeId)
       let arr = state.taskDefinition.map(x => x.value.nodeId)
       let index = arr.indexOf(j.nodeId)
@@ -681,6 +696,7 @@ export default defineComponent({
             let definition = data.data.taskDefinition
             let relation = data.data.taskRelation
             let label = definition.map(x => x.name)
+            console.log(label);
             let taskType = definition.map(x => x.taskType)
             let code = definition.map(x => x.code)
             let taskCode = locations.map(x => x.taskCode)
@@ -704,7 +720,7 @@ export default defineComponent({
                   fontSize: 16,
                   fill: "#333",
                   fontWeight: 800,
-                  text: taskType[locations.indexOf(x)] === "COLLECT" ? state.collectLabel: state.flinkLabel,
+                  text: label[locations.indexOf(x)],
                 },
               },
               text: {
