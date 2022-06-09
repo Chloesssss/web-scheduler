@@ -62,7 +62,6 @@ export default defineComponent({
       //监听获取的数据存储
       watchCode: null,
       watchDefinition: [],
-      label: '', // 节点名
       currentDefinition: {
         name: '',
         description: '',
@@ -316,14 +315,6 @@ export default defineComponent({
             text: state.collectLabel,
           },
         },
-        text: {
-          fontSize: 12,
-          fill: "rgba(0,0,0,0.85)",
-          textWrap: {
-            text: "",
-            width: -10,
-          },
-        },
         data: {},
         relation: {},
         ports: { ...ports },
@@ -377,17 +368,17 @@ export default defineComponent({
           })
           state.currentDefinition=obj?obj.value:null;
         }
-        if(node.getAttrs().label.text === "数据采集"){
+        if(node.getAttrs().label.text == "数据采集"){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.dialogVisible = true;
-        } else if(node.getAttrs().label.text === "数据开发"){
+        } else if(node.getAttrs().label.text == "数据开发"){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.flinkVisible = true;
         }
-        if(node.data.taskType === 'COLLECT'){
+        if(node.data.taskType == 'COLLECT'){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.dialogVisible = true;
-        } else if(node.data.taskType === 'DLINK'){
+        } else if(node.data.taskType == 'DLINK'){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.flinkVisible = true;
         }
