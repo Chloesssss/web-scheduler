@@ -363,18 +363,13 @@ export default defineComponent({
       graph.on("cell:dblclick", ({ node, cell }) => {
         let index = state.arrList.indexOf(node.id)
         state.currentCode = state.taskCode[index]
-        console.log(state.taskCode);
-        console.log(node.id);
-        console.log(state.arrList);
         if (node.data.id) {
           state.currentCode = node.id
           state.dataId = node.data.id
           state.currentDefinition = node.data
-          console.log(5555);
         } else {
           let index = state.arrList.indexOf(node.id)
           state.currentCode = state.taskCode[index]
-          console.log(state.currentCode);
           state.dataId = null
           let obj =null
           obj =  state.taskDefinition.find((item)=>{
@@ -382,25 +377,19 @@ export default defineComponent({
           })
           state.currentDefinition=obj?obj.value:null;
         }
-        console.log(node.data);
-        if (!state.projectCode) {
-          if(node.getAttrs().label.text === "数据采集"){
-            console.log("open");
-            state.nodeId = state.currentCode ? state.currentCode : node.id
-            state.dialogVisible = true;
-          } else if(node.getAttrs().label.text === "数据开发"){
-            state.nodeId = state.currentCode ? state.currentCode : node.id
-            state.flinkVisible = true;
-          }
-        }else{
-          if(node.data.taskType === "COLLECT"){
-            console.log("open");
-            state.nodeId = state.currentCode ? state.currentCode : node.id
-            state.dialogVisible = true;
-          } else if(node.data.taskType === "DLINK"){
-            state.nodeId = state.currentCode ? state.currentCode : node.id
-            state.flinkVisible = true;
-          }
+        if(node.getAttrs().label.text === "数据采集"){
+          state.nodeId = state.currentCode ? state.currentCode : node.id
+          state.dialogVisible = true;
+        } else if(node.getAttrs().label.text === "数据开发"){
+          state.nodeId = state.currentCode ? state.currentCode : node.id
+          state.flinkVisible = true;
+        }
+        if(node.data.taskType === 'COLLECT'){
+          state.nodeId = state.currentCode ? state.currentCode : node.id
+          state.dialogVisible = true;
+        } else if(node.data.taskType === 'DLINK'){
+          state.nodeId = state.currentCode ? state.currentCode : node.id
+          state.flinkVisible = true;
         }
       });
       // 节点删除操作
@@ -428,7 +417,6 @@ export default defineComponent({
         }
         let m = state.setDocId.indexOf(state.currentCode)
         let arr = state.taskDefinition.map(x => x.value.nodeId)
-        console.log(arr);
         let a = arr.indexOf(state.currentCode)
         if (m > -1) {
           state.taskDefinition.splice(m,1)
@@ -696,7 +684,6 @@ export default defineComponent({
             let definition = data.data.taskDefinition
             let relation = data.data.taskRelation
             let label = definition.map(x => x.name)
-            console.log(label);
             let taskType = definition.map(x => x.taskType)
             let code = definition.map(x => x.code)
             let taskCode = locations.map(x => x.taskCode)
