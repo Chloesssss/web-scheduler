@@ -96,6 +96,7 @@
       const getCode = (e,i,j,k,x) => {
         var m = JSON.stringify(k)
         taskDefinition.taskWork = e;
+        taskDefinition.name = e;
         taskDefinition.originTable = i;
         taskDefinition.targetTable = j;
         taskDefinition.taskParams = m;

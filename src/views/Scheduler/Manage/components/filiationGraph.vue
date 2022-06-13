@@ -647,16 +647,162 @@ export default defineComponent({
           } else {
             ElMessage.error(data.msg)
           }
+          reSet()
         }).catch(e => {
           ElMessage.error('保存失败请重试！')
         })
       }
+    }
+    const reSet = () => {
+      let mm = ''
+      state.taskDefinition = []
+      state.watchDefinition = []
+      state.arrList = []
+      state.codeList = []
+      state.taskCode = mm
+      state.watchCode = null
+      proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
+      .then(({data}) => {
+        if(data.code == 200 && data.data.taskDefinition != null){
+          state.code = data.data.processPagingQueryVO.code
+          state.projectCode = data.data.processPagingQueryVO.projectCode
+          state.name = data.data.processPagingQueryVO.name
+          state.params = data.data
+          let locations = JSON.parse(data.data.processPagingQueryVO.locations)
+          let definition = data.data.taskDefinition
+          let relation = data.data.taskRelation
+          let label = definition.map(x => x.name)
+          let taskType = definition.map(x => x.taskType)
+          let code = definition.map(x => x.code)
+          let taskCode = locations.map(x => x.taskCode)
+          state.nodeDtos = locations.map(x => ({
+            x: Number(x.x),
+            y: Number(x.y),
+            id: x.taskCode,
+            width: 120,
+            height: 60,
+            data: definition[locations.indexOf(x)],
+            relation: relation[locations.indexOf(x)],
+            attrs: {
+              body: {
+                fill: taskType[locations.indexOf(x)] === "COLLECT" ? "#EFF4FF": "#efdbff",
+                stroke: taskType[locations.indexOf(x)] === "COLLECT" ? "#5F95FF" : "#9254de",
+                color: "#333",
+                rx: 50,
+                ry: 20,
+              },
+              label: {
+                fontSize: 16,
+                fill: "#333",
+                fontWeight: 800,
+                text: label[locations.indexOf(x)],
+              },
+            },
+            text: {
+              fontSize: 12,
+              fill: "rgba(0,0,0,0.85)",
+              textWrap: {
+                text: "",
+                width: -10,
+              },
+            },
+            shape: 'rect',
+            ports: {
+              groups: {
+                in: {
+                  position: 'top',
+                  attrs: {
+                    circle: {
+                      r: 4,
+                      magnet: true,
+                      stroke: '#108ee9',
+                      strokeWidth: 2,
+                      fill: '#fff'
+                    }
+                  }
+                },
+                out: {
+                  position: 'bottom',
+                  attrs: {
+                    circle: {
+                      r: 4,
+                      magnet: true,
+                      stroke: '#31d0c6',
+                      strokeWidth: 2,
+                      fill: '#fff'
+                    }
+                  }
+                }
+              },
+              items: [
+                {
+                  id: x.taskCode + '_in',
+                  group: 'in',
+                },
+                {
+                  id: x.taskCode + '_out',
+                  group: 'out',
+                },
+              ],
+            }
+          }))
+          let edges = data.data.taskRelation
+          for (let index = edges.length-1; index >= 0; index--) {
+            const element = edges[index];
+            if (edges[index].preTaskCode === 0) {
+              edges.splice(element,1)
+            }
+          }
+          state.linkDtos = edges.map(x => ({
+            source: {cell: x.preTaskCode, port: x.preTaskCode + '_out'},
+            target: {cell: x.postTaskCode, port: x.postTaskCode + '_in'},
+            attrs: {
+              line: {
+                strokeDasharray: '5 5',
+                stroke: '#808080',
+                strokeWidth: 1,
+                targetMarker: {
+                  name: 'block',
+                  args: {
+                    size: '6',
+                  },
+                },
+              },
+            },
+            shape: 'edge',
+          }))
+          nodeData.nodes = state.nodeDtos;
+          nodeData.edges = state.linkDtos
+          graph.fromJSON(nodeData)
+          state.watchCode = taskCode
+          state.watchDefinition = nodeData.nodes.map(x =>x.data)
+          state.workState = data.data.processPagingQueryVO.releaseState
+          emit("giveState", state.workState);
+          let flinkForm = [];
+          let collectForm = [];
+          for (let p = definition.length-1; p >= 0; p --) {
+            const formObj = definition[p];
+            if (definition[p].taskType === "COLLECT") {
+              definition.splice(formObj,1)
+              flinkForm = definition
+            } else if (definition[p].taskType === "DLINK") {
+              definition.splice(formObj,1)
+              collectForm = definition
+            }
+          }
+        }else{
+          nodeData.nodes = null
+          graph.fromJSON([])
+          ElMessage.warning('当前画布为空')
+        }
+      })
     }
     //监听树节点code获取画布节点位置信息
     watch([code, projectCode, workName],(newval,oldval) => {
       state.code = newval[0]
       state.projectCode = newval[1]
       state.name = newval[2]
+      console.log(newval);
       let mm = ''
       if (newval[0]!=oldval[0]) {
         state.taskDefinition = []
@@ -667,138 +813,7 @@ export default defineComponent({
         state.watchCode = null
       }
       if(state.projectCode){
-        proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
-        .then(({data}) => {
-          if(data.code == 200 && data.data.taskDefinition != null){
-            state.params = data.data
-            let locations = JSON.parse(data.data.processPagingQueryVO.locations)
-            let definition = data.data.taskDefinition
-            let relation = data.data.taskRelation
-            let label = definition.map(x => x.name)
-            let taskType = definition.map(x => x.taskType)
-            let code = definition.map(x => x.code)
-            let taskCode = locations.map(x => x.taskCode)
-            state.nodeDtos = locations.map(x => ({
-              x: Number(x.x),
-              y: Number(x.y),
-              id: x.taskCode,
-              width: 120,
-              height: 60,
-              data: definition[locations.indexOf(x)],
-              relation: relation[locations.indexOf(x)],
-              attrs: {
-                body: {
-                  fill: taskType[locations.indexOf(x)] === "COLLECT" ? "#EFF4FF": "#efdbff",
-                  stroke: taskType[locations.indexOf(x)] === "COLLECT" ? "#5F95FF" : "#9254de",
-                  color: "#333",
-                  rx: 50,
-                  ry: 20,
-                },
-                label: {
-                  fontSize: 16,
-                  fill: "#333",
-                  fontWeight: 800,
-                  text: label[locations.indexOf(x)],
-                },
-              },
-              text: {
-                fontSize: 12,
-                fill: "rgba(0,0,0,0.85)",
-                textWrap: {
-                  text: "",
-                  width: -10,
-                },
-              },
-              shape: 'rect',
-              ports: {
-                groups: {
-                  in: {
-                    position: 'top',
-                    attrs: {
-                      circle: {
-                        r: 4,
-                        magnet: true,
-                        stroke: '#108ee9',
-                        strokeWidth: 2,
-                        fill: '#fff'
-                      }
-                    }
-                  },
-                  out: {
-                    position: 'bottom',
-                    attrs: {
-                      circle: {
-                        r: 4,
-                        magnet: true,
-                        stroke: '#31d0c6',
-                        strokeWidth: 2,
-                        fill: '#fff'
-                      }
-                    }
-                  }
-                },
-                items: [
-                  {
-                    id: x.taskCode + '_in',
-                    group: 'in',
-                  },
-                  {
-                    id: x.taskCode + '_out',
-                    group: 'out',
-                  },
-                ],
-              }
-            }))
-            let edges = data.data.taskRelation
-            for (let index = edges.length-1; index >= 0; index--) {
-              const element = edges[index];
-              if (edges[index].preTaskCode === 0) {
-                edges.splice(element,1)
-              }
-            }
-            state.linkDtos = edges.map(x => ({
-              source: {cell: x.preTaskCode, port: x.preTaskCode + '_out'},
-              target: {cell: x.postTaskCode, port: x.postTaskCode + '_in'},
-              attrs: {
-                line: {
-                  strokeDasharray: '5 5',
-                  stroke: '#808080',
-                  strokeWidth: 1,
-                  targetMarker: {
-                    name: 'block',
-                    args: {
-                      size: '6',
-                    },
-                  },
-                },
-              },
-              shape: 'edge',
-            }))
-            nodeData.nodes = state.nodeDtos;
-            nodeData.edges = state.linkDtos
-            graph.fromJSON(nodeData)
-            state.watchCode = taskCode
-            state.watchDefinition = nodeData.nodes.map(x =>x.data)
-            state.workState = data.data.processPagingQueryVO.releaseState
-            emit("giveState", state.workState);
-            let flinkForm = [];
-            let collectForm = [];
-            for (let p = definition.length-1; p >= 0; p --) {
-              const formObj = definition[p];
-              if (definition[p].taskType === "COLLECT") {
-                definition.splice(formObj,1)
-                flinkForm = definition
-              } else if (definition[p].taskType === "DLINK") {
-                definition.splice(formObj,1)
-                collectForm = definition
-              }
-            }
-          }else{
-            nodeData.nodes = null
-            graph.fromJSON([])
-            ElMessage.warning('当前画布为空')
-          }
-        })
+        reSet()
       } else {
       }
     })
@@ -812,6 +827,7 @@ export default defineComponent({
       closeModal,
       showPorts,
       save,
+      reSet,
       getCollect,
       getFlink,
     }

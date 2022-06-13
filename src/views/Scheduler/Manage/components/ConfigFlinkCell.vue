@@ -88,6 +88,7 @@
       const getCode = (e, k, x) => {
         var m = JSON.stringify(k)
         taskDefinition.taskWork = e;
+        taskDefinition.name = e;
         taskDefinition.taskParams = m;
         taskDefinition.callTaskId = x;
       }
