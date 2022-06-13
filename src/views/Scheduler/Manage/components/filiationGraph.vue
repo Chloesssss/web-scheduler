@@ -87,6 +87,32 @@ export default defineComponent({
       edges: [
       ],
     };
+    const imageShapes = [
+      {
+        body: {
+          fill: "#EFF4FF",
+          stroke: "#5F95FF",
+          strokeWidth: 1,
+        },
+        label: {
+          text: state.collectLabel,
+          fill: '#5F95FF',
+        },
+        image: require('/src/assets/rowCook.svg'),
+      },
+      {
+        body: {
+          fill: "#efdbff",
+          stroke: "#9254de",
+          strokeWidth: 1,
+        },
+        label: {
+          text: state.flinkLabel,
+          fill: '#9254de',
+          },
+        image: require('/src/assets/stickyCake.svg'),
+      },
+    ]
     const init= () => {
       // 定义边
       Graph.registerConnector(
@@ -200,34 +226,6 @@ export default defineComponent({
           }
         },
       });
-      Shape.Rect.config({
-        width: 120,
-        height: 60,
-        markup: [
-          {
-            tagName: "rect",
-            selector: "body",
-          },
-          {
-            tagName: "text",
-            selector: "label",
-          },
-        ],
-        attrs: {
-          body: {
-            fill: "#fff",
-            stroke: "#000",
-            strokeWidth: 2,
-          },
-          label: {
-            fontSize: 14,
-            fill: "#333",
-            fontFamily: "Arial, helvetica, sans-serif",
-            textAnchor: "middle",
-            textVerticalAnchor: "middle",
-          },
-        },
-      });
       // graph.isPannable() // 画布是否可以平移
       // graph.enablePanning() // 启用画布平移
       graph.centerContent();
@@ -238,7 +236,7 @@ export default defineComponent({
         target: graph,
         search: false, // 搜索
         collapsable: true,
-        stencilGraphWidth: 250,
+        stencilGraphWidth: 300,
         stencilGraphHeight: 400,
         groups: [
           {
@@ -247,9 +245,11 @@ export default defineComponent({
           },
         ],
         layoutOptions: {
+          dx: 30,
+          dy: 20,
           columns: 1,
           columnWidth: 130,
-          rowHeight: 70,
+          rowHeight: 80,
         },
       });
       proxy.$refs.stencilContainer.appendChild(stencil.container)
@@ -299,52 +299,87 @@ export default defineComponent({
         ],
       }
       //设计画布左侧节点样式
-      const collect = new Rect({
-        attrs: {
-          body: {
-            fill: "#EFF4FF",
-            stroke: "#5F95FF",
-            color: "#333",
-            rx: 50,
-            ry: 20,
+      Graph.registerNode(
+        'custom-node',
+        {
+          inherit: 'rect',
+          width: 120,
+          height: 60,
+          attrs: {
+            body: {
+              stroke: '#5F95FF',
+              strokeWidth: 1,
+              fill: 'rgba(95,149,255,0.05)',
+            },
+            image: {
+              width: 16,
+              height: 16,
+              x: 12,
+              y: 6,
+            },
+            text: {
+              refX: 40,
+              refY: 15,
+              fontSize: 15,
+              'text-anchor': 'start',
+            },
+            label: {
+              text: 'Please named this node',
+              refX: 10,
+              refY: 30,
+              fontSize: 12,
+              fill: 'rgba(0,0,0,0.6)',
+              'text-anchor': 'start',
+              textWrap: {
+                width: -10,      // 宽度减少 10px
+                height: '70%',   // 高度为参照元素高度的一半
+                ellipsis: true,  // 文本超出显示范围时，自动添加省略号
+                breakWord: true, // 是否截断单词
+              }
+            },
           },
-          label: {
-            fontSize: 16,
-            fill: "#333",
-            fontWeight: 800,
-            text: state.collectLabel,
-          },
+          markup: [
+            {
+              tagName: 'rect',
+              selector: 'body',
+            },
+            {
+              tagName: 'image',
+              selector: 'image',
+            },
+            {
+              tagName: 'text',
+              selector: 'text',
+            },
+            {
+              tagName: 'text',
+              selector: 'label',
+            },
+          ],
+          data: {},
+          relation: {},
+          ports: { ...ports },
         },
-        data: {},
-        relation: {},
-        ports: { ...ports },
-      });
-      const flink = new Rect({
-        attrs: {
-          body: {
-            fill: "#efdbff",
-            stroke: "#9254de",
-            rx: 50,
-            ry: 20,
+        true,
+      )
+      const imageNodes = imageShapes.map((item) =>
+        graph.createNode({
+          shape: 'custom-node',
+          attrs: {
+            image: {
+              'xlink:href': item.image,
+            },
+            body: item.body,
+            text: item.label,
           },
-          label: {
-            fontSize: 16,
-            fill: "#333",
-            fontWeight: 800,
-            text: state.flinkLabel,
-          },
-        },
-        data: {},
-        relation: {},
-        ports: { ...ports },
-      });
+        }),
+      )
       stencil.load(
-        [collect, flink],
+        imageNodes,
         "processLibrary"
       );
       graph.toJSON()
       //绑定事件
-      // 拖拽
       graph.on('node:added', ({ node }) => {
         state.arrList.push(node.id)
         state.currentCode = node.id
@@ -368,10 +403,10 @@ export default defineComponent({
           })
           state.currentDefinition=obj?obj.value:null;
         }
-        if(node.getAttrs().label.text == "数据采集"){
+        if(node.getAttrs().text.text == "数据采集"){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.dialogVisible = true;
-        } else if(node.getAttrs().label.text == "数据开发"){
+        } else if(node.getAttrs().text.text == "数据开发"){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.flinkVisible = true;
         }
@@ -679,34 +714,24 @@ export default defineComponent({
             x: Number(x.x),
             y: Number(x.y),
             id: x.taskCode,
-            width: 120,
-            height: 60,
             data: definition[locations.indexOf(x)],
             relation: relation[locations.indexOf(x)],
             attrs: {
               body: {
-                fill: taskType[locations.indexOf(x)] === "COLLECT" ? "#EFF4FF": "#efdbff",
-                stroke: taskType[locations.indexOf(x)] === "COLLECT" ? "#5F95FF" : "#9254de",
-                color: "#333",
-                rx: 50,
-                ry: 20,
+                fill: taskType[locations.indexOf(x)] === "COLLECT" ? "#EFF4FF" : '#efdbff',
+                stroke: taskType[locations.indexOf(x)] === "COLLECT" ? "#5F95FF" : '#9254de',
+                strokeWidth: 1,
               },
               label: {
-                fontSize: 16,
-                fill: "#333",
-                fontWeight: 800,
                 text: label[locations.indexOf(x)],
               },
-            },
-            text: {
-              fontSize: 12,
-              fill: "rgba(0,0,0,0.85)",
-              textWrap: {
-                text: "",
-                width: -10,
+              text: {
+                text: taskType[locations.indexOf(x)] === "COLLECT" ? "数据采集" : "数据开发",
+                fill: taskType[locations.indexOf(x)] === "COLLECT" ? '#5F95FF' : '#9254de',
               },
+              image: {'xlink:href': taskType[locations.indexOf(x)] === "COLLECT" ? imageShapes[0].image : imageShapes[1].image}
             },
-            shape: 'rect',
+            shape: 'custom-node',
             ports: {
               groups: {
                 in: {
@@ -843,7 +868,7 @@ export default defineComponent({
   display: flex;
 }
 .app-stencil {
-  width: 160px;
+  width: 200px;
   border: 1px solid #ffffff;
   position: relative;
 }
