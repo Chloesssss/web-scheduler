@@ -4,6 +4,7 @@
     v-model="dialogVisible"
     title="数据采集调度节点"
     :before-close="onCancel"
+    :show-close="false"
     direction="rtl"
     custom-class="demo-drawer"
   >

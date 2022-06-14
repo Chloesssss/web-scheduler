@@ -82,6 +82,7 @@ export default defineComponent({
       // motif: "",
     });
     const state = reactive({
+      valList: [],
       loading: false,
       // runStatusOptions: [
       //   {
@@ -135,10 +136,7 @@ export default defineComponent({
     // };
     //获取选中值
     const selectChoose = (val,row) => {
-      let valList = val,arrList=[];
-      valList.map((row)=>{
-        emit("giveCode", row.name, row, row.id);
-      })
+      state.valList = val
       if (val.length > 1) {
         proxy.$refs.multipleTable.clearSelection();
         proxy.$refs.multipleTable.toggleRowSelection(val.pop());
@@ -155,10 +153,14 @@ export default defineComponent({
       })
     }
     const onCancel = () => {
+      state.valList = []
       proxy.$refs.multipleTable.clearSelection()
       emit('close')
     }
     const onCommit = () => {
+      state.valList.map((row)=>{
+        emit("giveCode", row.name, row, row.id);
+      })
       emit('close')
     }
     watch([dialogTableVisible, tableName],(newval,oldval) => {

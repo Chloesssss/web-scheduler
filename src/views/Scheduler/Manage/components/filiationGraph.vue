@@ -249,7 +249,7 @@ export default defineComponent({
           dy: 20,
           columns: 1,
           columnWidth: 130,
-          rowHeight: 80,
+          rowHeight: 100,
         },
       });
       proxy.$refs.stencilContainer.appendChild(stencil.container)
@@ -303,8 +303,8 @@ export default defineComponent({
         'custom-node',
         {
           inherit: 'rect',
-          width: 120,
-          height: 60,
+          width: 140,
+          height: 76,
           attrs: {
             body: {
               stroke: '#5F95FF',
@@ -324,7 +324,7 @@ export default defineComponent({
               'text-anchor': 'start',
             },
             label: {
-              text: 'Please named this node',
+              text: 'Please nominate this node',
               refX: 10,
               refY: 30,
               fontSize: 12,
