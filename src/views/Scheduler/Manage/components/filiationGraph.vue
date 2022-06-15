@@ -3,17 +3,23 @@
     <div class="app-stencil" ref="stencilContainer"></div>
     <div class="app-content" id="flowContainer" ref="container"></div>
   </div>
-  <!-- 执行策略配置 -->
+  <!-- 采集执行策略配置 -->
   <config-cell ref="dialogCollect" :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-collect="getCollect" :definition="state.currentDefinition" :id="state.dataId"/>
   <!-- 开发执行策略配置 -->
   <config-flink-cell ref="dialogFlink" :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-flink="getFlink" :definition="state.currentDefinition" :id="state.dataId"/>
+  <!-- 标准执行策略配置 -->
+  <config-stand-cell ref="dialogStander" :visible="state.standVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-stand="getStand" :definition="state.currentDefinition" :id="state.dataId"/>
+  <!-- 质控执行策略配置 -->
+  <config-control-cell ref="dialogControl" :visible="state.controlVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-control="getControl" :definition="state.currentDefinition" :id="state.dataId"/>
 </template>
 
 <script>
 import { defineComponent, reactive, toRefs, ref, onMounted, watch, getCurrentInstance } from 'vue'
 import { Graph, Shape, Addon, FunctionExt } from "@antv/x6";
-import ConfigCell from "./ConfigCell.vue";
-import ConfigFlinkCell from './ConfigFlinkCell.vue';
+import ConfigCell from "../CollectConfig/ConfigCell.vue";
+import ConfigFlinkCell from '../FlinkConfig/ConfigFlinkCell.vue';
+import configStandCell from '../StanderConfig/ConfigStandCell.vue';
+import configControlCell from '../ControlConfig/ConfigControlCell.vue';
 import { ElMessageBox } from 'element-plus'
 import { ElMessage } from 'element-plus';
 import { BorderedImage } from '@antv/x6/lib/shape/standard';
@@ -21,7 +27,7 @@ const { Stencil } = Addon;
 const { Rect, Polygon } = Shape;
 
 export default defineComponent({
-  components: { ConfigCell, ConfigFlinkCell },
+  components: { ConfigCell, ConfigFlinkCell, configStandCell, configControlCell },
   name: "filiationGraph",
   props: {
     code: [String, Number],
@@ -40,6 +46,8 @@ export default defineComponent({
       projectCode: '',
       dialogVisible: false,
       flinkVisible: false,
+      standVisible: false,
+      controlVisible: false,
       name: '',// 工作流作业名
       codeList: [],// 后端接口返回节点id数组
       taskCode: '',// 后端接口返回节点id字符串
@@ -58,6 +66,8 @@ export default defineComponent({
       workState: '',
       collectLabel: '数据采集',
       flinkLabel: '数据开发',
+      standerLabel: '数据标准',
+      controlLabel: '数据质控',
       params: {},
       //监听获取的数据存储
       watchCode: null,
@@ -92,7 +102,6 @@ export default defineComponent({
         body: {
           fill: "#EFF4FF",
           stroke: "#5F95FF",
-          strokeWidth: 1,
         },
         label: {
           text: state.collectLabel,
@@ -104,13 +113,34 @@ export default defineComponent({
         body: {
           fill: "#efdbff",
           stroke: "#9254de",
-          strokeWidth: 1,
         },
         label: {
           text: state.flinkLabel,
           fill: '#9254de',
           },
         image: require('/src/assets/stickyCake.svg'),
+      },
+      {
+        body: {
+          fill: "#fcd3d3",
+          stroke: "#f89898",
+        },
+        label: {
+          text: state.standerLabel,
+          fill: '#f89898',
+          },
+        image: require('/src/assets/rougaMo.svg'),
+      },
+      {
+        body: {
+          fill: "#e1f3d8",
+          stroke: "#95d475",
+        },
+        label: {
+          text: state.controlLabel,
+          fill: '#95d475',
+          },
+        image: require('/src/assets/steamedBuns.svg'),
       },
     ]
     const init= () => {
@@ -237,7 +267,7 @@ export default defineComponent({
         search: false, // 搜索
         collapsable: true,
         stencilGraphWidth: 300,
-        stencilGraphHeight: 400,
+        stencilGraphHeight: 600,
         groups: [
           {
             name: "processLibrary",
@@ -307,9 +337,7 @@ export default defineComponent({
           height: 76,
           attrs: {
             body: {
-              stroke: '#5F95FF',
               strokeWidth: 1,
-              fill: 'rgba(95,149,255,0.05)',
             },
             image: {
               width: 16,
@@ -409,6 +437,12 @@ export default defineComponent({
         } else if(node.getAttrs().text.text == "数据开发"){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.flinkVisible = true;
+        }else if(node.getAttrs().text.text == "数据标准"){
+          state.nodeId = state.currentCode ? state.currentCode : node.id
+          state.standVisible = true;
+        }else if(node.getAttrs().text.text == "数据质控"){
+          state.nodeId = state.currentCode ? state.currentCode : node.id
+          state.controlVisible = true;
         }
         if(node.data.taskType == 'COLLECT'){
           state.nodeId = state.currentCode ? state.currentCode : node.id
@@ -546,15 +580,6 @@ export default defineComponent({
       if (x > -1) {
         state.watchDefinition.splice(x,1)
       }
-      // let obj = []
-      // console.log(state.taskDefinition.map(x => x.value.nodeId));
-      // obj = state.taskDefinition.find((item)=>{
-      //   console.log(item.value.nodeId);
-      //   console.log(i.nodeId.toString());
-      //   return item.value.nodeId == i.nodeId.toString()           
-      // })
-      // console.log(obj);
-      // state.currentDefinition = obj
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(i)) })
     }
     //获取开发节点配置信息
@@ -573,9 +598,43 @@ export default defineComponent({
       }
       state.taskDefinition.push({ value: JSON.parse(JSON.stringify(j)) })
     }
+    //获取开发节点配置信息
+    const getStand = (k) => {
+      state.standerLabel = k.name
+      state.setDocId.push(k.nodeId)
+      let arr = state.taskDefinition.map(x => x.value.nodeId)
+      let index = arr.indexOf(k.nodeId)
+      if (index > -1) {
+        state.taskDefinition.splice(index,1)
+      }
+      let brr = state.watchDefinition.map(x => x.code.toString())
+      let x = brr.indexOf(k.nodeId)
+      if (x > -1) {
+        state.watchDefinition.splice(x,1)
+      }
+      state.taskDefinition.push({ value: JSON.parse(JSON.stringify(k)) })
+    }
+    //获取开发节点配置信息
+    const getControl = (l) => {
+      state.controlLabel = l.name
+      state.setDocId.push(l.nodeId)
+      let arr = state.taskDefinition.map(x => x.value.nodeId)
+      let index = arr.indexOf(l.nodeId)
+      if (index > -1) {
+        state.taskDefinition.splice(index,1)
+      }
+      let brr = state.watchDefinition.map(x => x.code.toString())
+      let x = brr.indexOf(l.nodeId)
+      if (x > -1) {
+        state.watchDefinition.splice(x,1)
+      }
+      state.taskDefinition.push({ value: JSON.parse(JSON.stringify(l)) })
+    }
     const closeModal = () => {//节点配置抽屉关闭
       state.dialogVisible = false;
       state.flinkVisible = false;
+      state.controlVisible = false;
+      state.standVisible = false;
     }
     // 控制连接桩显示/隐藏
     const showPorts = (ports, show) => {
@@ -855,6 +914,8 @@ export default defineComponent({
       reSet,
       getCollect,
       getFlink,
+      getStand,
+      getControl,
     }
   },
 });
