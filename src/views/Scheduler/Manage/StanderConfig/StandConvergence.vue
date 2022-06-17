@@ -23,7 +23,21 @@
       </el-form>
       <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" @selection-change="selectChoose" stripe ref="multipleTable">
         <el-table-column type="selection" width="55" />
-        <el-table-column v-for="(header, index) in state.tableHeaders" :key="index" :prop="header.name" :label="header.title" :min-width="header.title.length < 6 ? header.width: header.title.length * 20" show-overflow-tooltip/>
+        <el-table-column prop="datasourceId" label="数据源ID" show-overflow-tooltip/>
+        <el-table-column prop="tableName" label="表名称" show-overflow-tooltip/>
+        <el-table-column prop="datasourceName" label="数据源名称" show-overflow-tooltip/>       
+        <el-table-column prop="status" label="状态" show-overflow-tooltip>
+          <template #default="{row}">
+            <el-tag
+              :type="row.status === 2 ? '' : 'danger'"
+              disable-transitions
+            >{{ row.status === 2 ? '已执行' : '未标化' }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="executeDate" label="最后执行时间" show-overflow-tooltip/>
+        <el-table-column prop="createTime" label="创建时间" show-overflow-tooltip/>
+        <el-table-column prop="updateTime" label="最近修改时间" show-overflow-tooltip/>
+        
       </el-table>
     </div>
     <!-- 表格底部分页显示 -->
@@ -95,14 +109,13 @@ export default defineComponent({
       tableName: ''
     });
     const getData = (row) => {
-      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dbus/queryJobByPage`, {
+      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dmdm/queryGroupPage`, {
         // runStatus: searchObj.runStatus,
         current: pageObj.current,
         size: pageObj.size,
-        name: searchObj.name,
+        tableName: searchObj.name,
       }).then(({ data: { data } }) => {
-        state.tableHeaders = data.table.headers
-        state.tableData = data.table.bodies
+        state.tableData = data.records
         pageObj.total = data.total;
       });
     };
@@ -133,7 +146,7 @@ export default defineComponent({
     }
     const toggleSelection = (rows) => {
       rows.forEach(row => {
-        if (row.name === state.tableName) {     
+        if (row.tableName === state.tableName) {     
         // toggleRowSelection  这个方法是用来选中某一行（打勾）
         // row 是要选中的那一行
         // true 是为选中
@@ -148,7 +161,7 @@ export default defineComponent({
     }
     const onCommit = () => {
       state.valList.map((row)=>{
-        emit("giveCode", row.name, row.sourceTableName, row.targetTableName, row, row.id);
+        emit("giveCode", row.tableName, row, row.id);
       })
       emit('close')
     }

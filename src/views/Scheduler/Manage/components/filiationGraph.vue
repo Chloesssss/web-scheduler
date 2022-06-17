@@ -777,18 +777,18 @@ export default defineComponent({
             relation: relation[locations.indexOf(x)],
             attrs: {
               body: {
-                fill: taskType[locations.indexOf(x)] === "COLLECT" ? "#EFF4FF" : '#efdbff',
-                stroke: taskType[locations.indexOf(x)] === "COLLECT" ? "#5F95FF" : '#9254de',
+                fill: taskType[locations.indexOf(x)] === "COLLECT" ? "#EFF4FF" : (taskType[locations.indexOf(x)] === "DMDM" ? '#fcd3d3' : (taskType[locations.indexOf(x)] === "DLINK" ? '#efdbff' : '#e1f3d8' )),
+                stroke: taskType[locations.indexOf(x)] === "COLLECT" ? '#5F95FF' : (taskType[locations.indexOf(x)] === "DMDM" ? '#f89898' : (taskType[locations.indexOf(x)] === "DLINK" ? '#9254de' : '#95d475' )),
                 strokeWidth: 1,
               },
               label: {
                 text: label[locations.indexOf(x)],
               },
               text: {
-                text: taskType[locations.indexOf(x)] === "COLLECT" ? "数据采集" : "数据开发",
-                fill: taskType[locations.indexOf(x)] === "COLLECT" ? '#5F95FF' : '#9254de',
+                text: taskType[locations.indexOf(x)] === "COLLECT" ? "数据采集" : (taskType[locations.indexOf(x)] === "DMDM" ? "数据标准" : (taskType[locations.indexOf(x)] === "DLINK" ? "数据开发" : "数据质控" )),
+                fill: taskType[locations.indexOf(x)] === "COLLECT" ? '#5F95FF' : (taskType[locations.indexOf(x)] === "DMDM" ? '#f89898' : (taskType[locations.indexOf(x)] === "DLINK" ? '#9254de' : '#95d475' )),
               },
-              image: {'xlink:href': taskType[locations.indexOf(x)] === "COLLECT" ? imageShapes[0].image : imageShapes[1].image}
+              image: {'xlink:href': taskType[locations.indexOf(x)] === "COLLECT" ? imageShapes[0].image : (taskType[locations.indexOf(x)] === "DMDM"? imageShapes[2].image : (taskType[locations.indexOf(x)] === "DLINK"?imageShapes[1].image: imageShapes[3].image)) }
             },
             shape: 'custom-node',
             ports: {

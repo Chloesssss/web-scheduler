@@ -24,12 +24,6 @@
           <el-input class="flex-1" v-model="taskDefinition.taskWork" disabled></el-input>
           <el-button type="primary" class="flex ml-20" @click="chooseWork">选择</el-button>
         </el-form-item>
-        <el-form-item label="源表" prop="originTable">
-          <el-input v-model="taskDefinition.originTable" disabled></el-input>
-        </el-form-item>
-        <el-form-item label="目标表" prop="targetTable">
-          <el-input v-model="taskDefinition.targetTable" disabled></el-input>
-        </el-form-item>
       </el-form>
       <div class="demo-drawer__footer">
         <el-button @click="handleClose">取消</el-button>
@@ -74,7 +68,7 @@
         originTable: '',
         targetTable: '',
         taskParams: '',
-        taskType: "COLLECT",
+        taskType: "DMDM",
         projectCode: '',
         code: '',
         callTaskId: '',
@@ -94,14 +88,12 @@
         },
       })
       //获取作业名、源表名、目标表名，选中的整条数据，id
-      const getCode = (e,i,j,k,x) => {
-        var m = JSON.stringify(k)
+      const getCode = (e,i,j) => {
+        var m = JSON.stringify(i)
         taskDefinition.taskWork = e;
         taskDefinition.name = e;
-        taskDefinition.originTable = i;
-        taskDefinition.targetTable = j;
         taskDefinition.taskParams = m;
-        taskDefinition.callTaskId = x;
+        taskDefinition.callTaskId = j;
       }
       //超时失败
       const onStatus = () => {
@@ -136,7 +128,7 @@
           originTable: '',
           targetTable: '',
           taskParams: '',
-          taskType: "COLLECT",
+          taskType: "DMDM",
           callTaskId: '',
         }
         let obj = newval[5]?1:0
