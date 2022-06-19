@@ -66,7 +66,7 @@
         timeoutFlag: "CLOSE",
         taskWork: '',
         taskParams: '',
-        taskType: "DLINK",
+        taskType: "DQUALITY",
         projectCode: '',
         code: '',
         callTaskId: '',
@@ -117,7 +117,7 @@
           timeoutFlag: "CLOSE",
           taskWork: '',
           taskParams: '',
-          taskType: "DLINK",
+          taskType: "DQUALITY",
           callTaskId: '',
         }
          let obj = newval[5]?1:0
@@ -137,7 +137,8 @@
               o = state.definition[i];
               arr.push(o)
             }
-            Object.assign(taskDefinition, newval[5],{taskWork: arr[13], taskParams: state.definition})
+            console.log(arr);
+            Object.assign(taskDefinition, newval[5],{taskWork: arr[1], taskParams: state.definition})
           }
         }
       })

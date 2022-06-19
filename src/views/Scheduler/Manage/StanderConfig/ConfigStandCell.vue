@@ -148,7 +148,7 @@
               o = state.definition[i];
               arr.push(o)
             }
-            Object.assign(taskDefinition, newval[5],{taskWork: arr[1], originTable: arr[5], targetTable: arr[9], })
+            Object.assign(taskDefinition, newval[5],{taskWork: arr[3] })
           } 
         }
       })

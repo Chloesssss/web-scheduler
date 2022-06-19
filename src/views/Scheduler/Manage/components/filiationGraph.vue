@@ -450,6 +450,12 @@ export default defineComponent({
         } else if(node.data.taskType == 'DLINK'){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.flinkVisible = true;
+        } else if(node.data.taskType == 'DMDM'){
+          state.nodeId = state.currentCode ? state.currentCode : node.id
+          state.standVisible = true;
+        } else if(node.data.taskType == 'DQUALITY'){
+          state.nodeId = state.currentCode ? state.currentCode : node.id
+          state.controlVisible = true;
         }
       });
       // 节点删除操作
@@ -870,6 +876,12 @@ export default defineComponent({
               definition.splice(formObj,1)
               flinkForm = definition
             } else if (definition[p].taskType === "DLINK") {
+              definition.splice(formObj,1)
+              collectForm = definition
+            } else if (definition[p].taskType === "DMDM") {
+              definition.splice(formObj,1)
+              collectForm = definition
+            } else if (definition[p].taskType === "DQUALITY") {
               definition.splice(formObj,1)
               collectForm = definition
             }

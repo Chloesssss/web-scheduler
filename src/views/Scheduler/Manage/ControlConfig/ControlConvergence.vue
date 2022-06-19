@@ -23,20 +23,20 @@
       </el-form>
       <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" @selection-change="selectChoose" stripe ref="multipleTable">
         <el-table-column type="selection" width="55" />
+        <!-- <el-table-column prop="cronExpression" label="cron表达式" show-overflow-tooltip/> -->
         <el-table-column prop="id" label="编号" show-overflow-tooltip/>
-        <el-table-column prop="name" label="名称" show-overflow-tooltip/>
-        <el-table-column prop="alias" label="描述" show-overflow-tooltip/>
-        <el-table-column prop="state" label="状态" show-overflow-tooltip>
+        <el-table-column prop="jobName" label="任务名称" show-overflow-tooltip/>
+        <!-- <el-table-column prop="status" label="状态" show-overflow-tooltip>
           <template #default="{row}">
             <el-tag
-              :type="row.state === '0' ? '' : 'danger'"
+              :type="row.status === 'running' ? '' : 'danger'"
               disable-transitions
-            >{{ row.state === '0' ? '上线' : '下线' }}</el-tag>
+            >{{ row.status === 'running' ? '运行中' : '下线' }}</el-tag>
           </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" show-overflow-tooltip/>
-        <el-table-column prop="updateTime" label="更新时间" show-overflow-tooltip/>
-        
+        </el-table-column> -->
+        <el-table-column prop="themeId" label="主题ID" show-overflow-tooltip/>
+        <el-table-column prop="themeName" label="主题名称" show-overflow-tooltip/>
+        <!-- <el-table-column prop="onlyOnce" label="仅一次" show-overflow-tooltip/> -->
       </el-table>
     </div>
     <!-- 表格底部分页显示 -->
@@ -106,13 +106,13 @@ export default defineComponent({
       tableName: ''
     });
     const getData = (row) => {
-      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dlink/queryGroupPage`, {
+      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dquality/queryGroupPage`, {
         // runStatus: searchObj.runStatus,
         current: pageObj.current,
-        pageSize: pageObj.size,
-        name: searchObj.name,
+        size: pageObj.size,
+        jobName: searchObj.name,
       }).then(({data}) => {
-        state.tableData = data.data.totalList
+        state.tableData = data.data
         pageObj.total = data.data.total
       })
     };
@@ -144,7 +144,7 @@ export default defineComponent({
     }
     const toggleSelection = (rows) => {
       rows.forEach(row => {
-        if (row.name === state.tableName) {     
+        if (row.jobName === state.tableName) {     
         // toggleRowSelection  这个方法是用来选中某一行（打勾）
         // row 是要选中的那一行
         // true 是为选中
@@ -159,7 +159,7 @@ export default defineComponent({
     }
     const onCommit = () => {
       state.valList.map((row)=>{
-        emit("giveCode", row.name, row, row.id);
+        emit("giveCode", row.jobName, row, row.id);
       })
       emit('close')
     }
