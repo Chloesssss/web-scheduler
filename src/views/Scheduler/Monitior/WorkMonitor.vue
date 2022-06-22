@@ -170,7 +170,7 @@ export default defineComponent({
         DeleteConfirm().then(() => {
           proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/delete?code=${row.code}&projectCode=${row.projectCode}`,
           ).then((data) => {
-            if(data.code = 200){
+            if(data.code == 200){
               ElMessage.success("删除成功")
               fetchData()
             }else {
