@@ -24,6 +24,9 @@ let history = null;
 function render(props = {}) {
     const { container } = props;
     history = createWebHistory(window.__POWERED_BY_QIANKUN__ ? `${props.name}` : '/');
+    if (process.env.NODE_ENV === 'customer') { // 客户环境，线上环境
+        history = createWebHistory(window.__POWERED_BY_QIANKUN__ ? `/${props.name}/` : '/Child/WebScheduler/'); // 整合后
+    }
     router = createRouter({
         history,
         routes,
