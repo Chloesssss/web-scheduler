@@ -5,6 +5,7 @@ function resolve (dir) {
   return path.join(__dirname, dir)
 }
 module.exports = {
+  publicPath: process.env.NODE_ENV === 'customer' ? "/Child/WebScheduler/" : "", // 项目整合，单独部署的时候注释掉这个参数。 process.env.NODE_ENV === 'customer', 客户的部署环境。
   filenameHashing: true,
   lintOnSave: false,
   runtimeCompiler: true,
