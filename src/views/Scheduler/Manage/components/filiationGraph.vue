@@ -120,17 +120,17 @@ export default defineComponent({
           },
         image: require('/src/assets/stickyCake.svg'),
       },
-      {
-        body: {
-          fill: "#fcd3d3",
-          stroke: "#f89898",
-        },
-        label: {
-          text: state.standerLabel,
-          fill: '#f89898',
-          },
-        image: require('/src/assets/rougaMo.svg'),
-      },
+      // {
+      //   body: {
+      //     fill: "#fcd3d3",
+      //     stroke: "#f89898",
+      //   },
+      //   label: {
+      //     text: state.standerLabel,
+      //     fill: '#f89898',
+      //     },
+      //   image: require('/src/assets/rougaMo.svg'),
+      // },
       {
         body: {
           fill: "#e1f3d8",
@@ -794,7 +794,8 @@ export default defineComponent({
                 text: taskType[locations.indexOf(x)] === "COLLECT" ? "数据采集" : (taskType[locations.indexOf(x)] === "DMDM" ? "数据标准" : (taskType[locations.indexOf(x)] === "DLINK" ? "数据开发" : "数据质控" )),
                 fill: taskType[locations.indexOf(x)] === "COLLECT" ? '#5F95FF' : (taskType[locations.indexOf(x)] === "DMDM" ? '#f89898' : (taskType[locations.indexOf(x)] === "DLINK" ? '#9254de' : '#95d475' )),
               },
-              image: {'xlink:href': taskType[locations.indexOf(x)] === "COLLECT" ? imageShapes[0].image : (taskType[locations.indexOf(x)] === "DMDM"? imageShapes[2].image : (taskType[locations.indexOf(x)] === "DLINK"?imageShapes[1].image: imageShapes[3].image)) }
+              // image: {'xlink:href': taskType[locations.indexOf(x)] === "COLLECT" ? imageShapes[0].image : (taskType[locations.indexOf(x)] === "DMDM"? imageShapes[2].image : (taskType[locations.indexOf(x)] === "DLINK"?imageShapes[1].image: imageShapes[3].image)) }
+              image: {'xlink:href': taskType[locations.indexOf(x)] === "COLLECT" ? imageShapes[0].image : (taskType[locations.indexOf(x)] === "DLINK"?imageShapes[1].image: imageShapes[2].image)}
             },
             shape: 'custom-node',
             ports: {

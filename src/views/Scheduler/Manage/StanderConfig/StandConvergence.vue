@@ -120,7 +120,7 @@ export default defineComponent({
       });
     };
     onMounted(() => {
-      getData();
+      // getData();
     });
     //分页
     const onPageChange = (data) => {
