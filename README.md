@@ -23,5 +23,5 @@ npm run lint
 
 ### 拉取最新的common文件(需要保证本地项目没有可以提交的改动， 不然会报错)
 ```
-git subtree pull --prefix=common http://223.71.0.241:9000/frontend-dev/common.git master --squash
+git subtree pull --prefix=common http://xxxx/common.git master --squash
 ```

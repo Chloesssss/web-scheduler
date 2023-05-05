@@ -4,13 +4,15 @@
     <div class="app-content" id="flowContainer" ref="container"></div>
   </div>
   <!-- 采集执行策略配置 -->
-  <config-cell ref="dialogCollect" :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-collect="getCollect" :definition="state.currentDefinition" :id="state.dataId"/>
+  <config-cell ref="dialogCollect" :visible="state.dialogVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-collect="getCollect" :definition="state.currentDefinition" :id="state.dataId" :current-id="state.currentId"/>
   <!-- 开发执行策略配置 -->
-  <config-flink-cell ref="dialogFlink" :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-flink="getFlink" :definition="state.currentDefinition" :id="state.dataId"/>
+  <config-flink-cell ref="dialogFlink" :visible="state.flinkVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-flink="getFlink" :definition="state.currentDefinition" :id="state.dataId" :current-id="state.currentId"/>
   <!-- 标准执行策略配置 -->
-  <config-stand-cell ref="dialogStander" :visible="state.standVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-stand="getStand" :definition="state.currentDefinition" :id="state.dataId"/>
+  <config-stand-cell ref="dialogStander" :visible="state.standVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-stand="getStand" :definition="state.currentDefinition" :id="state.dataId" :current-id="state.currentId"/>
   <!-- 质控执行策略配置 -->
-  <config-control-cell ref="dialogControl" :visible="state.controlVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-control="getControl" :definition="state.currentDefinition" :id="state.dataId"/>
+  <config-control-cell ref="dialogControl" :visible="state.controlVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-control="getControl" :definition="state.currentDefinition" :id="state.dataId" :current-id="state.currentId"/>
+  <!-- 监控执行策略配置 -->
+  <config-monitor-cell ref="dialogControl" :visible="state.monitorVisible" @close="closeModal" :code="state.code" :project-code="state.projectCode" :task-code="state.nodeId" :work-name="state.name" @get-Monitor="getMonitor" :definition="state.currentDefinition" :id="state.dataId" :current-id="state.currentId"/>
 </template>
 
 <script>
@@ -20,15 +22,17 @@ import ConfigCell from "../CollectConfig/ConfigCell.vue";
 import ConfigFlinkCell from '../FlinkConfig/ConfigFlinkCell.vue';
 import configStandCell from '../StanderConfig/ConfigStandCell.vue';
 import configControlCell from '../ControlConfig/ConfigControlCell.vue';
+import configMonitorCell from '../MonitorConfig/ConfigMonitorCell.vue';
 import { ElMessageBox } from 'element-plus'
 import { ElMessage } from 'element-plus';
 import { BorderedImage } from '@antv/x6/lib/shape/standard';
+// import { ApiConstant } from '@/constants/ApiConstant/index.js'
 const { Stencil } = Addon;
 const { Rect, Polygon } = Shape;
 
 export default defineComponent({
-  components: { ConfigCell, ConfigFlinkCell, configStandCell, configControlCell },
-  name: "filiationGraph",
+  components: { ConfigCell, ConfigFlinkCell, configStandCell, configControlCell, configMonitorCell },
+  name: "FiliationGraph",
   props: {
     code: [String, Number],
     projectCode: [String, Number],
@@ -48,17 +52,18 @@ export default defineComponent({
       flinkVisible: false,
       standVisible: false,
       controlVisible: false,
+      monitorVisible: false,
       name: '',// 工作流作业名
       codeList: [],// 后端接口返回节点id数组
       taskCode: '',// 后端接口返回节点id字符串
       nodeDtos: [], //回显的节点数据
       linkDtos: [], //回显的边数据
       currentCode: '',// 当前节点id
+      sysCode: '', //接口给予的当前节点id
       nodeId: '',// 当前节点id(传入表单)
       arrList:[],// 节点id数组（原）
       taskDefinition: [],// 节点配置表单信息
       taskRelation: [],// 节点关系
-      setDocId: [],// 配置后的对应节点id数组
       postTaskCode: '',// 总是指向自己的节点id，用于匹配次级节点的pretaskcode
       preTaskCode: 0,//发出edge的节点id（若节点无输入桩的链接，则该id为0，即该节点为初始节点）
       postTaskVersion: 1,//指向的节点版本（指向1（指向自己））
@@ -68,6 +73,7 @@ export default defineComponent({
       flinkLabel: '数据开发',
       standerLabel: '数据标准',
       controlLabel: '数据质控',
+      monitorLabel: '数据质量监控',
       params: {},
       //监听获取的数据存储
       watchCode: null,
@@ -100,47 +106,58 @@ export default defineComponent({
     const imageShapes = [
       {
         body: {
-          fill: "#EFF4FF",
-          stroke: "#5F95FF",
+          fill: "rgba(102, 153, 204, 0.05)",
+          stroke: "rgb(102, 153, 204)",
         },
         label: {
           text: state.collectLabel,
-          fill: '#5F95FF',
+          fill: 'rgb(102, 153, 204)',
         },
-        image: require('/src/assets/rowCook.svg'),
+        image: require('/src/assets/Scheduler/DataCollect.svg'),
       },
       {
         body: {
-          fill: "#efdbff",
-          stroke: "#9254de",
+          fill: "rgba(185, 147, 214, 0.05)",
+          stroke: "rgb(185, 147, 214)",
         },
         label: {
           text: state.flinkLabel,
-          fill: '#9254de',
+          fill: 'rgb(185, 147, 214)',
           },
-        image: require('/src/assets/stickyCake.svg'),
+        image: require('/src/assets/Scheduler/DataFlink.svg'),
       },
-      // {
-      //   body: {
-      //     fill: "#fcd3d3",
-      //     stroke: "#f89898",
-      //   },
-      //   label: {
-      //     text: state.standerLabel,
-      //     fill: '#f89898',
-      //     },
-      //   image: require('/src/assets/rougaMo.svg'),
-      // },
       {
         body: {
-          fill: "#e1f3d8",
-          stroke: "#95d475",
+          fill: "rgba(154, 184, 122, 0.05)",
+          stroke: "rgb(154, 184, 122)",
         },
         label: {
           text: state.controlLabel,
-          fill: '#95d475',
+          fill: 'rgb(154, 184, 122)',
           },
-        image: require('/src/assets/steamedBuns.svg'),
+        image: require('/src/assets/Scheduler/DataQc.svg'),
+      },
+      {
+        body: {
+          fill: "rgba(247, 178, 103, 0.05)",
+          stroke: "rgb(247, 178, 103)",
+        },
+        label: {
+          text: state.monitorLabel,
+          fill: 'rgb(247, 178, 103)',
+          },
+        image: require('/src/assets/Scheduler/DataWatch.svg'),
+      },
+      {
+        body: {
+          fill: "rgba(219, 127, 142, 0.05)",
+          stroke: "rgb(219, 127, 142)",
+        },
+        label: {
+          text: state.standerLabel,
+          fill: 'rgb(219, 127, 142)',
+          },
+        image: require('/src/assets/Scheduler/DataStandred.svg'),
       },
     ]
     const init= () => {
@@ -251,7 +268,6 @@ export default defineComponent({
           // 当停止拖动边的时候根据 validateEdge 返回值来判断边是否生效，如果返回 false, 该边会被清除。
           validateEdge({ edge }) {
             const { source, target } = edge
-            
             return true
           }
         },
@@ -263,6 +279,7 @@ export default defineComponent({
       /******************************** 左侧模型栏 ****************************/
       const stencil = new Stencil({
         title: "数据集成",
+        name: "processLibrary",
         target: graph,
         search: false, // 搜索
         collapsable: true,
@@ -319,7 +336,7 @@ export default defineComponent({
         },
         items: [
           {
-            id: state.currentCode + '_in',
+            id: state.currentCode+ '_in',
             group: 'in',
           },
           {
@@ -338,12 +355,14 @@ export default defineComponent({
           attrs: {
             body: {
               strokeWidth: 1,
+              rx: 30,
+              ry: 30,
             },
             image: {
-              width: 16,
-              height: 16,
+              width: 20,
+              height: 20,
               x: 12,
-              y: 6,
+              y: 3,
             },
             text: {
               refX: 40,
@@ -353,6 +372,8 @@ export default defineComponent({
             },
             label: {
               text: 'Please nominate this node',
+              id: 0,
+              data: {},
               refX: 10,
               refY: 30,
               fontSize: 12,
@@ -408,29 +429,23 @@ export default defineComponent({
       );
       graph.toJSON()
       //绑定事件
-      graph.on('node:added', ({ node }) => {
-        state.arrList.push(node.id)
+      graph.on('node:added', ({ node, cell }) => {
         state.currentCode = node.id
-        getNodeCode(1)
+        getNodeCode(1, node.id)
       })
       //双击节点打开节点配置
       graph.on("cell:dblclick", ({ node, cell }) => {
-        let index = state.arrList.indexOf(node.id)
-        state.currentCode = state.taskCode[index]
+        state.currentCode = node.attrs.label.id
         if (node.data.id) {
           state.currentCode = node.id
           state.dataId = node.data.id
-          state.currentDefinition = node.data
+          state.currentDefinition = node.attrs.label.data
         } else {
-          let index = state.arrList.indexOf(node.id)
-          state.currentCode = state.taskCode[index]
+          state.currentCode = node.attrs.label.id
           state.dataId = null
-          let obj =null
-          obj =  state.taskDefinition.find((item)=>{
-            return item.value.code== state.currentCode            
-          })
-          state.currentDefinition=obj?obj.value:null;
+          state.currentDefinition = node.attrs.label.data ? node.attrs.label.data : null;
         }
+        state.currentId = node.id
         if(node.getAttrs().text.text == "数据采集"){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.dialogVisible = true;
@@ -443,6 +458,9 @@ export default defineComponent({
         }else if(node.getAttrs().text.text == "数据质控"){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.controlVisible = true;
+        }else if(node.getAttrs().text.text == "数据质量监控"){
+          state.nodeId = state.currentCode ? state.currentCode : node.id
+          state.monitorVisible = true;
         }
         if(node.data.taskType == 'COLLECT'){
           state.nodeId = state.currentCode ? state.currentCode : node.id
@@ -456,6 +474,9 @@ export default defineComponent({
         } else if(node.data.taskType == 'DQUALITY'){
           state.nodeId = state.currentCode ? state.currentCode : node.id
           state.controlVisible = true;
+        } else if(node.data.taskType == 'MONITOR'){
+          state.nodeId = state.currentCode ? state.currentCode : node.id
+          state.monitorVisible = true;
         }
       });
       // 节点删除操作
@@ -467,34 +488,39 @@ export default defineComponent({
             x: 0,
             y: 0,
             offset: { x: 10, y: 10 },
+            markup: [
+              {
+                tagName: 'circle',
+                selector: 'button',
+                attrs: {
+                  r: 8,
+                  stroke: '#F25C54',
+                  strokeWidth: 1,
+                  fill: 'rgba(214, 40, 40, 0.25)',
+                  cursor: 'pointer',
+                },
+              },
+              {
+                tagName: 'text',
+                textContent: '✕',
+                selector: 'icon',
+                attrs: {
+                  fill: '#F25C54',
+                  fontSize: 7,
+                  textAnchor: 'middle',
+                  pointerEvents: 'none',
+                  y: '0.3em',
+                },
+              },
+            ],
           },
         });
       });
       graph.on("node:removed", ({ node, options }) => {
-        let x = state.arrList.indexOf(node.id)
-        state.currentCode = state.taskCode[x]
+        console.log(node);
         if (!options.ui) {
           return;
         }
-        let i = state.watchCode.indexOf(node.id)
-        if (i > -1) {
-          state.watchCode.splice(i,1)
-          state.watchDefinition.splice(i,1)
-        }
-        let m = state.setDocId.indexOf(state.currentCode)
-        let arr = state.taskDefinition.map(x => x.value.nodeId)
-        let a = arr.indexOf(state.currentCode)
-        if (m > -1) {
-          state.taskDefinition.splice(m,1)
-        } else if(a >-1 ){
-          state.taskDefinition.splice(a,1)
-        }
-        let index = state.arrList.indexOf(node.id)
-        if(index > -1){
-          state.arrList.splice(index, 1);
-          state.codeList.splice(index,1);
-          state.taskCode.splice(index,1);
-        }	
       });
       graph.on("node:mouseleave", ({ node }) => {
         // 鼠标移开时删除删除按钮
@@ -508,7 +534,32 @@ export default defineComponent({
           {
             name: "button-remove",
             args: {
-              distance: -30,
+              distance: 50,
+              markup: [
+                {
+                  tagName: 'circle',
+                  selector: 'button',
+                  attrs: {
+                    r: 8,
+                    stroke: '#F25C54',
+                    strokeWidth: 1,
+                    fill: 'rgba(214, 40, 40, 0.25)',
+                    cursor: 'pointer',
+                  },
+                },
+                {
+                  tagName: 'text',
+                  textContent: '✕',
+                  selector: 'icon',
+                  attrs: {
+                    fill: '#F25C54',
+                    fontSize: 7,
+                    textAnchor: 'middle',
+                    pointerEvents: 'none',
+                    y: '0.3em',
+                  },
+                },
+              ],
             },
           },
         ]);
@@ -517,15 +568,22 @@ export default defineComponent({
         if (!options.ui) {
           return;
         }
+        console.log(edge.getTargetCellId());
         const cellId = edge.getTargetCellId()
         const target = graph.getCellById(cellId)
-        target && target.setPortProp(target.id+ '_in', 'connected', false)
+        console.log(target);
+        if (target) {
+          const id = target.ports.items[0].id
+          target && target.setPortProp(id, 'connected', false)
+        }else{
+          target && target.setPortProp(cellId+'_in', 'connected', false)
+        }
       });
       graph.on("edge:mouseleave", ({ edge }) => {
         // 鼠标移开时删除删除按钮
         edge.removeTools();
       });
-      graph.on('node:change:data', ({node}) => {
+      graph.on('node:change:data', ({ node }) => {
         node.data = eachNodeData
       })
       graph.on("node:contextmenu", ({ cell, view }) => {
@@ -575,72 +633,63 @@ export default defineComponent({
     //获取采集节点配置信息
     const getCollect = (i) => {
       state.collectLabel = i.name
-      state.setDocId.push(i.nodeId)
-      let arr = state.taskDefinition.map(x => x.value.nodeId)
-      let index = arr.indexOf(i.nodeId)
-      if (index > -1) {
-        state.taskDefinition.splice(index,1)
+      let cell = graph.getCellById(i.currentId)
+      if (!cell || !cell.isNode()) {
+        return
       }
-      let brr = state.watchDefinition.map(x => x.code.toString())
-      let x = brr.indexOf(i.nodeId)
-      if (x > -1) {
-        state.watchDefinition.splice(x,1)
-      }
-      state.taskDefinition.push({ value: JSON.parse(JSON.stringify(i)) })
+      //设置指定路径上的属性值cell.attr('text/text', value)  其中label/text为自定义标题
+      cell.attr('label/text', state.collectLabel)
+      cell.attr('label/data', i)
     }
     //获取开发节点配置信息
     const getFlink = (j) => {
       state.flinkLabel = j.name
-      state.setDocId.push(j.nodeId)
-      let arr = state.taskDefinition.map(x => x.value.nodeId)
-      let index = arr.indexOf(j.nodeId)
-      if (index > -1) {
-        state.taskDefinition.splice(index,1)
+      let cell = graph.getCellById(j.currentId) // 通过id获取当前节点
+      if (!cell || !cell.isNode()) {
+        return
       }
-      let brr = state.watchDefinition.map(x => x.code.toString())
-      let x = brr.indexOf(j.nodeId)
-      if (x > -1) {
-        state.watchDefinition.splice(x,1)
-      }
-      state.taskDefinition.push({ value: JSON.parse(JSON.stringify(j)) })
+      //设置指定路径上的属性值cell.attr('text/text', value)  其中label/text为自定义标题
+      cell.attr('label/text', state.flinkLabel)
+      cell.attr('label/data', j)
     }
-    //获取开发节点配置信息
+    //获取标准节点配置信息
     const getStand = (k) => {
       state.standerLabel = k.name
-      state.setDocId.push(k.nodeId)
-      let arr = state.taskDefinition.map(x => x.value.nodeId)
-      let index = arr.indexOf(k.nodeId)
-      if (index > -1) {
-        state.taskDefinition.splice(index,1)
+      let cell = graph.getCellById(k.currentId) // 通过id获取当前节点
+      if (!cell || !cell.isNode()) {
+        return
       }
-      let brr = state.watchDefinition.map(x => x.code.toString())
-      let x = brr.indexOf(k.nodeId)
-      if (x > -1) {
-        state.watchDefinition.splice(x,1)
-      }
-      state.taskDefinition.push({ value: JSON.parse(JSON.stringify(k)) })
+      //设置指定路径上的属性值cell.attr('text/text', value)  其中label/text为自定义标题
+      cell.attr('label/text', state.standerLabel)
+      cell.attr('label/data', k)
     }
-    //获取开发节点配置信息
+    //获取质控节点配置信息
     const getControl = (l) => {
       state.controlLabel = l.name
-      state.setDocId.push(l.nodeId)
-      let arr = state.taskDefinition.map(x => x.value.nodeId)
-      let index = arr.indexOf(l.nodeId)
-      if (index > -1) {
-        state.taskDefinition.splice(index,1)
+      let cell = graph.getCellById(l.currentId) // 通过id获取当前节点
+      if (!cell || !cell.isNode()) {
+        return
       }
-      let brr = state.watchDefinition.map(x => x.code.toString())
-      let x = brr.indexOf(l.nodeId)
-      if (x > -1) {
-        state.watchDefinition.splice(x,1)
+      //设置指定路径上的属性值cell.attr('text/text', value)  其中label/text为自定义标题
+      cell.attr('label/text', state.controlLabel)
+      cell.attr('label/data', l)
+    }
+    const getMonitor = (m) => {
+      state.monitorLabel = m.name
+      let cell = graph.getCellById(m.currentId) // 通过id获取当前节点
+      if (!cell || !cell.isNode()) {
+        return
       }
-      state.taskDefinition.push({ value: JSON.parse(JSON.stringify(l)) })
+      //设置指定路径上的属性值cell.attr('text/text', value)  其中label/text为自定义标题
+      cell.attr('label/text', state.monitorLabel)
+      cell.attr('label/data', m)
     }
     const closeModal = () => {//节点配置抽屉关闭
       state.dialogVisible = false;
       state.flinkVisible = false;
       state.controlVisible = false;
       state.standVisible = false;
+      state.monitorVisible = false
     }
     // 控制连接桩显示/隐藏
     const showPorts = (ports, show) => {
@@ -653,8 +702,8 @@ export default defineComponent({
       const taskRelation = graph.getEdges().map(y => ({
         id: 0,
         name: '',
-        preTaskCode: state.taskCode[state.arrList.indexOf(y.getSource().cell)] ? state.taskCode[state.arrList.indexOf(y.getSource().cell)] : y.getSource().cell,
-        postTaskCode: state.taskCode[state.arrList.indexOf(y.getTarget().cell)] ? state.taskCode[state.arrList.indexOf(y.getTarget().cell)] : y.getTarget().cell,
+        preTaskCode: graph.getNodes().filter((item) => y.getSource().cell === item.id)[0] ? graph.getNodes().filter((item) => y.getSource().cell === item.id)[0].attrs.label.id : y.getSource().cell,
+        postTaskCode: graph.getNodes().filter((item) => y.getTarget().cell === item.id)[0] ? graph.getNodes().filter((item) => y.getTarget().cell === item.id)[0].attrs.label.id : y.getTarget().cell,
         processDefinitionCode: state.code,
         projectCode: state.projectCode,
         postTaskVersion: state.postTaskVersion,
@@ -673,15 +722,15 @@ export default defineComponent({
       })
       let childNodes =[]
       childNodes = taskRelation.map(y => y.postTaskCode.toString())
-      let taskCodes = ''
-      taskCodes = !state.taskCode ? state.watchCode : (!state.watchCode ? state.taskCode : state.watchCode.concat(state.taskCode))
       let parentShip = [];
+      let taskCodes = []
+      taskCodes = graph.getNodes().map(x => x.attrs.label.id)
       for (var i = 0; i < taskCodes.length; i++) {
         if (childNodes.indexOf(taskCodes[i]) === -1) {
           parentShip.push(taskCodes[i])
         }
       }
-      const sourceNodeship = parentShip.map(x =>({
+      const sourceNodeship = parentShip.map(x => ({
         id:0,
         name: '',
         preTaskCode: '0',
@@ -694,13 +743,16 @@ export default defineComponent({
       state.taskRelation = sourceNodeship.concat(taskRelation)
     }
     //生成节点标识
-    const getNodeCode = (flag) => {
-      proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/gen-task-codes`).then(({data}) => {
-        state.codeList.push(data.data)
-        state.taskCode = state.codeList.toString().split(",")
+    const getNodeCode = (flag, id) => {
+      proxy.$axios.get().then(({ data }) => {
+        state.sysCode = data.data
+        let cell = graph.getCellById(id)
+        if (!cell || !cell.isNode()) {
+          return
+        }
+        cell.attr('label/id', String(state.sysCode))
         if(flag===1){
-          let index = state.arrList.indexOf(state.currentCode)
-          state.currentCode = state.taskCode[index]
+          state.currentCode = String(state.sysCode)
         }else{
           state.currentCode = ""
         }
@@ -711,26 +763,20 @@ export default defineComponent({
     const save = () => {
       setRelation()
       let taskDefinition = state.taskDefinition.map(x => x.value);
-      const locations = graph.getNodes().map(x => ({// 节点位置
+      const locations = graph.getNodes().map(x => ({ // 节点位置
         x: x.position().x,
         y: x.position().y,
       }))
       let codeList = ''
-      codeList = !state.taskCode ? state.watchCode : (!state.watchCode ? state.taskCode : state.watchCode.concat(state.taskCode))
+      codeList = graph.getNodes().map(x => x.attrs.label.id)
       let taskDefinitionList = []
-      if (nodeData.nodes) {
-        taskDefinitionList = taskDefinition.concat(state.watchDefinition)
-      }else{
-        taskDefinitionList = taskDefinition
-      }
-      console.log(locations,codeList.toString(),state.taskRelation,taskDefinitionList);
+      taskDefinitionList = graph.getNodes().map(x => x.attrs.label.data)
       if(!graph.getNodes().length) {
         ElMessage.warning('请输入依赖项')
       }else if (taskDefinitionList.length != codeList.length) {
         ElMessage.warning('请配置节点信息')
       }else{
-        console.log(locations,codeList.toString(),state.taskRelation,taskDefinitionList);
-        proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/${state.code}`, {
+        proxy.$axios.put({}, {
           code: state.code,
           name: state.name,
           projectCode: state.projectCode,
@@ -741,28 +787,21 @@ export default defineComponent({
           description: '',
           timeout: 0,
           globalParams: '',
-        }).then(({data}) => {
+        }).then(({ data }) => {
           if(data.code === 200) {
             ElMessage.success('保存成功')
+            reSet()
           } else {
-            ElMessage.error(data.msg)
+            ElMessage.error(data.msg);
           }
-          reSet()
         }).catch(e => {
           ElMessage.error('保存失败请重试！')
         })
       }
     }
     const reSet = () => {
-      let mm = ''
-      state.taskDefinition = []
-      state.watchDefinition = []
-      state.arrList = []
-      state.codeList = []
-      state.taskCode = mm
-      state.watchCode = null
-      proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
-      .then(({data}) => {
+      proxy.$axios.get(``)
+      .then(({ data }) => {
         if(data.code == 200 && data.data.taskDefinition != null){
           state.code = data.data.processPagingQueryVO.code
           state.projectCode = data.data.processPagingQueryVO.projectCode
@@ -773,8 +812,7 @@ export default defineComponent({
           let relation = data.data.taskRelation
           let label = definition.map(x => x.name)
           let taskType = definition.map(x => x.taskType)
-          let code = definition.map(x => x.code)
-          let taskCode = locations.map(x => x.taskCode)
+          let msg = definition.map(x => x)
           state.nodeDtos = locations.map(x => ({
             x: Number(x.x),
             y: Number(x.y),
@@ -783,19 +821,21 @@ export default defineComponent({
             relation: relation[locations.indexOf(x)],
             attrs: {
               body: {
-                fill: taskType[locations.indexOf(x)] === "COLLECT" ? "#EFF4FF" : (taskType[locations.indexOf(x)] === "DMDM" ? '#fcd3d3' : (taskType[locations.indexOf(x)] === "DLINK" ? '#efdbff' : '#e1f3d8' )),
-                stroke: taskType[locations.indexOf(x)] === "COLLECT" ? '#5F95FF' : (taskType[locations.indexOf(x)] === "DMDM" ? '#f89898' : (taskType[locations.indexOf(x)] === "DLINK" ? '#9254de' : '#95d475' )),
+                fill: taskType[locations.indexOf(x)] === "COLLECT" ? "rgba(102, 153, 204, 0.05)" : (taskType[locations.indexOf(x)] === "DMDM" ? 'rgba(219, 127, 142, 0.05)' : (taskType[locations.indexOf(x)] === "DLINK" ? 'rgba(185, 147, 214, 0.05)' : (taskType[locations.indexOf(x)] === "MONITOR" ? 'rgba(247, 178, 103, 0.05)' : 'rgba(154, 184, 122, 0.05)' ) )),
+                stroke: taskType[locations.indexOf(x)] === "COLLECT" ? 'rgb(102, 153, 204)' : (taskType[locations.indexOf(x)] === "DMDM" ? 'rgb(219, 127, 142)' : (taskType[locations.indexOf(x)] === "DLINK" ? 'rgb(185, 147, 214)' : (taskType[locations.indexOf(x)] === "MONITOR" ? 'rgb(247, 178, 103)' : 'rgb(154, 184, 122)' ) )),
                 strokeWidth: 1,
               },
               label: {
+                id: x.taskCode,
                 text: label[locations.indexOf(x)],
+                data: msg.filter((item) => x.taskCode === String(item.code))[0]
               },
               text: {
-                text: taskType[locations.indexOf(x)] === "COLLECT" ? "数据采集" : (taskType[locations.indexOf(x)] === "DMDM" ? "数据标准" : (taskType[locations.indexOf(x)] === "DLINK" ? "数据开发" : "数据质控" )),
-                fill: taskType[locations.indexOf(x)] === "COLLECT" ? '#5F95FF' : (taskType[locations.indexOf(x)] === "DMDM" ? '#f89898' : (taskType[locations.indexOf(x)] === "DLINK" ? '#9254de' : '#95d475' )),
+                text: taskType[locations.indexOf(x)] === "COLLECT" ? "数据采集" : (taskType[locations.indexOf(x)] === "DMDM" ? "数据标准" : (taskType[locations.indexOf(x)] === "DLINK" ? "数据开发" : (taskType[locations.indexOf(x)] === "MONITOR" ? "数据质量监控" : "数据质控" ) )),
+                fill: taskType[locations.indexOf(x)] === "COLLECT" ? 'rgb(102, 153, 204)' : (taskType[locations.indexOf(x)] === "DMDM" ? 'rgb(219, 127, 142)' : (taskType[locations.indexOf(x)] === "DLINK" ? 'rgb(185, 147, 214)' : (taskType[locations.indexOf(x)] === "MONITOR" ? 'rgb(247, 178, 103)' : 'rgb(154, 184, 122)' ) )),
               },
               // image: {'xlink:href': taskType[locations.indexOf(x)] === "COLLECT" ? imageShapes[0].image : (taskType[locations.indexOf(x)] === "DMDM"? imageShapes[2].image : (taskType[locations.indexOf(x)] === "DLINK"?imageShapes[1].image: imageShapes[3].image)) }
-              image: {'xlink:href': taskType[locations.indexOf(x)] === "COLLECT" ? imageShapes[0].image : (taskType[locations.indexOf(x)] === "DLINK"?imageShapes[1].image: imageShapes[2].image)}
+              image: {'xlink:href': taskType[locations.indexOf(x)] === "COLLECT" ? imageShapes[0].image : (taskType[locations.indexOf(x)] === "DLINK"?imageShapes[1].image: (taskType[locations.indexOf(x)] === "DQUALITY"?imageShapes[2].image: (taskType[locations.indexOf(x)] === "MONITOR"?imageShapes[3].image: imageShapes[4].image)))}
             },
             shape: 'custom-node',
             ports: {
@@ -845,8 +885,8 @@ export default defineComponent({
             }
           }
           state.linkDtos = edges.map(x => ({
-            source: {cell: x.preTaskCode, port: x.preTaskCode + '_out'},
-            target: {cell: x.postTaskCode, port: x.postTaskCode + '_in'},
+            source: { cell: x.preTaskCode, port: x.preTaskCode + '_out' },
+            target: { cell: x.postTaskCode, port: x.postTaskCode + '_in' },
             attrs: {
               line: {
                 strokeDasharray: '5 5',
@@ -865,28 +905,8 @@ export default defineComponent({
           nodeData.nodes = state.nodeDtos;
           nodeData.edges = state.linkDtos
           graph.fromJSON(nodeData)
-          state.watchCode = taskCode
-          state.watchDefinition = nodeData.nodes.map(x =>x.data)
           state.workState = data.data.processPagingQueryVO.releaseState
-          emit("giveState", state.workState);
-          let flinkForm = [];
-          let collectForm = [];
-          for (let p = definition.length-1; p >= 0; p --) {
-            const formObj = definition[p];
-            if (definition[p].taskType === "COLLECT") {
-              definition.splice(formObj,1)
-              flinkForm = definition
-            } else if (definition[p].taskType === "DLINK") {
-              definition.splice(formObj,1)
-              collectForm = definition
-            } else if (definition[p].taskType === "DMDM") {
-              definition.splice(formObj,1)
-              collectForm = definition
-            } else if (definition[p].taskType === "DQUALITY") {
-              definition.splice(formObj,1)
-              collectForm = definition
-            }
-          }
+          emit("giveState", state.workState)
         }else{
           nodeData.nodes = null
           graph.fromJSON([])
@@ -899,16 +919,7 @@ export default defineComponent({
       state.code = newval[0]
       state.projectCode = newval[1]
       state.name = newval[2]
-      console.log(newval);
       let mm = ''
-      if (newval[0]!=oldval[0]) {
-        state.taskDefinition = []
-        state.watchDefinition = []
-        state.arrList = []
-        state.codeList = []
-        state.taskCode = mm
-        state.watchCode = null
-      }
       if(state.projectCode){
         reSet()
       } else {
@@ -929,6 +940,7 @@ export default defineComponent({
       getFlink,
       getStand,
       getControl,
+      getMonitor,
     }
   },
 });
