@@ -109,15 +109,15 @@ export default defineComponent({
       tableName: ''
     });
     const getData = (row) => {
-      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dmdm/queryGroupPage`, {
-        // runStatus: searchObj.runStatus,
-        current: pageObj.current,
-        size: pageObj.size,
-        tableName: searchObj.name,
-      }).then(({ data: { data } }) => {
-        state.tableData = data.records
-        pageObj.total = data.total;
-      });
+      // proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dmdm/queryGroupPage`, {
+      //   // runStatus: searchObj.runStatus,
+      //   current: pageObj.current,
+      //   size: pageObj.size,
+      //   tableName: searchObj.name,
+      // }).then(({ data: { data } }) => {
+      //   state.tableData = data.records
+      //   pageObj.total = data.total;
+      // });
     };
     onMounted(() => {
       // getData();
@@ -132,7 +132,7 @@ export default defineComponent({
     };
     //获取下拉列表主题名
     // const getMotif = () => {
-    //   proxy.$axios.get("/dolphinscheduler-api/dolphinscheduler/projects/view-tree").then((res) => {
+    //   //proxy.$axios.get("/dolphinscheduler-api/dolphinscheduler/projects/view-tree").then((res) => {
     //     state.motifList = res.data.data;
     //   });
     // };

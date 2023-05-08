@@ -53,37 +53,37 @@ export default {
             const formObjTemp = cloneDeep(formObj)
             formObjTemp.parentId = props.parentId
             delete formObjTemp.id
-            proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects',formObjTemp).then(({ data }) => {
-              if (data.code == 200) {
-                ElMessage.success(data.msg)
-                proxy.$refs.Form.resetFields()
-                emit('onOk')
-              } else {
-                ElMessage.error(data.msg)
-                proxy.$refs.Form.resetFields()
-                emit('onOk')
-              }
-            }).catch(e=> {
-              ElMessage.error('请求失败！请重试！')
-            })
+            //proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects',formObjTemp).then(({ data }) => {
+            //   if (data.code == 200) {
+            //     ElMessage.success(data.msg)
+            //     proxy.$refs.Form.resetFields()
+            //     emit('onOk')
+            //   } else {
+            //     ElMessage.error(data.msg)
+            //     proxy.$refs.Form.resetFields()
+            //     emit('onOk')
+            //   }
+            // }).catch(e=> {
+            //   ElMessage.error('请求失败！请重试！')
+            // })
           } else { // 修改
             const formObjTemp = cloneDeep(formObj)
             formObjTemp.code = props.id
             delete formObjTemp.parentId
             delete formObjTemp.isLeaf
-            proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/${formObjTemp.code}`,formObjTemp).then(({ data }) => {
-              if (data.code == 200) {
-                ElMessage.success(data.msg)
-                proxy.$refs.Form.resetFields()
-                emit('onOk')
-              } else {
-                ElMessage.error(data.msg)
-                proxy.$refs.Form.resetFields()
-                emit('onOk')
-              }
-            }).catch(e=> {
-              ElMessage.error('请求失败！请重试！')
-            })
+            //proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/${formObjTemp.code}`,formObjTemp).then(({ data }) => {
+            //   if (data.code == 200) {
+            //     ElMessage.success(data.msg)
+            //     proxy.$refs.Form.resetFields()
+            //     emit('onOk')
+            //   } else {
+            //     ElMessage.error(data.msg)
+            //     proxy.$refs.Form.resetFields()
+            //     emit('onOk')
+            //   }
+            // }).catch(e=> {
+            //   ElMessage.error('请求失败！请重试！')
+            // })
           }
         }
       })

@@ -20,7 +20,7 @@
           </el-select>
         </el-form-item> -->
         <el-form-item>
-          <c-button type="search" @click="fetchData()" />
+          <el-button type="primary" @click="fetchData()">查询</el-button>
           <!-- <el-button @click="reset">重置</el-button> -->
         </el-form-item>
       </el-form>
@@ -50,7 +50,7 @@
       </el-table>
     </div>
     <!-- 表格底部分页显示 -->
-    <c-pagination :pages="pageObj" @on-page-change="onPageChange()" />
+    <pagination :pages="pageObj" @on-page-change="onPageChange()" />
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="onCancel">取 消</el-button>
@@ -118,16 +118,16 @@ export default defineComponent({
       tableName: ''
     });
     const getData = (row) => {
-      proxy.$axios.post(``, {
-        // runStatus: searchObj.runStatus,
-        current: pageObj.current,
-        size: pageObj.size,
-        jobName: searchObj.name,
-        jobTheme: searchObj.theme,
-      }).then(({ data: { data } }) => {
-        state.tableData = data.records
-        pageObj.total = data.total;
-      });
+      //proxy.$axios.post(``, {
+      //   // runStatus: searchObj.runStatus,
+      //   current: pageObj.current,
+      //   size: pageObj.size,
+      //   jobName: searchObj.name,
+      //   jobTheme: searchObj.theme,
+      // }).then(({ data: { data } }) => {
+      //   state.tableData = data.records
+      //   pageObj.total = data.total;
+      // });
     };
     onMounted(() => {
       getData();

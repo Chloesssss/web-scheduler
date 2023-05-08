@@ -58,10 +58,10 @@
           }
         }
         //dindex-bkadmin/topic/directory
-        proxy.$axios.get(props.url, { params: { keyword: filterText } }).then(({ data }) => {
+        //proxy.$axios.get(props.url, { params: { keyword: filterText } }).then(({ data }) => {
           state.menuList = data.data || [];
           generateDefaultKey(state.menuList)
-        })
+        // })
       }
       const handleCommand = () => {}
       const onTreeClick = (data, node, item) => {

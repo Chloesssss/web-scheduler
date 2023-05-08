@@ -81,25 +81,25 @@ export default defineComponent({
       } else if(releaseState == 'ONLINE'){
         status = 'OFFLINE'
       }
-      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/release/${state.code}`,{
-        code: state.code,
-        projectCode: state.projectCode,
-        releaseState: status,
-      })
-      .then((res) => {
-        let resq = res.data
-        if(resq.code == 200){
-          ElMessage.success('修改状态成功')
-        }else if(resq.code == 400){
-          ElMessageBox.alert(resq.msg, '提示', {
-            confirmButtonText: '确定',
-            type: 'warning'
-          })
-          .catch(() => {})
-        }else{
-          ElMessage.error(resq.msg)
-        }
-      });
+      //proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/release/${state.code}`,{
+      //   code: state.code,
+      //   projectCode: state.projectCode,
+      //   releaseState: status,
+      // })
+      // .then((res) => {
+      //   let resq = res.data
+      //   if(resq.code == 200){
+      //     ElMessage.success('修改状态成功')
+      //   }else if(resq.code == 400){
+      //     ElMessageBox.alert(resq.msg, '提示', {
+      //       confirmButtonText: '确定',
+      //       type: 'warning'
+      //     })
+      //     .catch(() => {})
+      //   }else{
+      //     ElMessage.error(resq.msg)
+      //   }
+      // });
     }
     //前往监控
     const onMonitior = () => {
@@ -113,12 +113,12 @@ export default defineComponent({
     }
     //立即执行
     const onCommitConfig = () => {
-      proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/executors/start-process-instance', {
-        projectCode: state.projectCode,
-        processDefinitionCode: state.code,
-      }).then(({data}) => {
-        ElMessage[data.code === 200 ? 'success': 'error'](data.msg)
-      })
+      //proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/executors/start-process-instance', {
+      //   projectCode: state.projectCode,
+      //   processDefinitionCode: state.code,
+      // }).then(({data}) => {
+      //   ElMessage[data.code === 200 ? 'success': 'error'](data.msg)
+      // })
     }
     //定时管理
     const onSetTime = () => {

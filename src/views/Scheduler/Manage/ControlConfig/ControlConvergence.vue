@@ -106,15 +106,15 @@ export default defineComponent({
       tableName: ''
     });
     const getData = (row) => {
-      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dquality/queryGroupPage`, {
-        // runStatus: searchObj.runStatus,
-        current: pageObj.current,
-        size: pageObj.size,
-        jobName: searchObj.name,
-      }).then(({data}) => {
-        state.tableData = data.data
-        pageObj.total = data.data.total
-      })
+      //proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dquality/queryGroupPage`, {
+      //   // runStatus: searchObj.runStatus,
+      //   current: pageObj.current,
+      //   size: pageObj.size,
+      //   jobName: searchObj.name,
+      // }).then(({data}) => {
+      //   state.tableData = data.data
+      //   pageObj.total = data.data.total
+      // })
     };
     onMounted(() => {
       getData();

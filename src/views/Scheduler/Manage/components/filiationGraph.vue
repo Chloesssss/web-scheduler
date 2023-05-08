@@ -25,13 +25,14 @@ import configControlCell from '../ControlConfig/ConfigControlCell.vue';
 import configMonitorCell from '../MonitorConfig/ConfigMonitorCell.vue';
 import { ElMessageBox } from 'element-plus'
 import { ElMessage } from 'element-plus';
+import { JsonData } from '@/constants'
 import { BorderedImage } from '@antv/x6/lib/shape/standard';
 // import { ApiConstant } from '@/constants/ApiConstant/index.js'
 const { Stencil } = Addon;
 const { Rect, Polygon } = Shape;
 
 export default defineComponent({
-  components: { ConfigCell, ConfigFlinkCell, configStandCell, configControlCell, configMonitorCell },
+  components: { ConfigCell, ConfigFlinkCell, configStandCell, configControlCell, configMonitorCell, JsonData },
   name: "FiliationGraph",
   props: {
     code: [String, Number],
@@ -744,19 +745,19 @@ export default defineComponent({
     }
     //生成节点标识
     const getNodeCode = (flag, id) => {
-      proxy.$axios.get().then(({ data }) => {
-        state.sysCode = data.data
-        let cell = graph.getCellById(id)
-        if (!cell || !cell.isNode()) {
-          return
-        }
-        cell.attr('label/id', String(state.sysCode))
-        if(flag===1){
-          state.currentCode = String(state.sysCode)
-        }else{
-          state.currentCode = ""
-        }
-      })
+      //proxy.$axios.get().then(({ data }) => {
+      //   state.sysCode = data.data
+      //   let cell = graph.getCellById(id)
+      //   if (!cell || !cell.isNode()) {
+      //     return
+      //   }
+      //   cell.attr('label/id', String(state.sysCode))
+      //   if(flag===1){
+      //     state.currentCode = String(state.sysCode)
+      //   }else{
+      //     state.currentCode = ""
+      //   }
+      // })
     }
     //将流程相关内容转化为JSON
     //保存画布配置
@@ -776,40 +777,54 @@ export default defineComponent({
       }else if (taskDefinitionList.length != codeList.length) {
         ElMessage.warning('请配置节点信息')
       }else{
-        proxy.$axios.put({}, {
-          code: state.code,
-          name: state.name,
-          projectCode: state.projectCode,
-          coordinatesList: locations,
-          taskCodes: codeList.toString(),
-          taskRelation: state.taskRelation,
-          taskDefinition: taskDefinitionList,
-          description: '',
-          timeout: 0,
-          globalParams: '',
-        }).then(({ data }) => {
-          if(data.code === 200) {
-            ElMessage.success('保存成功')
-            reSet()
-          } else {
-            ElMessage.error(data.msg);
-          }
-        }).catch(e => {
-          ElMessage.error('保存失败请重试！')
-        })
+        //proxy.$axios.put({}, {
+        //   code: state.code,
+        //   name: state.name,
+        //   projectCode: state.projectCode,
+        //   coordinatesList: locations,
+        //   taskCodes: codeList.toString(),
+        //   taskRelation: state.taskRelation,
+        //   taskDefinition: taskDefinitionList,
+        //   description: '',
+        //   timeout: 0,
+        //   globalParams: '',
+        // }).then(({ data }) => {
+        //   if(data.code === 200) {
+        //     ElMessage.success('保存成功')
+        //     reSet()
+        //   } else {
+        //     ElMessage.error(data.msg);
+        //   }
+        // }).catch(e => {
+        //   ElMessage.error('保存失败请重试！')
+        // })
       }
     }
-    const reSet = () => {
-      proxy.$axios.get(``)
-      .then(({ data }) => {
-        if(data.code == 200 && data.data.taskDefinition != null){
-          state.code = data.data.processPagingQueryVO.code
-          state.projectCode = data.data.processPagingQueryVO.projectCode
-          state.name = data.data.processPagingQueryVO.name
+    const getJsonData = () => {
+      let workData = JsonData.COMMON_WORK_DATA
+      workData.map(item => {
+        if (state.code == item.processPagingQueryVO.code && state.projectCode == item.processPagingQueryVO.projectCode) {
+          console.log(state.code, state.projectCode);
+          console.log(item.processPagingQueryVO.code, item.processPagingQueryVO.projectCode);
+          return reSet(item)
+        } else {
+          item = null
+          reSet(item)
+        }
+      })
+    }
+    const reSet = (data) => {
+      // proxy.$axios.get(`xxxx/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
+      // .then(({ data }) => {
+      if (data) {
+        if(data.taskDefinition !== null){
+          // state.code = data.processPagingQueryVO.code
+          // state.projectCode = data.processPagingQueryVO.projectCode
+          state.name = data.processPagingQueryVO.name
           state.params = data.data
-          let locations = JSON.parse(data.data.processPagingQueryVO.locations)
-          let definition = data.data.taskDefinition
-          let relation = data.data.taskRelation
+          let locations = JSON.parse(data.processPagingQueryVO.locations)
+          let definition = data.taskDefinition
+          let relation = data.taskRelation
           let label = definition.map(x => x.name)
           let taskType = definition.map(x => x.taskType)
           let msg = definition.map(x => x)
@@ -877,7 +892,7 @@ export default defineComponent({
               ],
             }
           }))
-          let edges = data.data.taskRelation
+          let edges = data.taskRelation
           for (let index = edges.length-1; index >= 0; index--) {
             const element = edges[index];
             if (edges[index].preTaskCode === 0) {
@@ -905,14 +920,16 @@ export default defineComponent({
           nodeData.nodes = state.nodeDtos;
           nodeData.edges = state.linkDtos
           graph.fromJSON(nodeData)
-          state.workState = data.data.processPagingQueryVO.releaseState
+          state.workState = data.processPagingQueryVO.releaseState
           emit("giveState", state.workState)
         }else{
           nodeData.nodes = null
           graph.fromJSON([])
           ElMessage.warning('当前画布为空')
         }
-      })
+      }else{
+      }
+      // })
     }
     //监听树节点code获取画布节点位置信息
     watch([code, projectCode, workName],(newval,oldval) => {
@@ -920,8 +937,8 @@ export default defineComponent({
       state.projectCode = newval[1]
       state.name = newval[2]
       let mm = ''
-      if(state.projectCode){
-        reSet()
+      if(state.code && state.projectCode){
+        getJsonData()
       } else {
       }
     })

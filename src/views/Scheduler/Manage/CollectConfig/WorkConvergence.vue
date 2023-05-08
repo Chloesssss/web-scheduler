@@ -95,16 +95,16 @@ export default defineComponent({
       tableName: ''
     });
     const getData = (row) => {
-      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dbus/queryJobByPage`, {
-        // runStatus: searchObj.runStatus,
-        current: pageObj.current,
-        size: pageObj.size,
-        name: searchObj.name,
-      }).then(({ data: { data } }) => {
-        state.tableHeaders = data.table.headers
-        state.tableData = data.table.bodies
-        pageObj.total = data.total;
-      });
+      //proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/dbus/queryJobByPage`, {
+      //  // runStatus: searchObj.runStatus,
+      //   current: pageObj.current,
+      //   size: pageObj.size,
+      //   name: searchObj.name,
+      // }).then(({ data: { data } }) => {
+      //   state.tableHeaders = data.table.headers
+      //   state.tableData = data.table.bodies
+      //   pageObj.total = data.total;
+      // });
     };
     onMounted(() => {
       getData();

@@ -170,18 +170,18 @@ export default defineComponent({
     })
     const getData = (page) => {
       page && (pageObj.current = page.current)
-      proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/process-instances/query-instances-page', {
-        definitionName: searchObj.definitionName,
-        searchVal: searchObj.name,
-        stateType: searchObj.stateType >= "0" ? searchObj.stateType : null,
-        current: page ? page.current : pageObj.current,
-        size: pageObj.size,
-        projectCode: state.projectCode,
-        processDefineCode: state.processDefineCode,
-      }).then(({data}) => {
-        state.tableData = data.data.totalList
-        pageObj.total = data.data.total
-      })
+      //proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/process-instances/query-instances-page', {
+      //   definitionName: searchObj.definitionName,
+      //   searchVal: searchObj.name,
+      //   stateType: searchObj.stateType >= "0" ? searchObj.stateType : null,
+      //   current: page ? page.current : pageObj.current,
+      //   size: pageObj.size,
+      //   projectCode: state.projectCode,
+      //   processDefineCode: state.processDefineCode,
+      // }).then(({data}) => {
+      //   state.tableData = data.data.totalList
+      //   pageObj.total = data.data.total
+      // })
     }
     //分页
     const onPageChange = (data) => {
@@ -209,54 +209,54 @@ export default defineComponent({
       switch (command) {
         //停止
         case 'stopRun' :
-          proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
-            execType: "STOP",
-            processInstanceId: row.id,
-            projectCode: row.projectCode,
-          }).then(({data}) => {
-            if(data.code === 200){
-              ElMessage.success(data.msg)
-              getData()
-            }else {
-              ElMessage.error(data.msg)
-            }
-          }).catch(e => {
-            ElMessage.error('请求失败！请重试！')
-          })
+          //proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
+          //   execType: "STOP",
+          //   processInstanceId: row.id,
+          //   projectCode: row.projectCode,
+          // }).then(({data}) => {
+          //   if(data.code === 200){
+          //     ElMessage.success(data.msg)
+          //     getData()
+          //   }else {
+          //     ElMessage.error(data.msg)
+          //   }
+          // }).catch(e => {
+          //   ElMessage.error('请求失败！请重试！')
+          // })
           break;
         //暂停
         case 'onStop' :
-          proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
-            execType: "PAUSE",
-            processInstanceId: row.id,
-            projectCode: row.projectCode,
-          }).then(({data}) => {
-            if(data.code === 200){
-              ElMessage.success(data.msg)
-              getData()
-            }else {
-              ElMessage.error(data.msg)
-            }
-          }).catch(e => {
-            ElMessage.error('请求失败！请重试！')
-          })
+          //proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
+          //   execType: "PAUSE",
+          //   processInstanceId: row.id,
+          //   projectCode: row.projectCode,
+          // }).then(({data}) => {
+          //   if(data.code === 200){
+          //     ElMessage.success(data.msg)
+          //     getData()
+          //   }else {
+          //     ElMessage.error(data.msg)
+          //   }
+          // }).catch(e => {
+          //   ElMessage.error('请求失败！请重试！')
+          // })
         break;
         //暂停
         case 'recover' :
-          proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
-            execType: "RECOVER_SUSPENDED_PROCESS",
-            processInstanceId: row.id,
-            projectCode: row.projectCode,
-          }).then(({data}) => {
-            if(data.code === 200){
-              ElMessage.success(data.msg)
-              getData()
-            }else {
-              ElMessage.error(data.msg)
-            }
-          }).catch(e => {
-            ElMessage.error('请求失败！请重试！')
-          })
+          //proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
+          //   execType: "RECOVER_SUSPENDED_PROCESS",
+          //   processInstanceId: row.id,
+          //   projectCode: row.projectCode,
+          // }).then(({data}) => {
+          //   if(data.code === 200){
+          //     ElMessage.success(data.msg)
+          //     getData()
+          //   }else {
+          //     ElMessage.error(data.msg)
+          //   }
+          // }).catch(e => {
+          //   ElMessage.error('请求失败！请重试！')
+          // })
         break;
       }
     }
@@ -274,33 +274,33 @@ export default defineComponent({
     }
     //重跑
     const reRun = (row) => {
-      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
-        execType: "REPEAT_RUNNING",
-        processInstanceId: row.id,
-        projectCode: row.projectCode,
-      }).then(({data}) => {
-        if(data.code === 200){
-          ElMessage.success(data.msg)
-          getData()
-        }else {
-          ElMessage.error(data.msg)
-        }
-      }).catch(e => {
-        ElMessage.error('请求失败！请重试！')
-      })
+      //proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/executors/execute`,{
+      //   execType: "REPEAT_RUNNING",
+      //   processInstanceId: row.id,
+      //   projectCode: row.projectCode,
+      // }).then(({data}) => {
+      //   if(data.code === 200){
+      //     ElMessage.success(data.msg)
+      //     getData()
+      //   }else {
+      //     ElMessage.error(data.msg)
+      //   }
+      // }).catch(e => {
+      //   ElMessage.error('请求失败！请重试！')
+      // })
     }
     //删除
     const onDelete = (row) => {
-      proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-instances/${row.id}?id=${row.id}&projectCode=${row.projectCode}`).then(({data}) => {
-        if(data.code == 200){
-          ElMessage.success("删除实例任务成功")
-          getData()
-        }else {
-          ElMessage.error(data.msg)
-        }
-      }).catch(e=> {
-        ElMessage.error('请求失败！请重试！')
-      })
+      //proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-instances/${row.id}?id=${row.id}&projectCode=${row.projectCode}`).then(({data}) => {
+      //   if(data.code == 200){
+      //     ElMessage.success("删除实例任务成功")
+      //     getData()
+      //   }else {
+      //     ElMessage.error(data.msg)
+      //   }
+      // }).catch(e=> {
+      //   ElMessage.error('请求失败！请重试！')
+      // })
     }
     return {
       pageObj,

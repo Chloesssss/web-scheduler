@@ -72,12 +72,13 @@ import { ElMessage } from 'element-plus'
 import {useRouter ,useRoute} from "vue-router";
 import CreateWork from "./CreateWork.vue";
 import WorkMenu from "./workMenu.vue";
+import { JsonData } from '@/constants'
 import { DeleteConfirm } from '@/../common/utils/index.js'
 import { Document, Search, Folder, FolderOpened, Fold, Expand, CirclePlus } from '@element-plus/icons-vue'
 
 export default defineComponent({
   name: "DocTree",
-  components: { CreateWork, WorkMenu, Document, Search, Folder, FolderOpened, Fold, Expand, CirclePlus },
+  components: { CreateWork, WorkMenu, Document, Search, Folder, FolderOpened, Fold, Expand, CirclePlus, JsonData },
   props: {
     editName: '',
   },
@@ -112,16 +113,17 @@ export default defineComponent({
     })
     //获取目录
     const getTreeData = () => {
-      proxy.$axios.get("/dolphinscheduler-api/dolphinscheduler/projects/view-tree",{
-      })
-      .then((res) => {
-        let resq = res.data
-        if(resq.code == 200){
-          state.dataSource = resq.data
-        }else{
-          ElMessage.error(resq.msg)
-        }
-      });
+      // proxy.$axios.get("",{ //在“”中填入请求的url地址
+      // })
+      // .then((res) => {
+      //   let resq = res.data
+      //   if(resq.code == 200){
+      //     state.dataSource = resq.data
+      //   }else{
+      //     ElMessage.error(resq.msg)
+      //   }
+      // });
+      state.dataSource = JsonData.COMMON_DOC_TREE
     }
     //点击目录
     const onTreeClick = (data,node) => {
@@ -158,30 +160,30 @@ export default defineComponent({
         case 'delete':
         DeleteConfirm().then(() => {
           if (data.children === null&&state.projectCode != 0) {
-            proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/delete?code=${state.code}&projectCode=${state.projectCode}`,
-            ).then((data) => {
-              if(data.data.code == 200){
-                ElMessage.success("删除工作流作业成功")
-                getTreeData()
-              }else {
-                ElMessage.error(data.data.msg)
-              }
-            }).catch(e => {
-              ElMessage.error('请求失败！请重试！')
-              getTreeData()
-            })
+            //proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/delete?code=${state.code}&projectCode=${state.projectCode}`,
+            // ).then((data) => {
+            //   if(data.data.code == 200){
+            //     ElMessage.success("删除工作流作业成功")
+            //     getTreeData()
+            //   }else {
+            //     ElMessage.error(data.data.msg)
+            //   }
+            // }).catch(e => {
+            //   ElMessage.error('请求失败！请重试！')
+            //   getTreeData()
+            // })
           } else {
-            proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/${state.code}`,
-            ).then((data) => {
-              if(data.data.code == 200){
-                ElMessage.success("删除项目成功")
-                getTreeData()
-              }else {
-                ElMessage.error(data.data.msg)
-              }
-            }).catch(e => {
-              ElMessage.error('请求失败！请重试！')
-            })
+            //proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/${state.code}`,
+            // ).then((data) => {
+            //   if(data.data.code == 200){
+            //     ElMessage.success("删除项目成功")
+            //     getTreeData()
+            //   }else {
+            //     ElMessage.error(data.data.msg)
+            //   }
+            // }).catch(e => {
+            //   ElMessage.error('请求失败！请重试！')
+            // })
           }
         })
         break;

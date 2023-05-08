@@ -277,7 +277,7 @@
       state.tableHeadersTemp = [];
       pageObj.total = 0;
     }
-    proxy.$axios.get(props.url, { params: { current: pageObj.current, size: pageObj.size, ...params, ...props.otherSearchParams } }).then(({ data: { data } }) => {
+    //proxy.$axios.get(props.url, { params: { current: pageObj.current, size: pageObj.size, ...params, ...props.otherSearchParams } }).then(({ data: { data } }) => {
       if(data) {
         state.tableData = (data && data.table && data.table.bodies) ? data.table.bodies : (props.getTableDate(data)) || [];
         if(props.tableHeaders && props.tableHeaders.length) {
@@ -292,10 +292,10 @@
         handleError()
         ElMessage.error('请求失败')
       }
-    }).catch(x => {
-      handleError()
-      ElMessage.error(x.data ? x.data.message : '请求失败')
-    })
+    // }).catch(x => {
+    //   handleError()
+    //   ElMessage.error(x.data ? x.data.message : '请求失败')
+    // })
   }
   const onHeaderRowClick = (row) => { // 当列配置中的行被点击时，将复选框选中
     proxy.$refs.headerTableRef.toggleRowSelection(row, !state.showHeaderList.map(x => x.prop).includes(row.prop))

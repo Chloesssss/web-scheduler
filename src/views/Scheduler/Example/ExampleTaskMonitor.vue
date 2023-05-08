@@ -106,18 +106,18 @@ export default defineComponent({
     //获取节点数据
     const getData = (page) => {
       page && (pageObj.current = page.current)
-      proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/task-instances/query-definition-page', {
-        current: page ? page.current : pageObj.current,
-        size: pageObj.size,
-        projectCode: state.projectCode,
-        processInstanceId: state.code,
-      }).then(({data}) => {
-        state.tableData = data.data.totalList
-        pageObj.total = data.data.total
-        state.docName = state.tableData[0].name
-        state.docState = state.tableData[0].stateCN
-        console.log(state.docName);
-      })
+      //proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/task-instances/query-definition-page', {
+      //   current: page ? page.current : pageObj.current,
+      //   size: pageObj.size,
+      //   projectCode: state.projectCode,
+      //   processInstanceId: state.code,
+      // }).then(({data}) => {
+      //   state.tableData = data.data.totalList
+      //   pageObj.total = data.data.total
+      //   state.docName = state.tableData[0].name
+      //   state.docState = state.tableData[0].stateCN
+      //   console.log(state.docName);
+      // })
     }
     //分页
     const onPageChange = (data) => {
@@ -138,9 +138,9 @@ export default defineComponent({
     });
     const onDetail = (row) => {
       state.dialogVisible = true
-      proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/log/task-log?taskInstanceId=${row.id}`).then((res) =>{
-        state.log = res.data.data
-      })
+      //proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/log/task-log?taskInstanceId=${row.id}`).then((res) =>{
+      //   state.log = res.data.data
+      // })
     }
     return {
       pageObj,

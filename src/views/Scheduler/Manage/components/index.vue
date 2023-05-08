@@ -126,7 +126,7 @@
         state.cronPopover = bol
       }
       // const getClusterList = () => {
-      //   proxy.$axios.get('/dlink/dlink-admin/cluster').then(({data}) => {
+      //  proxy.$axios.get('/dlink/dlink-admin/cluster').then(({data}) => {
       //     state.clusterList = data
       //     state.clusterList.unshift({
       //       id: 0,
@@ -157,52 +157,52 @@
           if(valid) {
             if(state.flagCode){
               // 修改定时调度
-              proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/schedules/${state.flagCode}`, {
-                id: state.flagCode,
-                projectCode: state.projectCode,
-                processDefinitionCode: state.code,
-                startTime: formObj.startTime,
-                endTime: formObj.endTime,
-                crontab: formObj.cronExpression,
-                failureStrategy: formObj.failureStrategy
-              }).then(({data}) => {
-                if(data.code === 200) {
-                  ElMessage.success('保存成功')
-                  proxy.$refs.Form.resetFields()
-                  emit('onOk', 'close')
-                  onCancel()
-                } else {
-                  ElMessage.error(data.msg)
-                  onCancel()
-                }
-              }).catch(e => {
-                ElMessage.error('保存失败请重试！')
-                onCancel()
-              })
+              // proxy.$axios.put(`/dolphinscheduler-api/dolphinscheduler/projects/schedules/${state.flagCode}`, {
+              //   id: state.flagCode,
+              //   projectCode: state.projectCode,
+              //   processDefinitionCode: state.code,
+              //   startTime: formObj.startTime,
+              //   endTime: formObj.endTime,
+              //   crontab: formObj.cronExpression,
+              //   failureStrategy: formObj.failureStrategy
+              // }).then(({data}) => {
+              //   if(data.code === 200) {
+              //     ElMessage.success('保存成功')
+              //     proxy.$refs.Form.resetFields()
+              //     emit('onOk', 'close')
+              //     onCancel()
+              //   } else {
+              //     ElMessage.error(data.msg)
+              //     onCancel()
+              //   }
+              // }).catch(e => {
+              //   ElMessage.error('保存失败请重试！')
+              //   onCancel()
+              // })
             } else {
               // 新增定时调度
-              proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/schedules`, {
-                projectCode: state.projectCode,
-                processDefinitionCode: state.code,
-                startTime: formObj.startTime,
-                endTime: formObj.endTime,
-                crontab: formObj.cronExpression,
-                failureStrategy: formObj.failureStrategy,
-                warningType: "NONE",
-              }).then(({data}) => {
-                if(data.code === 200) {
-                  ElMessage.success('保存成功')
-                  proxy.$refs.Form.resetFields()
-                  emit('onOk', 'close')
-                  onCancel()
-                } else {
-                  ElMessage.error(data.msg)
-                  onCancel()
-                }
-              }).catch(e => {
-                ElMessage.error('保存失败请重试！')
-                onCancel()
-              })
+              // proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/schedules`, {
+              //   projectCode: state.projectCode,
+              //   processDefinitionCode: state.code,
+              //   startTime: formObj.startTime,
+              //   endTime: formObj.endTime,
+              //   crontab: formObj.cronExpression,
+              //   failureStrategy: formObj.failureStrategy,
+              //   warningType: "NONE",
+              // }).then(({data}) => {
+              //   if(data.code === 200) {
+              //     ElMessage.success('保存成功')
+              //     proxy.$refs.Form.resetFields()
+              //     emit('onOk', 'close')
+              //     onCancel()
+              //   } else {
+              //     ElMessage.error(data.msg)
+              //     onCancel()
+              //   }
+              // }).catch(e => {
+              //   ElMessage.error('保存失败请重试！')
+              //   onCancel()
+              // })
             }
           }
         })
@@ -211,24 +211,24 @@
       watch([visible, code, projectCode],(newValue,oldValue) => {
         timeVisible.value = newValue[0];
         if(timeVisible.value){
-            proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/schedules/query-schedules-page?current=1&size=1&projectCode=${state.projectCode}&processDefinitionCode=${state.code}`)
-            .then((data) => {
-              let resq =data.data
-              if(resq.code == 200){
-                state.flagCode=resq.data.totalList[0].id
-                formObj.startTime = resq.data.totalList[0].startTime,
-                formObj.endTime = resq.data.totalList[0].endTime,
-                formObj.cronExpression = resq.data.totalList[0].crontab
-                if(state.flagCode) {
-                  formObj.failureStrategy = resq.data.totalList[0].failureStrategy,
-                  formObj.status = formObj.failureStrategy == "CONTINUE" ? 0 : 1
-                }else {
-                  onStatus()
-                }
-              }else{
-                ElMessage.error(data.msg)
-              }
-            });
+          // proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/schedules/query-schedules-page?current=1&size=1&projectCode=${state.projectCode}&processDefinitionCode=${state.code}`)
+          // .then((data) => {
+          //   let resq =data.data
+          //   if(resq.code == 200){
+          //     state.flagCode=resq.data.totalList[0].id
+          //     formObj.startTime = resq.data.totalList[0].startTime,
+          //     formObj.endTime = resq.data.totalList[0].endTime,
+          //     formObj.cronExpression = resq.data.totalList[0].crontab
+          //     if(state.flagCode) {
+          //       formObj.failureStrategy = resq.data.totalList[0].failureStrategy,
+          //       formObj.status = formObj.failureStrategy == "CONTINUE" ? 0 : 1
+          //     }else {
+          //       onStatus()
+          //     }
+          //   }else{
+          //     ElMessage.error(data.msg)
+          //   }
+          // });
         }else{
           Object.assign(formObj,{ startTime: '', endTime: '', failureStrategy: '', crontab: '' })
         }

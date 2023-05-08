@@ -280,14 +280,14 @@ export default defineComponent({
       state.label=newval[3]
       generateImag()
       if(state.projectCode){
-        proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
-        .then(({data}) => {
-          if(data.code == 200){
+        //proxy.$axios.get(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
+        // .then(({data}) => {
+        //   if(data.code == 200){
 
-          }else{
-            // ElMessage.error(data.msg)
-          }
-        })
+        //   }else{
+        //     // ElMessage.error(data.msg)
+        //   }
+        // })
       } else {
         //ElMessage.warning('请选择作业树子节点')
       }

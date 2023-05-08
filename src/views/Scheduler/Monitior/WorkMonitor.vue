@@ -118,25 +118,25 @@ export default defineComponent({
       //通过路由传参
       state.projectCode = proxy.$route.query.projectCode
       state.code = proxy.$route.query.code
-      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/query-definition-page`,{
-        searchVal: searchObj.name,
-        projectName: searchObj.motif,
-        releaseState: searchObj.runStatus,
-        current: pageObj.current,
-        size: pageObj.size,
-        projectCode: state.projectCode,
-        code: state.code,
-      })
-      .then((res) => {
-        let resq = res.data
-        state.tableData = resq.totalList
-        if(resq.code == 200){
-          state.tableData = resq.data.totalList
-          pageObj.total = resq.data.total
-        }else{
-          ElMessage.error(resq.msg)
-        }
-      });
+      //proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/query-definition-page`,{
+      //   searchVal: searchObj.name,
+      //   projectName: searchObj.motif,
+      //   releaseState: searchObj.runStatus,
+      //   current: pageObj.current,
+      //   size: pageObj.size,
+      //   projectCode: state.projectCode,
+      //   code: state.code,
+      // })
+      // .then((res) => {
+      //   let resq = res.data
+      //   state.tableData = resq.totalList
+      //   if(resq.code == 200){
+      //     state.tableData = resq.data.totalList
+      //     pageObj.total = resq.data.total
+      //   }else{
+      //     ElMessage.error(resq.msg)
+      //   }
+      // });
     }
     onMounted(() => {
       getData()
@@ -168,18 +168,18 @@ export default defineComponent({
         break;
         case 'onDelete' :
         DeleteConfirm().then(() => {
-          proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/delete?code=${row.code}&projectCode=${row.projectCode}`,
-          ).then((data) => {
-            if(data.code == 200){
-              ElMessage.success("删除成功")
-              fetchData()
-            }else {
-              ElMessage.error(data.data.msg)
-            }
-          }).catch(e => {
-            ElMessage.error('请求失败！请重试！')
-            fetchData()
-          })       
+          //proxy.$axios.delete(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/delete?code=${row.code}&projectCode=${row.projectCode}`,
+        //   ).then((data) => {
+        //     if(data.code == 200){
+        //       ElMessage.success("删除成功")
+        //       fetchData()
+        //     }else {
+        //       ElMessage.error(data.data.msg)
+        //     }
+        //   }).catch(e => {
+        //     ElMessage.error('请求失败！请重试！')
+        //     fetchData()
+        //   })       
         })
         break;
       }
@@ -192,41 +192,41 @@ export default defineComponent({
       } else if(row.releaseState == 'ONLINE'){
         releaseState = 'OFFLINE'
       }
-      proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/release/${row.code}`,{
-        code: row.code,
-        projectCode: row.projectCode,
-        releaseState: releaseState,
-      })
-      .then((res) => {
-        let resq = res.data
-        if(resq.code == 200){
-          ElMessage.success('操作成功')
-          getData()
-        }else if(resq.code == 400){
-          ElMessageBox.alert(resq.msg, '提示', {
-            confirmButtonText: '确定',
-            type: 'warning'
-          })
-          .catch(() => {})
-        }else{
-          ElMessage.error(resq.msg)
-        }
-      });
+      //proxy.$axios.post(`/dolphinscheduler-api/dolphinscheduler/projects/process-definition/release/${row.code}`,{
+      //   code: row.code,
+      //   projectCode: row.projectCode,
+      //   releaseState: releaseState,
+      // })
+      // .then((res) => {
+      //   let resq = res.data
+      //   if(resq.code == 200){
+      //     ElMessage.success('操作成功')
+      //     getData()
+      //   }else if(resq.code == 400){
+      //     ElMessageBox.alert(resq.msg, '提示', {
+      //       confirmButtonText: '确定',
+      //       type: 'warning'
+      //     })
+      //     .catch(() => {})
+      //   }else{
+      //     ElMessage.error(resq.msg)
+      //   }
+      // });
     }
     //立即执行
     const onDoWork = (row) => {
-      proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/executors/start-process-instance', {
-        projectCode: row.projectCode,
-        processDefinitionCode: row.code,
-      }).then(({data}) => {
-        ElMessage[data.code === 200 ? 'success': 'error'](data.msg)
-      })
+      //proxy.$axios.post('/dolphinscheduler-api/dolphinscheduler/projects/executors/start-process-instance', {
+      //   projectCode: row.projectCode,
+      //   processDefinitionCode: row.code,
+      // }).then(({data}) => {
+      //   ElMessage[data.code === 200 ? 'success': 'error'](data.msg)
+      // })
     }
     //获取下拉列表主题名
     const getMotif = () => {
-      proxy.$axios.get("/dolphinscheduler-api/dolphinscheduler/projects/view-tree").then((res) => {
-          state.motifList = res.data.data
-        })
+      //proxy.$axios.get("/dolphinscheduler-api/dolphinscheduler/projects/view-tree").then((res) => {
+        //   state.motifList = res.data.data
+        // })
     }
     //获取批量选中值
     const handleSelectionChange = (val) => {
