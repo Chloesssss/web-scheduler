@@ -8,7 +8,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="作业名称" prop="name">
-        <el-input v-model="searchObj.name" clearable placeholder="作业名称" maxlength="50" class="mr-10" />
+        <el-input v-model="searchObj.name" clearable placeholder="作业名称" maxlength="50"/>
       </el-form-item>
       <el-form-item label="作业主题" prop="motif">
         <el-select filterable clearable v-model="searchObj.motif" placeholder="请选择">
@@ -20,7 +20,7 @@
         <!-- <el-button @click="reset">重置</el-button> -->
       </el-form-item>
     </el-form>
-    <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" stripe @selection-change="handleSelectionChange">
+    <el-table v-loading="state.loading" border class="mt-10" :data="state.tableData" stripe @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column prop="code" label="编号" show-overflow-tooltip/>
       <el-table-column prop="name" label="作业名称" show-overflow-tooltip>
@@ -62,7 +62,7 @@
     </el-table>
   </div>
   <!-- 表格底部分页显示 -->
-  <pagination :pages="pageObj" @on-page-change="onPageChange()" />
+  <pagination class="justify-content-center" :pages="pageObj" @on-page-change="onPageChange()" />
 </template>
 
 <script>

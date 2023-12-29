@@ -7,13 +7,13 @@
   <div>
     <el-form :inline="true" :model="searchObj">
       <el-form-item label="作业名称">
-        <el-input v-model="searchObj.definitionName" clearable placeholder="作业名称" maxlength="50" class="mr-10" />
+        <el-input v-model="searchObj.definitionName" clearable placeholder="作业名称" maxlength="50"/>
       </el-form-item>
       <el-form-item label="实例名称">
-        <el-input v-model="searchObj.name" clearable placeholder="实例名称" maxlength="50" class="mr-10" />
+        <el-input v-model="searchObj.name" clearable placeholder="实例名称" maxlength="50"/>
       </el-form-item>
       <el-form-item label="实例状态">
-        <el-select class="mb-10" v-model="searchObj.stateType" clearable placeholder="请选择">
+        <el-select v-model="searchObj.stateType" clearable placeholder="请选择">
           <el-option v-for="item in state.statusOptions" :key="item.key" :label="item.key" :value="item.value" />
         </el-select>
       </el-form-item>
@@ -33,7 +33,7 @@
         <!-- <el-button @click="reset">重置</el-button> -->
       </el-form-item>
     </el-form>
-    <el-table v-loading="state.loading" border class="mt-20" :data="state.tableData" stripe @selection-change="handleSelectionChange">
+    <el-table v-loading="state.loading" border class="mt-10" :data="state.tableData" stripe @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" />
       <el-table-column prop="id" label="编号" show-overflow-tooltip/>
       <el-table-column prop="definitionName" label="作业名称" show-overflow-tooltip/>
@@ -73,7 +73,7 @@
     </el-table> 
   </div>
   <!-- 表格底部分页显示 -->
-  <pagination :pages="pageObj" @on-page-change="onPageChange()"/>
+  <pagination class="justify-content-center" :pages="pageObj" @on-page-change="onPageChange()"/>
 </template>
 
 <script>

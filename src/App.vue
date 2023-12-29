@@ -19,8 +19,8 @@ export default defineComponent({
     const state = reactive({
       menuList: [ // 左侧菜单列表
         {index:"WorkManage", name: "作业管理", icon: 'Setting' },
-        {index:"WorkMonitor", name:"作业监控", icon: 'Setting'},
-        {index:"ExampleMonitor", name:"实例监控", icon: 'Setting'},
+        // {index:"WorkMonitor", name:"作业监控", icon: 'Setting'},
+        // {index:"ExampleMonitor", name:"实例监控", icon: 'Setting'},
       ],
     });
     return {

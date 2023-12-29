@@ -6,10 +6,11 @@
 import { defineComponent, reactive, toRefs, ref, onMounted, watch, getCurrentInstance } from 'vue'
 import { Graph, Shape } from '@antv/x6';
 import { GridLayout, DagreLayout } from '@antv/layout'
-import { ApiConstant } from '@/constants/ApiConstant/index.js'
+import { JsonData } from '@/constants'
 import '@antv/x6-vue-shape'
 
 export default defineComponent({
+  components: { JsonData },
   props: {
     code: [String, Number],
     projectCode: [String, Number],
@@ -286,9 +287,11 @@ export default defineComponent({
       )
     }
     const registerGraph = () => {
-      proxy.$axios.get(`${ ApiConstant.DOLPHINSCHEDULER_API }/dolphinscheduler/projects/process-definition/taskTree/${state.code}?code=${state.code}&projectCode=${state.projectCode}`)
-      .then(({ data }) => {
-        if(data.code == 200 && data.data.taskDefinition != null){
+      // proxy.$axios.get(`?code=${state.code}&projectCode=${state.projectCode}`)
+      // .then(({ data }) => {
+      let workData = JsonData.COMMON_WORK_DATA
+      workData.map(item => {
+        if (state.code == item.processPagingQueryVO.code && state.projectCode == item.processPagingQueryVO.projectCode) {
           state.code = data.data.processPagingQueryVO.code
           state.projectCode = data.data.processPagingQueryVO.projectCode
           state.name = data.data.processPagingQueryVO.name
@@ -399,6 +402,7 @@ export default defineComponent({
           ElMessage.warning('当前画布为空')
         }
       })
+      // })
     }
     watch([code, projectCode, status,docName],(newval,oldval) => {//获取
       state.code = newval[0]

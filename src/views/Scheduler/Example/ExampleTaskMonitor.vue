@@ -44,7 +44,7 @@
     </div>
   </el-main>
   <!-- 表格底部分页显示 -->
-  <pagination :pages="pageObj" @on-page-change="onPageChange()"/>
+  <pagination class="justify-content-center" :pages="pageObj" @on-page-change="onPageChange()"/>
   <el-dialog title="日志详情" v-model="state.dialogVisible" destroy-on-close width="960px" top="25px">
     <el-scrollbar height="480px">
         <pre style="font-size: 13px;">

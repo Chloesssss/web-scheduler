@@ -58,10 +58,15 @@ export default defineComponent({
       state.projectCode = i;
       state.workName = j;
       state.motif = k;
+      proxy.$nextTick(() => {
+        proxy.$refs.filiateGraph.getJsonData()
+      })
     }
     //保存
     const onSave = () => {
-      proxy.$refs.filiateGraph.save()
+      proxy.$nextTick(() => {
+        proxy.$refs.filiateGraph.save()
+      })
     }
     //获取当前选中节点作业状态
     const getState = (i) => {
